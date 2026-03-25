@@ -130,6 +130,16 @@
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
                     </div>
+
+                    <div class="glass-card p-4 flex items-center justify-between cursor-pointer" onclick="loadBookingsAdmin()">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-calendar-check text-lg"></i></div>
+                            <div>
+                                <h3 class="text-sm font-bold text-dark">Facility Bookings</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
                 </div>
             </div>
 
@@ -436,6 +446,40 @@
                             <div class="bg-slate-50 p-2 rounded-lg mt-2 flex justify-between items-center text-xs">
                                 <span class="text-slate-500 font-semibold"><i class="fa-solid fa-house-user"></i> ${v.userName}</span>
                                 <span class="font-bold text-primary tracking-widest text-sm bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${v.status === 'Expected' ? v.passCode : 'XXXXXX'}</span>
+                            </div>
+                        </div>`;
+                    });
+                    content.innerHTML = `<div class="space-y-1">${html}</div>`;
+                }
+            } catch (err) {}
+        }
+
+        async function loadBookingsAdmin() {
+            const panel = document.getElementById('dynamicPanel');
+            const content = document.getElementById('panelContent');
+            panel.classList.remove('hidden');
+            document.getElementById('panelTitle').innerText = "Amenity Reservations Log";
+            content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div>`;
+
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            try {
+                const res = await fetch(`${API_URL}/bookings${query}`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const bookings = await res.json();
+                    let html = '';
+                    if(bookings.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No amenity reservations detected in the registry.</p>`;
+                    bookings.forEach(b => {
+                        html += `
+                        <div class="bg-white border-2 border-dashed border-emerald-200 p-3 rounded-xl mb-3 relative overflow-hidden flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl"><i class="fa-solid fa-bookmark"></i></div>
+                            <div class="flex-1">
+                                <h4 class="text-[14px] font-bold text-dark">${b.facility}</h4>
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mt-0.5">🗓️ ${b.date} • ${b.slot.split('(')[0]}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded text-[10px] block mb-1"><i class="fa-solid fa-user"></i> ${b.userName}</span>
                             </div>
                         </div>`;
                     });

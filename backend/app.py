@@ -447,6 +447,44 @@ def verify_pass():
         "status": visitor["status"]
     })
 
+@app.route('/api/bookings', methods=['GET', 'POST'])
+@token_required
+def manage_bookings(user_id, society_id):
+    if request.method == 'POST':
+        data = request.json
+        if not data.get('facility') or not data.get('date'):
+            return jsonify({"error": "Missing booking details"}), 400
+            
+        # Check for conflict to prevent double-booking the exact same slot
+        conflict = bookings_col.find_one({
+            "societyId": society_id, 
+            "facility": data.get('facility'), 
+            "date": data.get('date'), 
+            "slot": data.get('slot')
+        })
+        if conflict: return jsonify({"error": "Time slot already booked by another resident"}), 409
+        
+        booking = {
+            "userId": user_id,
+            "societyId": society_id,
+            "userName": request.user_data.get('name'),
+            "facility": data.get('facility'),
+            "date": data.get('date'),
+            "slot": data.get('slot'),
+            "status": "Confirmed"
+        }
+        bookings_col.insert_one(booking)
+        return jsonify({"message": "Booking Confirmed!"}), 201
+
+    if request.user_data.get('role') == 'admin':
+        soc_filter = request.args.get('societyId')
+        query = {"societyId": soc_filter} if soc_filter else {}
+    else:
+        query = {"userId": user_id, "societyId": society_id}
+        
+    cursor = bookings_col.find(query).sort("date", -1)
+    return jsonify(json.loads(json_util.dumps(cursor)))
+
 @app.route('/api/analytics', methods=['GET'])
 @token_required
 def get_analytics():
