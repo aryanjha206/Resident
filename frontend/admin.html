@@ -43,13 +43,15 @@
 
     <!-- Admin Dashboard View -->
     <div id="adminView" class="flex-col h-full bg-slate-50">
-        <!-- Header -->
         <header class="glass-header px-5 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <button onclick="window.location.href='index.html'" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:text-primary transition"><i class="fa-solid fa-arrow-left text-sm"></i></button>
                 <h1 class="text-lg font-bold text-dark">Control Panel</h1>
             </div>
-            <button onclick="logoutAdmin()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg">Logout</button>
+            <div class="flex items-center gap-4">
+                <a href="guard.html" class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition"><i class="fa-solid fa-camera mr-1"></i> Security App</a>
+                <button onclick="logoutAdmin()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition">Logout</button>
+            </div>
         </header>
         
         <main class="flex-1 overflow-y-auto px-5 py-6 space-y-6">

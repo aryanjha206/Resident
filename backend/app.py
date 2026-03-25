@@ -412,10 +412,33 @@ def add_visitor():
     return jsonify({"message": "Gate Pass Issued", "passCode": visitor["passCode"]}), 201
     
 @app.route('/api/visitors/<v_id>/check-in', methods=['PUT'])
-@admin_required
 def check_in_visitor(v_id):
-    visitors_col.update_one({"_id": ObjectId(v_id)}, {"$set": {"status": "Entered"}})
-    return jsonify({"message": "Visitor allowed entry"})
+    # Publicly accessible endpoint for the Security Guard app to update Entry status
+    res = visitors_col.update_one({"_id": ObjectId(v_id)}, {"$set": {"status": "Entered"}})
+    if res.modified_count > 0:
+        return jsonify({"message": "Visitor marked as ENTERED."})
+    return jsonify({"error": "Failed to update visitor"}), 400
+
+@app.route('/api/security/verify-pass', methods=['POST'])
+def verify_pass():
+    # Allows a guard to scan/type a passcode and fetch visitor mapping
+    pass_code = request.json.get('passCode')
+    if not pass_code: return jsonify({"error": "Pass Code required"}), 400
+    
+    visitor = visitors_col.find_one({"passCode": pass_code, "status": "Expected"})
+    if not visitor:
+        return jsonify({"error": "Invalid or Already Scanned Pass Code"}), 404
+        
+    society = societies_col.find_one({"_id": ObjectId(visitor["societyId"])})
+    soc_name = society["name"] if society else "Unknown Society"
+    
+    return jsonify({
+        "visitorId": str(visitor["_id"]),
+        "visitorName": visitor["visitorName"],
+        "purpose": visitor["purpose"],
+        "residentName": visitor["userName"],
+        "societyName": soc_name
+    })
 
 @app.route('/api/analytics', methods=['GET'])
 @token_required

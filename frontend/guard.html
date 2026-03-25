@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gate Security - Society Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#4F46E5', dark: '#1E293B' }
+                }
+            }
+        }
+    </script>
+    <style>body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }</style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex flex-col items-center justify-center px-6">
+
+    <div class="w-full max-w-sm bg-white p-8 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center text-center">
+        <div class="w-20 h-20 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl mb-4 shadow-lg">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-dark tracking-tight">Gate Security Scanner</h2>
+        <p class="text-xs text-slate-500 mb-6">Type the 6-digit visitor Gate Pass to verify their entry globally.</p>
+
+        <form onsubmit="verifyCode(event)" class="w-full space-y-4">
+            <input type="text" id="passInput" placeholder="Enter 6-Digit Pass" required class="w-full text-center tracking-[0.2em] font-bold text-2xl text-dark bg-slate-50 border border-slate-200 rounded-xl py-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition" maxlength="6">
+            <button type="submit" id="verifyBtn" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:bg-indigo-700 transition active:scale-95 text-lg">Validate Code</button>
+        </form>
+
+        <!-- Dynamic Output Box -->
+        <div id="resultBox" class="w-full mt-6 hidden border-2 border-dashed p-4 rounded-xl text-left">
+            <div id="foundVisitor" class="hidden">
+                <span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block">Valid Pass</span>
+                <p class="text-sm text-slate-500 mb-1">Guest Name: <span id="vName" class="font-bold text-dark"></span></p>
+                <p class="text-sm text-slate-500 mb-1">Going to: <span id="rName" class="font-bold text-dark"></span></p>
+                <p class="text-xs font-bold text-primary mb-4 bg-indigo-50 p-2 rounded-lg mt-2 text-center" id="sName"></p>
+                
+                <button onclick="allowEntry()" id="allowBtn" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Approve & Open Gate</button>
+            </div>
+            
+            <div id="errorVisitor" class="hidden text-center">
+                <i class="fa-solid fa-circle-xmark text-4xl text-red-500 mb-2"></i>
+                <h3 class="text-lg font-bold text-red-600">Access Denied</h3>
+                <p class="text-xs text-slate-500" id="errorMsg">Invalid or expired pass code.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links -->
+    <div class="mt-8 flex gap-4">
+        <a href="index.html" class="text-xs font-bold text-slate-400 hover:text-primary transition"><i class="fa-solid fa-house"></i> Resident Portal</a>
+        <a href="admin.html" class="text-xs font-bold text-slate-400 hover:text-primary transition"><i class="fa-solid fa-lock"></i> Admin Board</a>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
+        let currentVisId = null;
+
+        async function verifyCode(e) {
+            e.preventDefault();
+            const btn = document.getElementById('verifyBtn');
+            const resBox = document.getElementById('resultBox');
+            const foundNode = document.getElementById('foundVisitor');
+            const errorNode = document.getElementById('errorVisitor');
+            
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking Database...';
+            resBox.classList.add('hidden');
+            foundNode.classList.add('hidden');
+            errorNode.classList.add('hidden');
+            
+            try {
+                const res = await fetch(`${API_URL}/security/verify-pass`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ passCode: document.getElementById('passInput').value })
+                });
+                
+                const data = await res.json();
+                resBox.classList.remove('hidden');
+                
+                if(res.ok) {
+                    resBox.classList.replace('border-red-200', 'border-emerald-200');
+                    if(!resBox.className.includes('border-emerald-200')) resBox.classList.add('border-emerald-200'); // init
+                    
+                    document.getElementById('vName').innerText = data.visitorName + ` (${data.purpose})`;
+                    document.getElementById('rName').innerText = data.residentName;
+                    document.getElementById('sName').innerText = data.societyName;
+                    currentVisId = data.visitorId;
+                    foundNode.classList.remove('hidden');
+                } else {
+                    resBox.classList.replace('border-emerald-200', 'border-red-200');
+                    if(!resBox.className.includes('border-red-200')) resBox.classList.add('border-red-200');
+                    
+                    document.getElementById('errorMsg').innerText = data.error;
+                    errorNode.classList.remove('hidden');
+                }
+            } catch(e) { alert("Network Error"); }
+            btn.innerText = "Validate Code";
+        }
+
+        async function allowEntry() {
+            const btn = document.getElementById('allowBtn');
+            btn.innerText = "Opening...";
+            try {
+                const res = await fetch(`${API_URL}/visitors/${currentVisId}/check-in`, { method: 'PUT' });
+                if(res.ok) {
+                    btn.outerHTML = `<div class="bg-emerald-50 text-emerald-600 font-bold p-3 rounded-xl border border-emerald-200 text-center"><i class="fa-solid fa-check-double"></i> Marked Entered</div>`;
+                    setTimeout(() => { location.reload(); }, 2000);
+                }
+            } catch(e) {}
+        }
+    </script>
+</body>
+</html>
