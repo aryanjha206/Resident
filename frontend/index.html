@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Society Hub</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#4F46E5', secondary: '#10B981', accent: '#F59E0B', dark: '#1E293B', light: '#F8FAFC' },
+                    boxShadow: { 'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)', 'glow': '0 0 15px rgba(79, 70, 229, 0.5)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
+        .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.3); position: sticky; top: 0; z-index: 50; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border-radius: 16px; }
+        .bottom-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #E2E8F0; position: fixed; bottom: 0; width: 100%; z-index: 50; display:flex;}
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748B; transition: all 0.3s ease; }
+        .nav-item.active { color: #4F46E5; }
+        .nav-item i { font-size: 1.25rem; margin-bottom: 2px; }
+        .nav-item span { font-size: 0.65rem; font-weight: 500; }
+        
+        .carousel-hide-scrollbar::-webkit-scrollbar { display: none; }
+        .carousel-hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; scroll-behavior: smooth; scroll-snap-type: x mandatory; }
+        .carousel-item { scroll-snap-align: start; }
+        
+        .floating-add { background: linear-gradient(135deg, #4F46E5, #6366F1); color: white; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; transform: translateY(-20px); border: 4px solid #F8FAFC; box-shadow: 0 8px 15px rgba(79,70,229,0.3); }
+        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: all 0.3s ease; }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
+        .modal-content { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .modal-overlay.active .modal-content { transform: translateY(0); }
+        
+        #authOverlay { background: #F8FAFC; z-index: 100; opacity: 1; visibility: visible; }
+        #appContent { display: none; }
+        
+        /* Tab Views */
+        .tab-view { display: none; }
+        .tab-view.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen overflow-x-hidden">
+
+    <!-- Auth / Login / Signup Screen -->
+    <div id="authOverlay" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-50 to-white">
+        <div class="glass-card w-full max-w-sm p-8 flex flex-col items-center relative">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-purple-500 shadow-soft flex items-center justify-center text-white text-3xl mb-6">
+                <i class="fa-solid fa-building"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-dark mb-1">Society Hub</h2>
+            <p class="text-xs text-slate-500 mb-6 text-center">Login or Signup using Email OTP</p>
+            
+            <form id="authForm" class="w-full space-y-4">
+                <div id="emailStep">
+                    <input type="email" id="emailInput" placeholder="Enter your email" required class="w-full text-center bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition mb-4">
+                    <button type="submit" id="sendOtpBtn" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg hover:bg-indigo-700 transition active:scale-95">Send OTP</button>
+                    <p id="authMsg" class="text-xs text-center mt-3 text-red-500 font-semibold hidden"></p>
+                </div>
+                
+                <div id="otpStep" class="hidden text-center">
+                    <p class="text-[10px] text-slate-500 text-center mb-2">We sent a 6-digit code to your email.</p>
+                    <input type="text" id="otpInput" placeholder="Enter OTP" maxlength="6" class="w-full text-center tracking-widest text-xl bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition mb-4">
+                    
+                    <div id="registrationFields" class="hidden mb-4 space-y-3">
+                        <p class="text-xs font-bold text-primary mb-1">Welcome! Complete Signup:</p>
+                        <input type="text" id="nameInput" placeholder="Your Full Name" class="w-full text-center text-sm bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <input type="text" id="societyCodeInput" placeholder="Society Code (e.g. SOC-1234)" class="w-full text-center text-sm bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent">
+                        <p class="text-[10px] text-slate-400">Ask your Admin for the Society Code to join.</p>
+                    </div>
+
+                    <button type="button" id="verifyOtpBtn" onclick="verifyOtp()" class="w-full bg-secondary text-white font-bold py-3 rounded-xl shadow-lg hover:bg-emerald-600 transition active:scale-95">Verify & Access</button>
+                    <button type="button" onclick="cancelOtp()" class="w-full mt-3 text-xs text-slate-500 hover:text-dark transition">Go Back</button>
+                </div>
+            </form>
+        </div>
+        <a href="admin.html" class="mt-8 text-[11px] text-slate-400 font-medium hover:text-primary transition"><i class="fa-solid fa-shield-halved"></i> Admin / Staff Login</a>
+    </div>
+
+    <!-- MAIN APP CONTENT -->
+    <div id="appContent">
+        <!-- Header -->
+        <header class="glass-header px-5 py-4 flex justify-between items-center relative">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white shadow-soft">
+                    <i class="fa-solid fa-building"></i>
+                </div>
+                <div>
+                    <h1 id="societyNameDisplay" class="text-sm font-bold text-dark flex items-center gap-1">Society Hub</h1>
+                    <p id="userNameDisplay" class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full mt-1">Welcome</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 text-slate-600 relative">
+                <button onclick="toggleNotifications()" class="relative hover:text-primary transition">
+                    <i class="fa-solid fa-bell text-xl"></i>
+                    <span id="notifBadge" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
+                    </span>
+                </button>
+                <button onclick="logout()" class="hover:text-red-500 transition"><i class="fa-solid fa-arrow-right-from-bracket text-lg"></i></button>
+            </div>
+            
+            <!-- Notifications Dropdown -->
+            <div id="notifDropdown" class="hidden absolute top-[70px] right-5 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] origin-top-right transform transition-all">
+                <div class="bg-slate-50 border-b border-slate-100 px-4 py-3 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-dark uppercase tracking-wider">Alerts & Notifications</h3>
+                    <span id="notifCount" class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold">0</span>
+                </div>
+                <div id="notifList" class="max-h-64 overflow-y-auto p-2 space-y-1">
+                    <p class="text-[10px] text-slate-500 text-center py-4">No new alerts right now.</p>
+                </div>
+            </div>
+        </header>
+
+        <main class="px-5 py-4">
+            
+            <!-- HOME TAB -->
+            <div id="tab-home" class="tab-view active space-y-6">
+                <!-- Summary Cards -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="glass-card p-4 flex flex-col gap-2 relative overflow-hidden">
+                        <div class="flex items-center gap-2 text-primary">
+                            <i class="fa-solid fa-users text-sm bg-indigo-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Residents</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-700" id="totalResidents"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                    </div>
+                    
+                    <div class="glass-card p-4 flex flex-col gap-2 relative overflow-hidden">
+                        <div class="flex items-center gap-2 text-red-500">
+                            <i class="fa-solid fa-indian-rupee-sign text-sm bg-red-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Unpaid Dues</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-700" id="pendingDues"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                    </div>
+
+                    <div class="glass-card p-4 flex flex-col gap-2 relative overflow-hidden">
+                        <div class="flex items-center gap-2 text-accent">
+                            <i class="fa-solid fa-triangle-exclamation text-sm bg-amber-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Active Complaints</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-700" id="openComplaints"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                    </div>
+
+                    <div class="glass-card p-4 flex flex-col gap-2 relative overflow-hidden">
+                        <div class="flex items-center gap-2 text-secondary">
+                            <i class="fa-solid fa-bullhorn text-sm bg-emerald-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Alerts / Notices</span>
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-700" id="totalNotices"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                    </div>
+                </div>
+
+                <!-- New Features Carousel -->
+                <div>
+                    <h2 class="text-sm font-bold text-dark mb-3">Highlight Features</h2>
+                    <div class="flex gap-4 overflow-x-auto carousel-hide-scrollbar pb-2" id="featureCarousel">
+                        <div class="carousel-item min-w-[85%] bg-gradient-to-br from-primary to-indigo-800 rounded-2xl p-5 text-white shadow-soft relative overflow-hidden shrink-0">
+                            <div class="relative z-10 flex justify-between items-center">
+                                <div>
+                                    <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase backdrop-blur-sm">New</span>
+                                    <h3 class="text-md font-bold mt-2 leading-tight">Rent Autopay Feature</h3>
+                                    <p class="text-[10px] text-indigo-100 mt-1 mb-4 w-4/5">Never miss a due date. Enable automated payments.</p>
+                                    <button class="bg-white text-primary text-[10px] font-bold py-2 px-4 rounded-full shadow-lg hover:bg-slate-50 transition" onclick="switchTab('money')">Activate Now</button>
+                                </div>
+                                <i class="fa-solid fa-wallet text-5xl opacity-80 rotate-12 drop-shadow-lg text-indigo-200"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                    <!-- Quick Actions Grid -->
+                <div>
+                    <h2 class="text-sm font-bold text-dark mb-3">Quick Actions</h2>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button class="glass-card p-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition" onclick="switchTab('money')">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-lg"><i class="fa-solid fa-money-bill-wave"></i></div>
+                            <span class="text-[10px] font-semibold text-slate-600">Pay Dues</span>
+                        </button>
+                        <button class="glass-card p-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition" onclick="openModal('complaintModal')">
+                            <div class="w-10 h-10 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg"><i class="fa-solid fa-shield-halved"></i></div>
+                            <span class="text-[10px] font-semibold text-slate-600">Complaint</span>
+                        </button>
+                        <button class="glass-card p-3 flex flex-col items-center gap-2 hover:bg-slate-50 transition" onclick="openModal('visitorModal')">
+                            <div class="w-10 h-10 rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg shadow-glow"><i class="fa-solid fa-id-badge"></i></div>
+                            <span class="text-[10px] font-semibold text-indigo-700">Gate Pass</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="noticeBoard" class="glass-card p-4">
+                    <h3 class="text-sm font-bold text-dark mb-3">Notice Board</h3>
+                    <div id="noticesList" class="space-y-3">
+                        <p class="text-xs text-slate-500 text-center"><i class="fa-solid fa-spinner fa-spin"></i> Checking notices...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MONEY TAB -->
+            <div id="tab-money" class="tab-view space-y-6">
+                <h2 class="text-lg font-bold text-dark">My Outstanding Dues</h2>
+                <div id="myDuesList" class="space-y-4">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                </div>
+            </div>
+
+            <!-- PEOPLE TAB -->
+            <div id="tab-people" class="tab-view space-y-6">
+                <h2 class="text-lg font-bold text-dark">Society Directory</h2>
+                <div class="glass-card p-4">
+                    <input type="text" placeholder="Search residents..." class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
+                    <div id="mySocietyUsersList" class="space-y-3">
+                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROPERTY TAB -->
+            <div id="tab-property" class="tab-view space-y-6">
+                <h2 class="text-lg font-bold text-dark">My Complaints & Issues</h2>
+                <button onclick="openModal('complaintModal')" class="w-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-bold py-3 rounded-xl hover:bg-indigo-100 transition shadow-sm mb-4">+ Raise New Complaint</button>
+                <div id="myComplaintsList" class="space-y-3">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav pb-safe flex justify-between px-6 pt-3 h-[70px]">
+            <a href="#" class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="#" class="nav-item relative" onclick="switchTab('money')"><i class="fa-solid fa-wallet"></i><span>Money</span></a>
+            <div class="relative flex justify-center w-16 px-2">
+                <button class="absolute -top-7 floating-add active:scale-95 transition" onclick="openModal('complaintModal')"><i class="fa-solid fa-plus text-xl"></i></button>
+            </div>
+            <a href="#" class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i><span>People</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('property')"><i class="fa-solid fa-building"></i><span>Property</span></a>
+        </nav>
+    </div>
+
+    <!-- Complaint Modal -->
+    <div id="complaintModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'complaintModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-md font-bold text-dark">Raise Complaint</h3>
+                <button onclick="closeModal(null, 'complaintModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="complaintForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Category</label>
+                    <select id="compCategory" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                        <option>Plumbing</option><option>Electrical</option><option>Security</option><option>Cleanliness</option><option>Other</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Description</label>
+                    <textarea id="compDesc" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none resize-none" placeholder="Describe the issue..."></textarea>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Submit Incident</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Visitor Modal -->
+    <div id="visitorModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'visitorModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-md font-bold text-dark">Pre-Approve Visitor</h3>
+                <button onclick="closeModal(null, 'visitorModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div id="visitorFormContainer">
+                <form id="visitorForm" class="space-y-4">
+                    <input id="vName" type="text" placeholder="Visitor Name" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                    <input id="vPurpose" type="text" placeholder="Purpose (e.g. Delivery, Guest)" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                    <input id="vDate" type="datetime-local" required class="w-full text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                    <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Generate Security Code</button>
+                </form>
+            </div>
+            <div id="visitorSuccess" class="hidden text-center py-4">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl mb-4"><i class="fa-solid fa-check"></i></div>
+                <h3 class="text-lg font-bold text-dark mb-1">Gate Pass Ready</h3>
+                <p class="text-xs text-slate-500 mb-4">Share this completely unique code with your visitor or delivery agent.</p>
+                <div class="bg-indigo-50 border-2 border-dashed border-indigo-200 p-4 rounded-xl">
+                    <h2 id="generatedPasscode" class="text-3xl font-bold tracking-[0.2em] text-primary">000000</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
+        
+        function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` }; }
+
+        function checkAuth() {
+            const token = localStorage.getItem('userToken');
+            const userName = localStorage.getItem('userName');
+            const socName = localStorage.getItem('userSocietyName');
+            
+            if(token) {
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('appContent').style.display = 'block';
+                if(userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
+                if(socName) document.getElementById('societyNameDisplay').innerText = socName;
+                
+                fetchDashboardData();
+            }
+        }
+
+        // Auth Logic
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('sendOtpBtn');
+            const msg = document.getElementById('authMsg');
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+            msg.classList.add('hidden');
+            try {
+                const res = await fetch(`${API_URL}/auth/send-otp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: document.getElementById('emailInput').value }) });
+                if(res.ok) {
+                    document.getElementById('emailStep').classList.add('hidden');
+                    document.getElementById('otpStep').classList.remove('hidden');
+                } else {
+                    const data = await res.json();
+                    msg.innerText = data.error || "Error dispatching OTP email.";
+                    msg.classList.remove('hidden');
+                }
+            } catch(e) {}
+            btn.innerText = 'Send OTP';
+        });
+
+        async function verifyOtp() {
+            const btn = document.getElementById('verifyOtpBtn');
+            btn.innerText = "Authenticating...";
+            
+            try {
+                const payload = {
+                    email: document.getElementById('emailInput').value,
+                    otp: document.getElementById('otpInput').value,
+                    name: document.getElementById('nameInput').value,
+                    societyCode: document.getElementById('societyCodeInput').value
+                };
+
+                const res = await fetch(`${API_URL}/auth/verify-otp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const data = await res.json();
+                
+                if(res.ok) {
+                    localStorage.setItem('userToken', data.token);
+                    localStorage.setItem('userId', data.user._id);
+                    localStorage.setItem('userName', data.user.name);
+                    localStorage.setItem('userSocietyName', data.user.societyName || 'Society Hub');
+                    checkAuth();
+                } else {
+                    if(data.error === "Society Code is required for new signup") {
+                        document.getElementById('registrationFields').classList.remove('hidden');
+                        btn.innerText = "Complete Signup";
+                        return;
+                    }
+                    alert(data.error || "Authentication Mismatch");
+                }
+            } catch(e) {}
+            btn.innerText = "Verify & Access";
+        }
+
+        function cancelOtp() {
+            document.getElementById('otpStep').classList.add('hidden');
+            document.getElementById('emailStep').classList.remove('hidden');
+            document.getElementById('registrationFields').classList.add('hidden');
+        }
+
+        function logout() { localStorage.clear(); location.reload(); }
+
+        // Core App Routines
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notifDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            if(tabId === 'money') loadUserDues();
+            if(tabId === 'people') loadSocietyUsers();
+            if(tabId === 'property') loadUserComplaints();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(event, id) { 
+            if(event && event.target !== event.currentTarget) return;
+            document.getElementById(id).classList.remove('active'); 
+        }
+
+        async function fetchDashboardData() {
+            try {
+                let notifications = [];
+                const res = await fetch(`${API_URL}/analytics`, { headers: getAuthHeaders() });
+                if(res.ok) {
+                    const data = await res.json();
+                    document.getElementById('totalResidents').innerText = data.total_users || 0;
+                    document.getElementById('pendingDues').innerText = '₹' + (data.dues_pending || 0).toLocaleString();
+                    document.getElementById('openComplaints').innerText = data.pending_complaints || 0;
+                    
+                    if(data.dues_pending > 0) {
+                        notifications.push({
+                            title: 'Outstanding Maintenance Due',
+                            msg: `You have ₹${data.dues_pending} in unpaid society dues.`,
+                            icon: 'fa-indian-rupee-sign',
+                            color: 'text-red-500',
+                            bg: 'bg-red-50'
+                        });
+                    }
+                }
+
+                const noticeRes = await fetch(`${API_URL}/notices`, { headers: getAuthHeaders() });
+                if(noticeRes.ok) {
+                    const noticesData = await noticeRes.json();
+                    document.getElementById('totalNotices').innerText = noticesData.length;
+                    
+                    let html = '';
+                    if(noticesData.length === 0) {
+                        html = '<p class="text-xs text-slate-500 text-center py-4">No active notices broadcasted.</p>';
+                    } else {
+                        // Push newest notice to alerts if it exists
+                        const latest = noticesData[0];
+                        if(latest) {
+                            notifications.push({
+                                title: latest.category + ' Alert',
+                                msg: latest.title,
+                                icon: 'fa-bullhorn',
+                                color: 'text-primary',
+                                bg: 'bg-indigo-50'
+                            });
+                        }
+
+                        noticesData.slice(0, 3).forEach(n => {
+                            html += `<div class="p-3 bg-slate-50 border border-slate-100 rounded-xl mb-2 flex items-start flex-col">
+                                <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold mb-1">${n.category}</span>
+                                <h4 class="text-xs font-bold text-dark">${n.title}</h4>
+                                <p class="text-[10px] text-slate-500 line-clamp-2 mt-1 w-full">${n.content}</p>
+                            </div>`;
+                        });
+                    }
+                    document.getElementById('noticesList').innerHTML = html;
+                }
+                
+                // Update Notifications UI
+                const badge = document.getElementById('notifBadge');
+                const count = document.getElementById('notifCount');
+                const list = document.getElementById('notifList');
+                
+                if(notifications.length > 0) {
+                    badge.classList.remove('hidden');
+                    count.innerText = notifications.length;
+                    let notifHtml = '';
+                    notifications.forEach(n => {
+                        notifHtml += `
+                        <div class="p-3 hover:bg-slate-50 rounded-xl transition cursor-pointer flex gap-3 items-start border-b border-slate-50 last:border-0" onclick="toggleNotifications()">
+                            <div class="w-8 h-8 rounded-full ${n.bg} ${n.color} flex items-center justify-center shrink-0">
+                                <i class="fa-solid ${n.icon} text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-dark drop-shadow-sm">${n.title}</h4>
+                                <p class="text-[9px] text-slate-500 mt-0.5 leading-snug">${n.msg}</p>
+                            </div>
+                        </div>`;
+                    });
+                    list.innerHTML = notifHtml;
+                } else {
+                    badge.classList.add('hidden');
+                    count.innerText = "0";
+                    list.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-4">You are all caught up!</p>`;
+                }
+            } catch (err) {}
+        }
+
+        // Section Loading
+        async function loadUserDues() {
+            try {
+                const res = await fetch(`${API_URL}/dues`, { headers: getAuthHeaders() });
+                const dues = await res.json();
+                let html = '';
+                if(dues.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">Hooray! No pending dues.</p>`;
+                
+                dues.forEach(d => {
+                    html += `
+                        <div class="glass-card p-4 flex justify-between items-center border-l-4 ${d.status === 'Paid' ? 'border-l-emerald-500' : 'border-l-amber-500'}">
+                            <div>
+                                <h4 class="text-sm font-bold text-dark">${d.type} Maintenance</h4>
+                                <p class="text-[10px] text-slate-500">Due Date: ${d.dueDate}</p>
+                                <span class="text-[10px] font-bold ${d.status === 'Paid' ? 'text-emerald-500' : 'text-amber-500'}">${d.status}</span>
+                            </div>
+                            <div class="text-right">
+                                <h3 class="text-xl font-bold text-slate-700 mb-1">₹${d.amount}</h3>
+                                ${d.status !== 'Paid' ? `<button onclick="mockPay('${d._id}', this)" class="text-[10px] bg-primary text-white px-3 py-1.5 rounded-lg shadow-sm font-bold active:scale-95 transition">Pay Now</button>` : `<i class="fa-solid fa-circle-check text-emerald-500"></i>`}
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('myDuesList').innerHTML = html;
+            } catch(e) {}
+        }
+        
+        async function mockPay(id, btn) {
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.classList.replace('bg-primary', 'bg-slate-400');
+            try {
+                const res = await fetch(`${API_URL}/dues/${id}/pay`, {method: 'PUT', headers: getAuthHeaders()});
+                if(res.ok) {
+                    setTimeout(() => {
+                        btn.outerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-lg shadow-sm rounded-full animate-bounce"></i>`;
+                        fetchDashboardData();
+                    }, 800);
+                }
+            } catch(e) { btn.innerText = "Pay Now"; btn.classList.replace('bg-slate-400', 'bg-primary'); }
+        }
+        
+        async function loadSocietyUsers() {
+            document.getElementById('mySocietyUsersList').innerHTML = '<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>';
+            try {
+                const [usersRes, servRes] = await Promise.all([
+                    fetch(`${API_URL}/users`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/services`, { headers: getAuthHeaders() })
+                ]);
+                const users = await usersRes.json();
+                const services = servRes.ok ? await servRes.json() : [];
+                
+                let html = '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Essential Staff & Services</h3>';
+                if(services.length === 0) html += `<p class="text-[10px] text-slate-400 mb-4">No staff registered.</p>`;
+                services.forEach(s => {
+                    html += `
+                        <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl flex items-center justify-between mb-2 shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-500 font-bold"><i class="fa-solid fa-hard-hat"></i></div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-dark">${s.name}</h4>
+                                    <p class="text-[10px] text-slate-500">${s.role.toUpperCase()}</p>
+                                </div>
+                            </div>
+                            <a href="tel:${s.phone}" class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg active:scale-95 transition"><i class="fa-solid fa-phone"></i></a>
+                        </div>
+                    `;
+                });
+                
+                html += '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-4">Society Residents</h3>';
+                users.forEach(u => {
+                    html += `
+                        <div class="bg-white border border-slate-100 p-3 rounded-xl flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold"><i class="fa-solid fa-user"></i></div>
+                            <div>
+                                <h4 class="text-sm font-bold text-dark">${u.name}</h4>
+                                <p class="text-[10px] text-slate-500">${u.role.toUpperCase()}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('mySocietyUsersList').innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function loadUserComplaints() {
+            try {
+                const res = await fetch(`${API_URL}/complaints`, { headers: getAuthHeaders() });
+                const complaints = await res.json();
+                let html = '';
+                // Since GET /api/complaints restricts to societyId but we want user specific, 
+                // we can filter here locally for the resident, or backend restricts to user_id.
+                // Our backend actually restricts to userId for Resident automatically!
+                if(complaints.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No active complaints submitted.</p>`;
+                
+                complaints.forEach(c => {
+                    const style = c.status === 'Resolved' ? 'text-emerald-500' : 'text-amber-500';
+                    html += `
+                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-bold">${c.category}</span>
+                                <span class="text-[10px] font-bold ${style}">${c.status}</span>
+                            </div>
+                            <p class="text-xs text-slate-700 leading-relaxed">${c.description}</p>
+                            <p class="text-[9px] text-slate-400 mt-2">${new Date(c.date).toLocaleDateString()}</p>
+                        </div>
+                    `;
+                });
+                document.getElementById('myComplaintsList').innerHTML = html;
+            } catch(e) {}
+        }
+
+        document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const ogTxt = btn.innerText;
+            btn.innerText = "Storing...";
+            try {
+                await fetch(`${API_URL}/complaints`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ category: document.getElementById('compCategory').value, description: document.getElementById('compDesc').value })
+                });
+                closeModal(null, 'complaintModal');
+                fetchDashboardData();
+                if(document.getElementById('tab-property').classList.contains('active')) loadUserComplaints();
+                e.target.reset();
+            } catch(e) {}
+            btn.innerText = ogTxt;
+        });
+
+        document.getElementById('visitorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const ogTxt = btn.innerText;
+            btn.innerText = "Generating...";
+            try {
+                const res = await fetch(`${API_URL}/visitors`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ 
+                        visitorName: document.getElementById('vName').value, 
+                        purpose: document.getElementById('vPurpose').value,
+                        expectedDate: document.getElementById('vDate').value
+                    })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    document.getElementById('visitorFormContainer').classList.add('hidden');
+                    document.getElementById('generatedPasscode').innerText = data.passCode;
+                    document.getElementById('visitorSuccess').classList.remove('hidden');
+                    e.target.reset();
+                } else { alert("Failed to generate pass"); }
+            } catch(e) {}
+            btn.innerText = ogTxt;
+        });
+
+        // Reset Visitor Modal explicitly when reopening so you don't stare at the old PASSCODE
+        const ogOpenModal = openModal;
+        openModal = function(id) {
+            if(id === 'visitorModal') {
+                document.getElementById('visitorFormContainer').classList.remove('hidden');
+                document.getElementById('visitorSuccess').classList.add('hidden');
+            }
+            ogOpenModal(id);
+        }
+
+        checkAuth();
+    </script>
+</body>
+</html>
