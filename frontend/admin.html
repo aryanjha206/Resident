@@ -101,7 +101,7 @@
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
                     </div>
 
-                    <div class="glass-card p-4 flex items-center justify-between cursor-pointer" onclick="toggleSection('financeManager')">
+                    <div class="glass-card p-4 flex items-center justify-between cursor-pointer" onclick="loadFinanceAdmin()">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center"><i class="fa-solid fa-money-check-dollar text-lg"></i></div>
                             <div>
@@ -111,11 +111,21 @@
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
                     </div>
 
-                    <div class="glass-card p-4 flex items-center justify-between cursor-pointer" onclick="toggleSection('servicesManager')">
+                    <div class="glass-card p-4 flex items-center justify-between cursor-pointer" onclick="loadPeopleAdmin()">
                         <div class="flex items-center gap-3">
                             <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center"><i class="fa-solid fa-hard-hat text-lg"></i></div>
                             <div>
                                 <h3 class="text-sm font-bold text-dark">Services & Staff</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-4 flex items-center justify-between cursor-pointer" onclick="loadVisitorsAdmin()">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center"><i class="fa-solid fa-address-book text-lg"></i></div>
+                            <div>
+                                <h3 class="text-sm font-bold text-dark">Visitor & Gate Log</h3>
                             </div>
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
@@ -239,25 +249,6 @@
                         <input id="socName" type="text" placeholder="Society Name (e.g. Gokuldham)" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
                         <input id="socAddr" type="text" placeholder="Full Address" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
                         <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-indigo-700 transition">Generate Society & Code</button>
-                    </form>`;
-            } else if (section === 'financeManager') {
-                title.innerText = "Add Bulk Maintenance Due";
-                content.innerHTML = `
-                    <form onsubmit="postBulkDues(event)" class="space-y-3">
-                        <p class="text-[10px] text-slate-500 mb-2">The total amount entered below will be divided equally among all registered residents in the chosen society.</p>
-                        <input id="duesAmount" type="number" step="0.01" placeholder="Total Society Maintenance Amount (₹)" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 font-bold">
-                        <input id="duesDate" type="date" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                        <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-emerald-700 transition lg">Split & Issue Invoices</button>
-                    </form>`;
-            } else if (section === 'servicesManager') {
-                title.innerText = "Register Essential Service/Staff";
-                content.innerHTML = `
-                    <form onsubmit="postService(event)" class="space-y-3">
-                        <p class="text-[10px] text-slate-500 mb-2">Add a crucial contact that residents can call instantly (e.g. Electrician, Security Gate, Manager).</p>
-                        <input id="sName" type="text" placeholder="Full Name or Business Name" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                        <input id="sRole" type="text" placeholder="Designation (e.g. Senior Electrician)" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                        <input id="sPhone" type="tel" placeholder="Phone Number" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                        <button type="submit" class="w-full bg-amber-500 text-white font-bold py-2 rounded-lg text-sm hover:bg-amber-600 transition">Publish to Resident Directory</button>
                     </form>`;
             }
         }
@@ -411,6 +402,135 @@
             } catch(e){}
         }
 
+        async function loadVisitorsAdmin() {
+            const panel = document.getElementById('dynamicPanel');
+            const content = document.getElementById('panelContent');
+            panel.classList.remove('hidden');
+            document.getElementById('panelTitle').innerText = "Gate Pass Log";
+            content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>`;
+
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            try {
+                const res = await fetch(`${API_URL}/visitors${query}`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const data = await res.json();
+                    let html = '';
+                    if(data.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No gate logs recorded.</p>`;
+                    data.forEach(v => {
+                        const style = v.status === 'Entered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-600';
+                        html += `
+                        <div class="bg-white border-2 border-dashed ${v.status === 'Entered' ? 'border-emerald-200' : 'border-indigo-200'} p-3 rounded-xl mb-3 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="text-[14px] font-bold text-dark">${v.visitorName}</h4>
+                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Purpose: ${v.purpose}</p>
+                                </div>
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${style}">${v.status}</span>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-lg mt-2 flex justify-between items-center text-xs">
+                                <span class="text-slate-500 font-semibold"><i class="fa-solid fa-house-user"></i> ${v.userName}</span>
+                                <span class="font-bold text-primary tracking-widest text-sm bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${v.status === 'Entered' ? 'XXXXXX' : v.passCode}</span>
+                            </div>
+                        </div>`;
+                    });
+                    content.innerHTML = `<div class="space-y-1">${html}</div>`;
+                }
+            } catch (err) {}
+        }
+
+        async function loadFinanceAdmin() {
+            const panel = document.getElementById('dynamicPanel');
+            const content = document.getElementById('panelContent');
+            panel.classList.remove('hidden');
+            document.getElementById('panelTitle').innerText = "Financial Billing & History";
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            let formHtml = `
+                    <div class="bg-emerald-50/50 p-4 border border-emerald-100 rounded-xl mb-4">
+                        <h4 class="text-xs font-bold text-emerald-700 mb-2 uppercase tracking-wide">Generate Invoices</h4>
+                        <form onsubmit="postBulkDues(event)" class="space-y-3">
+                            <input id="duesAmount" type="number" step="0.01" placeholder="Total Setup Amount (₹)" required class="w-full text-sm bg-white border border-emerald-200 rounded-lg px-3 py-2 font-bold">
+                            <input id="duesDate" type="date" required class="w-full text-sm bg-white border border-emerald-200 rounded-lg px-3 py-2">
+                            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-emerald-700 transition lg cursor-pointer border border-emerald-700">Split & Issue Invoices</button>
+                        </form>
+                    </div><div id="financeList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div></div>`;
+            content.innerHTML = formHtml;
+
+            try {
+                const res = await fetch(`${API_URL}/dues${query}`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const dues = await res.json();
+                    let html = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Resident Invoice History</h4>';
+                    if(dues.length === 0) html += `<p class="text-xs text-slate-400">No invoices issued yet.</p>`;
+                    dues.forEach(d => {
+                        const paid = d.status === 'Paid';
+                        html += `
+                        <div class="bg-white border-l-4 ${paid ? 'border-emerald-500' : 'border-amber-500'} p-3 rounded-lg shadow-sm border border-slate-100 mb-2 flex justify-between items-center">
+                            <div>
+                                <h4 class="text-sm font-bold text-dark">₹${d.amount} <span class="text-[10px] text-slate-500 font-normal ml-1">Due: ${d.dueDate}</span></h4>
+                                <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-user text-[9px] mr-0.5"></i> ${d.userName}</p>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded bg-slate-50 text-${paid?'emerald-600':'amber-600'}">${d.status}</span>
+                        </div>`;
+                    });
+                    document.getElementById('financeList').innerHTML = html;
+                }
+            } catch(e) {}
+        }
+
+        async function loadPeopleAdmin() {
+            const panel = document.getElementById('dynamicPanel');
+            const content = document.getElementById('panelContent');
+            panel.classList.remove('hidden');
+            document.getElementById('panelTitle').innerText = "People & Services Directory";
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            let formHtml = `
+                    <div class="bg-amber-50/50 p-4 border border-amber-100 rounded-xl mb-4">
+                        <h4 class="text-xs font-bold text-amber-600 mb-2 uppercase tracking-wide">Register New Service</h4>
+                        <form onsubmit="postService(event)" class="space-y-3">
+                            <input id="sName" type="text" placeholder="Full Name or Business Name" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
+                            <input id="sRole" type="text" placeholder="Role (Plumber, Manager)" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
+                            <input id="sPhone" type="tel" placeholder="Contact Phone Number" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
+                            <button type="submit" class="w-full bg-amber-500 text-white font-bold py-2 rounded-lg text-sm hover:bg-amber-600 transition">Publish Staff Details</button>
+                        </form>
+                    </div><div id="peopleList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-amber-500"></i></div></div>`;
+            content.innerHTML = formHtml;
+
+            try {
+                const [usersRes, servRes] = await Promise.all([
+                    fetch(`${API_URL}/users${query}`, {headers: getAuthHeaders()}),
+                    fetch(`${API_URL}/services${query}`, {headers: getAuthHeaders()})
+                ]);
+                const users = await usersRes.json();
+                const services = servRes.ok ? await servRes.json() : [];
+
+                let html = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Society Members</h4>';
+                
+                services.forEach(s => {
+                    html += `
+                        <div class="bg-amber-50/30 p-2 rounded-lg border border-amber-100 mb-1.5 flex justify-between items-center">
+                            <div class="flex items-center gap-2 text-xs text-dark font-medium"><i class="fa-solid fa-hard-hat text-amber-500 w-4"></i> ${s.name}</div>
+                            <span class="text-[9px] text-amber-600 font-bold uppercase">${s.role}</span>
+                        </div>`;
+                });
+                users.forEach(u => {
+                    html += `
+                        <div class="bg-white p-2 text-xs rounded-lg border border-slate-100 mb-1.5 flex justify-between items-center">
+                            <div class="flex items-center gap-2 text-slate-700 font-medium"><i class="fa-solid fa-user text-slate-400 w-4"></i> ${u.name}</div>
+                            <span class="text-[9px] text-slate-500 uppercase">${u.role}</span>
+                        </div>`;
+                });
+                if(users.length === 0 && services.length === 0) html += `<p class="text-xs text-slate-400">No records found.</p>`;
+                
+                document.getElementById('peopleList').innerHTML = html;
+            } catch(e) {}
+        }
+
         async function postSociety(e) {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -452,6 +572,7 @@
                 if(res.ok) {
                     alert(data.message);
                     document.getElementById('dynamicPanel').classList.add('hidden');
+                    loadFinanceAdmin();
                     fetchAdminAnalytics();
                 } else {
                     alert(data.error || "Failed to issue dues.");
@@ -485,7 +606,7 @@
                 
                 if(res.ok) {
                     alert("Service contact securely deployed to user directory!");
-                    document.getElementById('dynamicPanel').classList.add('hidden');
+                    loadPeopleAdmin();
                 } else {
                     alert("Failed to publish contact.");
                     btn.innerText = og;

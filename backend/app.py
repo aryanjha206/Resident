@@ -381,7 +381,6 @@ def get_visitors():
     if request.user_data.get('role') == 'admin':
         society_filter = request.args.get('societyId')
         query = {"societyId": society_filter} if society_filter else {}
-        query["status"] = "Expected" # Security usually processes 'Expected' ones
     else:
         query = {"userId": user_id, "societyId": society_id}
         

@@ -225,10 +225,23 @@
 
             <!-- PROPERTY TAB -->
             <div id="tab-property" class="tab-view space-y-6">
-                <h2 class="text-lg font-bold text-dark">My Complaints & Issues</h2>
-                <button onclick="openModal('complaintModal')" class="w-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-bold py-3 rounded-xl hover:bg-indigo-100 transition shadow-sm mb-4">+ Raise New Complaint</button>
-                <div id="myComplaintsList" class="space-y-3">
-                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                <h2 class="text-lg font-bold text-dark">My Property & Gate Log</h2>
+                
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Active Gate Passes</h3>
+                    <div id="myVisitorsList" class="space-y-3 mb-6">
+                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">My Complaints</h3>
+                    </div>
+                    <button onclick="openModal('complaintModal')" class="w-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-bold py-3 rounded-xl hover:bg-indigo-100 transition shadow-sm mb-4">+ Raise New Complaint</button>
+                    <div id="myComplaintsList" class="space-y-3">
+                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                    </div>
                 </div>
             </div>
 
@@ -395,7 +408,7 @@
             
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
-            if(tabId === 'property') loadUserComplaints();
+            if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); }
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -503,9 +516,9 @@
                                 <p class="text-[10px] text-slate-500">Due Date: ${d.dueDate}</p>
                                 <span class="text-[10px] font-bold ${d.status === 'Paid' ? 'text-emerald-500' : 'text-amber-500'}">${d.status}</span>
                             </div>
-                            <div class="text-right">
+                            <div class="text-right flex flex-col items-end gap-1">
                                 <h3 class="text-xl font-bold text-slate-700 mb-1">₹${d.amount}</h3>
-                                ${d.status !== 'Paid' ? `<button onclick="mockPay('${d._id}', this)" class="text-[10px] bg-primary text-white px-3 py-1.5 rounded-lg shadow-sm font-bold active:scale-95 transition">Pay Now</button>` : `<i class="fa-solid fa-circle-check text-emerald-500"></i>`}
+                                ${d.status !== 'Paid' ? `<button onclick="mockPay('${d._id}', this)" class="text-[10px] bg-primary text-white px-3 py-1.5 rounded-lg shadow-sm font-bold active:scale-95 transition">Pay Now</button>` : `<button onclick="downloadReceipt('${d._id}', '${d.type}', '${d.amount}', '${d.dueDate}')" class="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm font-bold hover:bg-slate-200 transition flex items-center gap-1"><i class="fa-solid fa-download text-emerald-500"></i> Receipt</button>`}
                             </div>
                         </div>
                     `;
@@ -521,11 +534,49 @@
                 const res = await fetch(`${API_URL}/dues/${id}/pay`, {method: 'PUT', headers: getAuthHeaders()});
                 if(res.ok) {
                     setTimeout(() => {
-                        btn.outerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-lg shadow-sm rounded-full animate-bounce"></i>`;
                         fetchDashboardData();
+                        loadUserDues();
                     }, 800);
                 }
             } catch(e) { btn.innerText = "Pay Now"; btn.classList.replace('bg-slate-400', 'bg-primary'); }
+        }
+
+        function downloadReceipt(id, type, amount, date) {
+            const socName = localStorage.getItem('userSocietyName') || 'Society Community';
+            const userName = localStorage.getItem('userName') || 'Resident';
+            
+            const receipt = `
+=========================================
+          ${socName.toUpperCase()}
+=========================================
+
+PAYMENT RECEIPT ACKNOWLEDGEMENT
+-----------------------------------------
+Receipt No:  RC-${id.substring(0,8).toUpperCase()}
+Generation:  ${new Date().toLocaleString()}
+Billed To:   ${userName}
+
+DESCRIPTION                   AMOUNT
+-----------------------------------------
+${type} Maintenance Due        ₹${amount}
+Cycle Date: ${date}
+
+STATUS: PAID
+=========================================
+Thank you for your timely payment!
+This is a computer generated document.
+=========================================
+            `;
+            
+            const blob = new Blob([receipt], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Receipt_${type}_${date.replace(/-/g,'')}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         }
         
         async function loadSocietyUsers() {
@@ -598,6 +649,35 @@
             } catch(e) {}
         }
 
+        async function loadUserVisitors() {
+            try {
+                const res = await fetch(`${API_URL}/visitors`, { headers: getAuthHeaders() });
+                const visitors = await res.json();
+                let html = '';
+                if(visitors.length === 0) html = `<p class="text-[10px] text-slate-400 py-3 text-center">No visitors expected or logged.</p>`;
+                
+                visitors.forEach(v => {
+                    const isEntered = v.status === 'Entered';
+                    html += `
+                        <div class="bg-white border-2 border-dashed ${isEntered ? 'border-emerald-200' : 'border-indigo-200'} p-3 rounded-xl relative overflow-hidden flex justify-between items-center shadow-sm">
+                            <div class="flex-1">
+                                <h4 class="text-sm font-bold text-dark">${v.visitorName}</h4>
+                                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Purpose: ${v.purpose}</p>
+                                <div class="mt-2 text-[10px] bg-slate-50 px-2 py-1 rounded inline-block text-slate-500">
+                                    <i class="fa-solid fa-clock"></i> ${new Date(v.expectedDate).toLocaleString([], {month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit'})}
+                                </div>
+                            </div>
+                            <div class="text-right flex flex-col items-end justify-center">
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-2 block ${isEntered ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-600'}">${v.status}</span>
+                                <span class="font-bold text-primary tracking-widest text-lg bg-indigo-50 px-2 py-1 rounded border border-indigo-100">${isEntered ? 'XXXXXX' : v.passCode}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('myVisitorsList').innerHTML = html;
+            } catch(e) { }
+        }
+
         document.getElementById('complaintForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button');
@@ -636,6 +716,7 @@
                     document.getElementById('generatedPasscode').innerText = data.passCode;
                     document.getElementById('visitorSuccess').classList.remove('hidden');
                     e.target.reset();
+                    if(document.getElementById('tab-property').classList.contains('active')) loadUserVisitors();
                 } else { alert("Failed to generate pass"); }
             } catch(e) {}
             btn.innerText = ogTxt;
