@@ -418,15 +418,22 @@ def check_in_visitor(v_id):
         return jsonify({"message": "Visitor marked as ENTERED."})
     return jsonify({"error": "Failed to update visitor"}), 400
 
+@app.route('/api/visitors/<v_id>/check-out', methods=['PUT'])
+def check_out_visitor(v_id):
+    res = visitors_col.update_one({"_id": ObjectId(v_id)}, {"$set": {"status": "Exited"}})
+    if res.modified_count > 0:
+        return jsonify({"message": "Visitor marked as EXITED."})
+    return jsonify({"error": "Failed to update visitor"}), 400
+
 @app.route('/api/security/verify-pass', methods=['POST'])
 def verify_pass():
     # Allows a guard to scan/type a passcode and fetch visitor mapping
     pass_code = request.json.get('passCode')
     if not pass_code: return jsonify({"error": "Pass Code required"}), 400
     
-    visitor = visitors_col.find_one({"passCode": pass_code, "status": "Expected"})
+    visitor = visitors_col.find_one({"passCode": pass_code, "status": {"$in": ["Expected", "Entered"]}})
     if not visitor:
-        return jsonify({"error": "Invalid or Already Scanned Pass Code"}), 404
+        return jsonify({"error": "Invalid, Expired, or Already Exited Pass Code"}), 404
         
     society = societies_col.find_one({"_id": ObjectId(visitor["societyId"])})
     soc_name = society["name"] if society else "Unknown Society"
@@ -436,7 +443,8 @@ def verify_pass():
         "visitorName": visitor["visitorName"],
         "purpose": visitor["purpose"],
         "residentName": visitor["userName"],
-        "societyName": soc_name
+        "societyName": soc_name,
+        "status": visitor["status"]
     })
 
 @app.route('/api/analytics', methods=['GET'])

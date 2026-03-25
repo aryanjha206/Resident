@@ -36,12 +36,14 @@
         <!-- Dynamic Output Box -->
         <div id="resultBox" class="w-full mt-6 hidden border-2 border-dashed p-4 rounded-xl text-left">
             <div id="foundVisitor" class="hidden">
-                <span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block">Valid Pass</span>
+                <span id="scanStatusBadge" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block">Valid Pass</span>
                 <p class="text-sm text-slate-500 mb-1">Guest Name: <span id="vName" class="font-bold text-dark"></span></p>
                 <p class="text-sm text-slate-500 mb-1">Going to: <span id="rName" class="font-bold text-dark"></span></p>
                 <p class="text-xs font-bold text-primary mb-4 bg-indigo-50 p-2 rounded-lg mt-2 text-center" id="sName"></p>
                 
-                <button onclick="allowEntry()" id="allowBtn" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Approve & Open Gate</button>
+                <div id="actionBtnContainer">
+                    <!-- Dynamic button goes here based on status -->
+                </div>
             </div>
             
             <div id="errorVisitor" class="hidden text-center">
@@ -91,6 +93,20 @@
                     document.getElementById('rName').innerText = data.residentName;
                     document.getElementById('sName').innerText = data.societyName;
                     currentVisId = data.visitorId;
+                    
+                    const badge = document.getElementById('scanStatusBadge');
+                    const btnBox = document.getElementById('actionBtnContainer');
+
+                    if(data.status === 'Expected') {
+                        badge.className = 'text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
+                        badge.innerText = 'Expected Arrival';
+                        btnBox.innerHTML = `<button onclick="allowEntry(this)" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Approve & Open Gate</button>`;
+                    } else if (data.status === 'Entered') {
+                        badge.className = 'text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
+                        badge.innerText = 'Currently Inside';
+                        btnBox.innerHTML = `<button onclick="checkoutEntry(this)" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Mark as Exited</button>`;
+                    }
+
                     foundNode.classList.remove('hidden');
                 } else {
                     resBox.classList.replace('border-emerald-200', 'border-red-200');
@@ -103,13 +119,23 @@
             btn.innerText = "Validate Code";
         }
 
-        async function allowEntry() {
-            const btn = document.getElementById('allowBtn');
+        async function allowEntry(btn) {
             btn.innerText = "Opening...";
             try {
                 const res = await fetch(`${API_URL}/visitors/${currentVisId}/check-in`, { method: 'PUT' });
                 if(res.ok) {
                     btn.outerHTML = `<div class="bg-emerald-50 text-emerald-600 font-bold p-3 rounded-xl border border-emerald-200 text-center"><i class="fa-solid fa-check-double"></i> Marked Entered</div>`;
+                    setTimeout(() => { location.reload(); }, 2000);
+                }
+            } catch(e) {}
+        }
+
+        async function checkoutEntry(btn) {
+            btn.innerText = "Processing...";
+            try {
+                const res = await fetch(`${API_URL}/visitors/${currentVisId}/check-out`, { method: 'PUT' });
+                if(res.ok) {
+                    btn.outerHTML = `<div class="bg-slate-100 text-slate-700 font-bold p-3 rounded-xl border border-slate-300 text-center"><i class="fa-solid fa-person-walking-arrow-right"></i> Marked Exited</div>`;
                     setTimeout(() => { location.reload(); }, 2000);
                 }
             } catch(e) {}
