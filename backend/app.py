@@ -32,6 +32,7 @@ try:
     otps_col = db['otps']
     societies_col = db['societies']
     visitors_col = db['visitors']
+    bookings_col = db['bookings']
     print("Connected to MongoDB database successfully!")
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")
