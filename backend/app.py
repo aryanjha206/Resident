@@ -483,8 +483,8 @@ def manage_bookings(user_id, society_id):
     else:
         query = {"userId": user_id, "societyId": society_id}
         
-    cursor = bookings_col.find(query).sort("date", -1)
-    return jsonify(json.loads(json_util.dumps(cursor)))
+    bookings = list(bookings_col.find(query).sort("date", -1))
+    return jsonify([format_doc(b) for b in bookings])
 
 @app.route('/api/analytics', methods=['GET'])
 @token_required
