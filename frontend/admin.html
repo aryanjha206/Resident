@@ -42,28 +42,37 @@
     </div>
 
     <!-- Admin Dashboard View -->
-    <div id="adminView" class="flex-col h-full bg-slate-50">
-        <header class="glass-header px-5 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <button onclick="window.location.href='index.html'" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:text-primary transition"><i class="fa-solid fa-arrow-left text-sm"></i></button>
-                <h1 class="text-lg font-bold text-dark">Control Panel</h1>
-            </div>
-            <div class="flex items-center gap-4">
-                <a href="guard.html" class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition"><i class="fa-solid fa-camera mr-1"></i> Security App</a>
-                <button onclick="logoutAdmin()" class="text-xs text-red-500 font-bold bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition">Logout</button>
-            </div>
-        </header>
+    <div id="adminView" class="flex-col h-full bg-slate-50 relative overflow-hidden">
         
-        <main class="flex-1 overflow-y-auto px-5 py-6 space-y-6">
+        <!-- DASHBOARD SCREEN -->
+        <div id="dashboardScreen" class="flex-col h-full flex w-full h-full overflow-y-auto">
+            <header class="glass-header px-5 py-4 flex justify-between items-center sticky top-0 z-40">
+                <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='index.html'" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:text-primary transition"><i class="fa-solid fa-arrow-left text-sm"></i></button>
+                    <h1 class="text-lg font-bold text-dark">Control Panel</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="guard.html" class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 hidden sm:block"><i class="fa-solid fa-camera mr-1"></i> Security App</a>
+                    <button onclick="logoutAdmin()" class="w-8 h-8 rounded-full bg-red-50 text-red-500 font-bold flex items-center justify-center hover:bg-red-100"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                </div>
+            </header>
             
-            <!-- Global Society Selector -->
-            <div class="glass-card p-4 border border-indigo-100 bg-indigo-50/50">
-                <h2 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Active Society Filter</h2>
-                <select id="adminSocietySelect" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 font-bold text-primary focus:outline-none focus:ring-2 focus:ring-primary" onchange="fetchAdminAnalytics()">
-                    <option value="">Aggregate All (Global)</option>
-                </select>
-                <button onclick="toggleSection('createSocietyManager')" class="mt-2 w-full text-[10px] font-bold text-indigo-600 bg-indigo-100 py-1.5 rounded-lg hover:bg-indigo-200 transition"> + Register New Society</button>
-            </div>
+            <main class="flex-1 px-5 py-6 space-y-6 max-w-3xl mx-auto w-full">
+                
+                <!-- Global Society Selector -->
+                <div class="glass-card p-5 border border-indigo-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10"></div>
+                    <div class="flex justify-between items-end mb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-primary uppercase tracking-wider mb-1"><i class="fa-solid fa-earth-americas mr-1"></i> Workspace Filter</h2>
+                            <p class="text-[10px] text-slate-500">Filter datasets locally to a single society.</p>
+                        </div>
+                    </div>
+                    <select id="adminSocietySelect" class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 font-bold text-dark focus:outline-none focus:ring-2 focus:ring-primary shadow-sm appearance-none mb-3" onchange="fetchAdminAnalytics()">
+                        <option value="">Aggregate All (Global)</option>
+                    </select>
+                    <button onclick="toggleSection('createSocietyManager')" class="w-full text-xs font-bold text-indigo-700 bg-indigo-50 py-2.5 rounded-xl hover:bg-indigo-100 transition border border-indigo-100 shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Register New Society Protocol</button>
+                </div>
 
             <!-- Quick Stats Row (Live Data Only) -->
             <div class="grid grid-cols-2 gap-3">
@@ -141,25 +150,19 @@
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
                     </div>
                 </div>
-            </div>
+            </main>
+        </div>
 
-            <!-- Dynamic Admin Content Panel -->
-            <div id="dynamicPanel" class="hidden glass-card p-5 mt-4 border-l-4 border-l-primary">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 id="panelTitle" class="text-md font-bold text-dark">Panel</h3>
-                    <button onclick="document.getElementById('dynamicPanel').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+        <!-- FULL-SCREEN MODULE SCREEN -->
+        <div id="moduleScreen" class="hidden flex-col h-full bg-slate-50 absolute inset-0 z-50 overflow-hidden shadow-2xl">
+            <header class="glass-header px-5 py-4 flex justify-between items-center sticky top-0 z-40 bg-white">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeModule()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 text-slate-600 transition"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h1 id="moduleTitle" class="text-md font-bold text-dark">Module</h1>
                 </div>
-                <div id="panelContent" class="space-y-4"></div>
-            </div>
-            
-            <div id="societiesListPanel" class="hidden glass-card p-5 mt-4 border-l-4 border-l-emerald-500">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-md font-bold text-dark">All Created Societies</h3>
-                    <button onclick="document.getElementById('societiesListPanel').classList.add('hidden')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <div id="societiesListContent" class="space-y-2"></div>
-            </div>
-        </main>
+            </header>
+            <main id="moduleContent" class="flex-1 overflow-y-auto px-5 py-6 space-y-4 max-w-3xl mx-auto w-full pb-20"></main>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -167,6 +170,20 @@
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
         
         function getAuthHeaders() { return {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`} }
+
+        function openModule(titleText) {
+            document.getElementById('dashboardScreen').style.display = 'none';
+            document.getElementById('moduleScreen').classList.remove('hidden');
+            document.getElementById('moduleScreen').style.display = 'flex';
+            document.getElementById('moduleTitle').innerText = titleText;
+            document.getElementById('moduleContent').innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-primary text-2xl"></i></div>`;
+        }
+
+        function closeModule() {
+            document.getElementById('moduleScreen').classList.add('hidden');
+            document.getElementById('moduleScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'flex';
+        }
 
         if(localStorage.getItem('adminToken')) { showAdmin(); }
 
@@ -247,27 +264,23 @@
         }
 
         function toggleSection(section) {
-            const panel = document.getElementById('dynamicPanel');
-            const title = document.getElementById('panelTitle');
-            const content = document.getElementById('panelContent');
-            panel.classList.remove('hidden');
-
             if (section === 'createSocietyManager') {
-                title.innerText = "Register New Society";
+                openModule("Register New Society");
+                const content = document.getElementById('moduleContent');
                 content.innerHTML = `
-                    <form onsubmit="postSociety(event)" class="space-y-3">
-                        <input id="socName" type="text" placeholder="Society Name (e.g. Gokuldham)" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                        <input id="socAddr" type="text" placeholder="Full Address" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
-                        <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-indigo-700 transition">Generate Society & Code</button>
-                    </form>`;
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm">
+                        <form onsubmit="postSociety(event)" class="space-y-3">
+                            <input id="socName" type="text" placeholder="Society Name (e.g. Gokuldham)" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
+                            <input id="socAddr" type="text" placeholder="Full Address" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
+                            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 mt-2 rounded-xl text-sm hover:bg-indigo-700 transition shadow-md">Generate Society & Access Code</button>
+                        </form>
+                    </div>`;
             }
         }
         
         async function loadNotices() {
-            const panel = document.getElementById('dynamicPanel');
-            const content = document.getElementById('panelContent');
-            panel.classList.remove('hidden');
-            document.getElementById('panelTitle').innerText = "Manage Notices & Alerts";
+            openModule("Notices & Alerts");
+            const content = document.getElementById('moduleContent');
             
             const sid = document.getElementById('adminSocietySelect').value;
             content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>`;
@@ -367,11 +380,8 @@
         }
 
         async function loadComplaints() {
-            const panel = document.getElementById('dynamicPanel');
-            const content = document.getElementById('panelContent');
-            panel.classList.remove('hidden');
-            document.getElementById('panelTitle').innerText = "Review Complaints";
-            content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>`;
+            openModule("Review Complaints");
+            const content = document.getElementById('moduleContent');
 
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
@@ -413,11 +423,8 @@
         }
 
         async function loadVisitorsAdmin() {
-            const panel = document.getElementById('dynamicPanel');
-            const content = document.getElementById('panelContent');
-            panel.classList.remove('hidden');
-            document.getElementById('panelTitle').innerText = "Gate Pass Log";
-            content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>`;
+            openModule("Gate Pass Log");
+            const content = document.getElementById('moduleContent');
 
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
@@ -455,11 +462,8 @@
         }
 
         async function loadBookingsAdmin() {
-            const panel = document.getElementById('dynamicPanel');
-            const content = document.getElementById('panelContent');
-            panel.classList.remove('hidden');
-            document.getElementById('panelTitle').innerText = "Amenity Reservations Log";
-            content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div>`;
+            openModule("Amenity Reservations");
+            const content = document.getElementById('moduleContent');
 
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
@@ -489,10 +493,8 @@
         }
 
         async function loadFinanceAdmin() {
-            const panel = document.getElementById('dynamicPanel');
-            const content = document.getElementById('panelContent');
-            panel.classList.remove('hidden');
-            document.getElementById('panelTitle').innerText = "Financial Billing & History";
+            openModule("Financial Billing & History");
+            const content = document.getElementById('moduleContent');
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
 
@@ -530,10 +532,8 @@
         }
 
         async function loadPeopleAdmin() {
-            const panel = document.getElementById('dynamicPanel');
-            const content = document.getElementById('panelContent');
-            panel.classList.remove('hidden');
-            document.getElementById('panelTitle').innerText = "People & Services Directory";
+            openModule("People & Services Directory");
+            const content = document.getElementById('moduleContent');
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
 
@@ -592,15 +592,15 @@
                 if(res.ok) {
                     const data = await res.json();
                     btn.innerHTML = `<i class='fa-solid fa-check'></i> Created Code: ${data.code}`;
-                    setTimeout(() => { document.getElementById('dynamicPanel').classList.add('hidden'); loadSocieties(); }, 2000);
+                    setTimeout(() => { closeModule(); loadSocieties(); }, 2000);
                 } else { btn.innerText = "Failed"; }
-            } catch(e) { console.log(e); btn.innerText = og; }
+            } catch(e) { btn.innerText = og; }
         }
 
         async function postBulkDues(e) {
             e.preventDefault();
             const sid = document.getElementById('adminSocietySelect').value;
-            if(!sid) { alert("Select a specific society first!"); return; }
+             if(!sid) { alert("Select a specific society first!"); return; }
             
             const btn = e.target.querySelector('button');
             const og = btn.innerText;
@@ -619,7 +619,6 @@
                 const data = await res.json();
                 if(res.ok) {
                     alert(data.message);
-                    document.getElementById('dynamicPanel').classList.add('hidden');
                     loadFinanceAdmin();
                     fetchAdminAnalytics();
                 } else {
