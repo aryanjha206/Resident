@@ -450,7 +450,10 @@ def verify_pass():
 
 @app.route('/api/bookings', methods=['GET', 'POST'])
 @token_required
-def manage_bookings(user_id, society_id):
+def manage_bookings():
+    user_id = request.user_data.get('user_id')
+    society_id = request.user_data.get('societyId')
+    
     if request.method == 'POST':
         data = request.json
         if not data.get('facility') or not data.get('date'):
@@ -461,7 +464,8 @@ def manage_bookings(user_id, society_id):
             "societyId": society_id, 
             "facility": data.get('facility'), 
             "date": data.get('date'), 
-            "slot": data.get('slot')
+            "slot": data.get('slot'),
+            "status": "Confirmed"
         })
         if conflict: return jsonify({"error": "Time slot already booked by another resident"}), 409
         
@@ -472,6 +476,7 @@ def manage_bookings(user_id, society_id):
             "facility": data.get('facility'),
             "date": data.get('date'),
             "slot": data.get('slot'),
+            "guests": data.get('guests', 1),
             "status": "Confirmed"
         }
         bookings_col.insert_one(booking)
@@ -485,6 +490,15 @@ def manage_bookings(user_id, society_id):
         
     bookings = list(bookings_col.find(query).sort("date", -1))
     return jsonify([format_doc(b) for b in bookings])
+
+@app.route('/api/bookings/<b_id>', methods=['DELETE'])
+@token_required
+def cancel_booking(b_id):
+    user_id = request.user_data.get('user_id')
+    res = bookings_col.delete_one({"_id": ObjectId(b_id), "userId": user_id})
+    if res.deleted_count > 0:
+        return jsonify({"message": "Booking canceled successfully"})
+    return jsonify({"error": "Failed to cancel booking (not found or unauthorized)"}), 400
 
 @app.route('/api/analytics', methods=['GET'])
 @token_required
