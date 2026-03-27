@@ -19,9 +19,12 @@
     </script>
     <style>body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }</style>
 </head>
-<body class="text-slate-800 antialiased h-screen flex flex-col items-center justify-center px-6 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-slate-200 via-white to-slate-100 overflow-hidden">
-    <div class="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
-        <div class="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-indigo-200 rounded-full blur-[150px]"></div>
+<body class="text-slate-800 antialiased h-screen flex flex-col items-center justify-center px-6 bg-[#020617] overflow-hidden">
+    <!-- Premium Animated Background -->
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-[10%] -right-[10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute -bottom-[10%] -left-[10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] mix-blend-overlay"></div>
     </div>
 
     <!-- In-App Notification (Toast) -->
@@ -34,32 +37,44 @@
         <button onclick="hideToast()" class="text-slate-400 hover:text-white transition pointer-events-auto"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
 
-    <div class="w-full max-w-sm bg-white p-8 rounded-2xl shadow-xl border border-slate-100 flex flex-col items-center text-center">
-        <div class="w-20 h-20 rounded-full bg-slate-900 text-white flex items-center justify-center text-3xl mb-4 shadow-lg">
-            <i class="fa-solid fa-shield-halved"></i>
-        </div>
-        <h2 class="text-3xl font-bold text-dark tracking-tighter">Gate Security</h2>
-        <div class="bg-slate-100 text-slate-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest mb-4 border border-slate-200 mt-1"><i class="fa-solid fa-tower-observation mr-1"></i> Active Monitoring</div>
+    <div class="w-full max-w-sm relative group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-slate-400 to-indigo-500 rounded-3xl blur opacity-20 transition duration-1000"></div>
         
-        <p class="text-[11px] text-slate-500 mb-8 leading-relaxed max-w-[240px]">Validate global visitor passcodes instantly. Ensure authorized entry for all guests and service providers.</p>
+        <div class="glass-card relative bg-white/95 backdrop-blur-3xl border border-white/20 p-8 pt-12 flex flex-col items-center shadow-2xl rounded-[2.5rem] text-center">
+            <!-- Floating Security Icon -->
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-slate-900 border border-slate-700 text-white flex items-center justify-center text-4xl shadow-2xl transform rotate-6 rotate-0 transition-transform duration-500">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
 
-        <form onsubmit="verifyCode(event)" class="w-full space-y-4">
-            <input type="text" id="passInput" placeholder="Enter 6-Digit Pass" required class="w-full text-center tracking-[0.2em] font-bold text-2xl text-dark bg-slate-50 border border-slate-200 rounded-xl py-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition" maxlength="6">
-            <button type="submit" id="verifyBtn" class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:bg-indigo-700 transition active:scale-95 text-lg">Validate Code</button>
-        </form>
-
-        <!-- Dynamic Output Box -->
-        <div id="resultBox" class="w-full mt-6 hidden border-2 border-dashed p-4 rounded-xl text-left">
-            <div id="foundVisitor" class="hidden">
-                <span id="scanStatusBadge" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block">Valid Pass</span>
-                <p class="text-sm text-slate-500 mb-1">Guest Name: <span id="vName" class="font-bold text-dark"></span></p>
-                <p class="text-sm text-slate-500 mb-1">Going to: <span id="rName" class="font-bold text-dark"></span></p>
-                <p class="text-xs font-bold text-primary mb-4 bg-indigo-50 p-2 rounded-lg mt-2 text-center" id="sName"></p>
-                
-                <div id="actionBtnContainer">
-                    <!-- Dynamic button goes here based on status -->
+            <div class="text-center mb-6">
+                <h2 class="text-3xl font-black text-slate-900 tracking-tighter">Gate Security</h2>
+                <div class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-slate-200 mt-2">
+                    <i class="fa-solid fa-tower-observation text-[8px]"></i> Active Monitoring
                 </div>
             </div>
+            
+            <p class="text-[11px] text-slate-500 mb-8 leading-relaxed max-w-[240px] font-medium mx-auto">Validate global visitor passcodes instantly. Ensure authorized entry for all guests and service providers.</p>
+
+            <form onsubmit="verifyCode(event)" class="w-full space-y-4">
+                <div class="relative group/input">
+                    <i class="fa-solid fa-ticket absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
+                    <input type="text" id="passInput" placeholder="Pass Code" required class="w-full text-center tracking-[0.2em] font-black text-2xl text-dark bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition" maxlength="6">
+                </div>
+                <button type="submit" id="verifyBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98] text-lg">Validate Access</button>
+            </form>
+
+            <!-- Dynamic Output Box -->
+            <div id="resultBox" class="w-full mt-6 hidden border-2 border-dashed p-4 rounded-2xl text-left bg-slate-50/50">
+                <div id="foundVisitor" class="hidden">
+                    <span id="scanStatusBadge" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md font-bold uppercase tracking-wider mb-2 inline-block shadow-sm">Valid Pass</span>
+                    <p class="text-sm text-slate-500 mb-1">Guest: <span id="vName" class="font-bold text-dark"></span></p>
+                    <p class="text-sm text-slate-500 mb-1">Unit: <span id="rName" class="font-bold text-dark"></span></p>
+                    <p class="text-[11px] font-bold text-primary mb-4 bg-indigo-50/80 p-2 rounded-xl mt-2 text-center border border-indigo-100/50" id="sName"></p>
+                    
+                    <div id="actionBtnContainer">
+                        <!-- Dynamic button goes here based on status -->
+                    </div>
+                </div>
             
             <div id="errorVisitor" class="hidden text-center">
                 <i class="fa-solid fa-circle-xmark text-4xl text-red-500 mb-2"></i>
