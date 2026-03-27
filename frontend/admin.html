@@ -51,6 +51,21 @@
         <button onclick="hideToast()" class="text-slate-400 hover:text-white transition pointer-events-auto"><i class="fa-solid fa-xmark text-lg"></i></button>
     </div>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl w-[85%] max-w-xs p-6 shadow-2xl mx-auto flex flex-col items-center text-center transform scale-95 transition-transform duration-300" id="confirmContent">
+            <div class="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center text-3xl mb-4 border border-red-100">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark tracking-tight mb-2" id="cModalTitle">Confirm Action</h3>
+            <p class="text-[13px] font-medium text-slate-500 mb-6 w-full leading-relaxed" id="cModalText">Are you sure you want to proceed?</p>
+            <div class="flex gap-3 w-full">
+                <button onclick="closeConfirmModal()" class="w-full bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl shadow-sm hover:bg-slate-200 transition text-sm">Review</button>
+                <button id="cModalBtn" class="w-full bg-red-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95 transition text-sm flex items-center justify-center gap-2">Confirm Action</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Dashboard View -->
     <div id="adminView" class="flex-col h-full bg-slate-50 relative overflow-hidden">
         
@@ -207,6 +222,33 @@
             toast.style.transform = 'translate(-50%, -150%)';
             toast.style.opacity = '0';
         }
+
+        let _confirmCallback = null;
+        function showConfirm(title, message, callback) {
+            document.getElementById('cModalTitle').innerText = title;
+            document.getElementById('cModalText').innerText = message;
+            const m = document.getElementById('confirmModal');
+            m.classList.remove('hidden');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('confirmContent').classList.remove('scale-95'); }, 10);
+            _confirmCallback = callback;
+        }
+
+        function closeConfirmModal() {
+            const m = document.getElementById('confirmModal');
+            m.classList.add('opacity-0');
+            document.getElementById('confirmContent').classList.add('scale-95');
+            setTimeout(() => { m.classList.add('hidden'); _confirmCallback = null; }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cBtn = document.getElementById('cModalBtn');
+            if(cBtn) {
+                cBtn.addEventListener('click', () => {
+                    if (_confirmCallback) _confirmCallback();
+                    closeConfirmModal();
+                });
+            }
+        });
 
         function openModule(titleText) {
             document.getElementById('dashboardScreen').style.display = 'none';
@@ -389,11 +431,15 @@
         }
 
         async function deleteNotice(id) {
-            if(!confirm("Are you sure you want to delete this notice?")) return;
-            try {
-                await fetch(`${API_URL}/notices/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                loadNotices(); // Refresh
-            } catch(e) {}
+            showConfirm("Delete Notice", "Are you sure you want to permanently delete this notice?", async () => {
+                try {
+                    await fetch(`${API_URL}/notices/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                    showToast("Notice removed successfully", "success", "Deleted");
+                    loadNotices();
+                } catch(e) {
+                    showToast("Failed to delete notice", "error");
+                }
+            });
         }
         
         async function submitNotice(e, id) {
