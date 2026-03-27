@@ -491,32 +491,40 @@ def manage_bookings(user_id, society_id):
 def get_analytics():
     society_id = request.user_data.get('societyId')
     
-    # If admin and no specific society ID passed, aggregate all, or pass specific query.
-    # For now, let's allow `?societyId=xyz` for admin.
     if request.user_data.get('role') == 'admin':
         society_filter = request.args.get('societyId')
         query = {"societyId": society_filter} if society_filter else {}
         u_query = {"societyId": society_filter} if society_filter else {}
+        my_complaints_query = query
+        my_dues_query = query
     else:
         query = {"societyId": society_id}
         u_query = {"societyId": society_id}
+        my_complaints_query = {"userId": request.user_data.get('user_id'), "societyId": society_id}
+        my_dues_query = {"userId": request.user_data.get('user_id'), "societyId": society_id}
         
     total_users = users_col.count_documents(u_query)
     total_complaints = complaints_col.count_documents(query)
     pending_complaints = complaints_col.count_documents({**query, "status": "Pending"})
+    my_pending_complaints = complaints_col.count_documents({**my_complaints_query, "status": "Pending"})
     resolved_complaints = complaints_col.count_documents({**query, "status": "Resolved"})
     
-    dues = list(payments_col.find(query))
-    collected = sum([float(d.get('amount', 0)) for d in dues if d.get('status') == 'Paid'])
-    pending = sum([float(d.get('amount', 0)) for d in dues if d.get('status') == 'Pending'])
+    society_dues = list(payments_col.find(query))
+    society_collected = sum([float(d.get('amount', 0)) for d in society_dues if d.get('status') == 'Paid'])
+    society_pending = sum([float(d.get('amount', 0)) for d in society_dues if d.get('status') == 'Pending'])
+
+    my_dues = list(payments_col.find(my_dues_query))
+    my_pending = sum([float(d.get('amount', 0)) for d in my_dues if d.get('status') == 'Pending'])
 
     return jsonify({
         "total_users": total_users,
         "total_complaints": total_complaints,
         "pending_complaints": pending_complaints,
+        "my_pending_complaints": my_pending_complaints,
         "resolved_complaints": resolved_complaints,
-        "dues_collected": collected,
-        "dues_pending": pending
+        "dues_collected": society_collected,
+        "dues_pending": society_pending,
+        "my_dues_pending": my_pending
     })
 
 if __name__ == '__main__':
