@@ -518,8 +518,10 @@
                         document.getElementById('registrationFields').classList.remove('hidden');
                         btn.innerText = "Complete Signup";
                         return;
+                    } else {
+                        showToast(data.error || "Authentication Mismatch", "Error");
+                        cancelOtp();
                     }
-                    alert(data.error || "Authentication Mismatch");
                 }
             } catch(e) {}
             btn.innerText = "Verify & Access";
@@ -868,7 +870,7 @@ This is a computer generated document.
                     document.getElementById('visitorSuccess').classList.remove('hidden');
                     e.target.reset();
                     if(document.getElementById('tab-property').classList.contains('active')) loadUserVisitors();
-                } else { alert("Failed to generate pass"); }
+                } else { showToast("Failed to generate pass", "Error"); }
             } catch(e) {}
             btn.innerText = ogTxt;
         });
@@ -892,11 +894,10 @@ This is a computer generated document.
                 if(res.ok) {
                     pushNotif('Facility Booked', 'Your amenity reservation request is confirmed.', 'fa-calendar-check', 'text-teal-500', 'bg-teal-50');
                     fetchDashboardData();
-                    alert("Facility exclusively reserved for you! 🌟");
                     closeModal(null, 'bookingModal');
                     e.target.reset();
                     if(document.getElementById('tab-property').classList.contains('active')) loadUserBookings();
-                } else { alert(data.error || "Slot already booked by someone else!"); }
+                } else { showToast(data.error || "Slot already booked by someone else!", "Error"); }
             } catch(e) {}
             btn.innerHTML = ogTxt;
         });
@@ -938,7 +939,7 @@ This is a computer generated document.
                     loadUserBookings();
                 } else {
                     const data = await res.json();
-                    alert(data.error || "Failed to cancel.");
+                    showToast(data.error || "Failed to cancel.", "Error");
                 }
             } catch(e) {}
         }
