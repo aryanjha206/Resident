@@ -88,6 +88,16 @@
         </div>
     </div>
 
+    <!-- In-App Notification (Toast) -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-[150] flex items-center gap-3 transition-all duration-300 translate-y-[-150%] opacity-0 w-[90%] max-w-sm pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-bell text-2xl text-primary drop-shadow-lg"></i>
+        <div class="flex-1">
+            <h4 id="toastTitle" class="text-[14px] font-bold tracking-wide">Alert</h4>
+            <p id="toastMessage" class="text-[12px] text-slate-300 leading-tight mt-0.5"></p>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white transition pointer-events-auto"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
     <!-- MAIN APP CONTENT -->
     <div id="appContent">
         <!-- Header -->
@@ -113,7 +123,7 @@
             </div>
             
             <!-- Notifications Dropdown -->
-            <div id="notifDropdown" class="hidden absolute top-[70px] right-5 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] origin-top-right transform transition-all">
+            <div id="notifDropdown" class="hidden absolute top-[70px] right-4 left-4 sm:left-auto sm:right-5 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] origin-top-right transform transition-all">
                 <div class="bg-slate-50 border-b border-slate-100 px-4 py-3 flex justify-between items-center">
                     <h3 class="text-xs font-bold text-dark uppercase tracking-wider">Alerts & Notifications</h3>
                     <span id="notifCount" class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold">0</span>
@@ -422,6 +432,28 @@
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
         
+        window.localNotifications = [];
+        
+        function showToast(message, title = 'Notification') {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').innerText = message;
+            document.getElementById('toastTitle').innerText = title;
+            toast.style.transform = 'translate(-50%, 0)';
+            toast.style.opacity = '1';
+            setTimeout(() => { hideToast(); }, 4000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toastNotification');
+            toast.style.transform = 'translate(-50%, -150%)';
+            toast.style.opacity = '0';
+        }
+
+        function pushNotif(title, msg, icon, color, bg) {
+            window.localNotifications.unshift({title, msg, icon, color, bg});
+            showToast(msg, title);
+        }
+        
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` }; }
 
         function checkAuth() {
@@ -527,7 +559,7 @@
 
         async function fetchDashboardData() {
             try {
-                let notifications = [];
+                let notifications = [...(window.localNotifications || [])];
                 const res = await fetch(`${API_URL}/analytics`, { headers: getAuthHeaders() });
                 if(res.ok) {
                     const data = await res.json();
@@ -644,6 +676,7 @@
             try {
                 const res = await fetch(`${API_URL}/dues/${id}/pay`, {method: 'PUT', headers: getAuthHeaders()});
                 if(res.ok) {
+                    pushNotif('Payment Successful', 'Your society dues payment was processed.', 'fa-circle-check', 'text-emerald-500', 'bg-emerald-50');
                     setTimeout(() => {
                         fetchDashboardData();
                         loadUserDues();
@@ -804,6 +837,7 @@ This is a computer generated document.
                     body: JSON.stringify({ category: document.getElementById('compCategory').value, description: document.getElementById('compDesc').value })
                 });
                 closeModal(null, 'complaintModal');
+                pushNotif('Complaint Registered', 'Your issue has been submitted to the administration.', 'fa-clipboard-list', 'text-sky-500', 'bg-sky-50');
                 fetchDashboardData();
                 if(document.getElementById('tab-property').classList.contains('active')) loadUserComplaints();
                 e.target.reset();
@@ -827,6 +861,8 @@ This is a computer generated document.
                 });
                 const data = await res.json();
                 if(res.ok) {
+                    pushNotif('Gate Pass Generated', 'Your visitor has been approved for entry.', 'fa-id-badge', 'text-indigo-500', 'bg-indigo-50');
+                    fetchDashboardData();
                     document.getElementById('visitorFormContainer').classList.add('hidden');
                     document.getElementById('generatedPasscode').innerText = data.passCode;
                     document.getElementById('visitorSuccess').classList.remove('hidden');
@@ -854,6 +890,8 @@ This is a computer generated document.
                 });
                 const data = await res.json();
                 if(res.ok) {
+                    pushNotif('Facility Booked', 'Your amenity reservation request is confirmed.', 'fa-calendar-check', 'text-teal-500', 'bg-teal-50');
+                    fetchDashboardData();
                     alert("Facility exclusively reserved for you! 🌟");
                     closeModal(null, 'bookingModal');
                     e.target.reset();
