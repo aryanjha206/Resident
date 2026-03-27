@@ -254,7 +254,8 @@ def get_complaints():
         query = {"societyId": society_filter} if society_filter else {}
         complaints = list(complaints_col.find(query).sort("date", -1))
     else:
-        complaints = list(complaints_col.find({"societyId": society_id}).sort("date", -1))
+        user_id = request.user_data.get('user_id')
+        complaints = list(complaints_col.find({"societyId": society_id, "userId": user_id}).sort("date", -1))
     return jsonify([format_doc(c) for c in complaints])
 
 @app.route('/api/complaints', methods=['POST'])
