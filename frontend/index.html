@@ -51,8 +51,12 @@
 <body class="text-slate-800 antialiased min-h-screen overflow-x-hidden">
 
     <!-- Auth / Login / Signup Screen -->
-    <div id="authOverlay" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-50 to-white">
-        <div class="glass-card w-full max-w-sm p-8 flex flex-col items-center relative">
+    <div id="authOverlay" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-600 via-indigo-900 to-slate-900 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+            <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-500 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-500 rounded-full blur-[120px] animate-pulse"></div>
+        </div>
+        <div class="glass-card w-full max-w-sm p-10 flex flex-col items-center relative backdrop-blur-xl bg-white/90 border-white/20 shadow-2xl">
             <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-purple-500 shadow-soft flex items-center justify-center text-white text-3xl mb-6">
                 <i class="fa-solid fa-building"></i>
             </div>

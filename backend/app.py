@@ -154,7 +154,7 @@ def verify_otp():
 @app.route('/api/auth/admin-login', methods=['POST'])
 def admin_login():
     data = request.json
-    if data.get('pin') == "70458":
+    if data.get('pin') == "88786":
         token = jwt.encode({'role': 'admin', 'exp': datetime.utcnow().timestamp() + 86400}, app.config['SECRET_KEY'], algorithm='HS256')
         return jsonify({"token": token, "role": "admin"})
     return jsonify({"error": "Invalid PIN"}), 401
