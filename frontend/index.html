@@ -38,6 +38,7 @@
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-overlay.active .modal-content { transform: translateY(0); }
+        .market-hero { background: radial-gradient(circle at top left, rgba(79,70,229,0.18), transparent 42%), linear-gradient(135deg, #ffffff 0%, #eef2ff 52%, #f8fafc 100%); }
         
         #authOverlay { background: #F8FAFC; z-index: 100; opacity: 1; visibility: visible; }
         #appContent { display: none; }
@@ -138,15 +139,33 @@
             <button onclick="logoutSeller()" class="text-red-500 font-bold text-xs">Exit Workspace</button>
         </header>
         <main class="flex-1 overflow-y-auto p-5 space-y-6">
-            <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-                <h3 class="text-xl font-bold">Welcome, Vendor</h3>
-                <p class="text-xs text-indigo-100 opacity-80 mt-1">Manage your storefront and track incoming orders.</p>
-                <i class="fa-solid fa-box-open absolute top-4 right-4 text-5xl opacity-20"></i>
+            <!-- Revenue Stats -->
+            <div class="grid grid-cols-2 gap-3" id="sellerStatsGrid">
+                <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-4 text-white shadow-lg">
+                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Collected</p>
+                    <h3 class="text-xl font-bold" id="sellerPaidRev">\u20b90</h3>
+                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerPaidCount">0</span> paid orders</p>
+                </div>
+                <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-4 text-white shadow-lg">
+                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Pending</p>
+                    <h3 class="text-xl font-bold" id="sellerPendingRev">\u20b90</h3>
+                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerPendingCount">0</span> unpaid</p>
+                </div>
+                <div class="bg-gradient-to-br from-primary to-indigo-700 rounded-2xl p-4 text-white shadow-lg">
+                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Total Revenue</p>
+                    <h3 class="text-xl font-bold" id="sellerTotalRev">\u20b90</h3>
+                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerTotalOrders">0</span> orders</p>
+                </div>
+                <div class="bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl p-4 text-white shadow-lg">
+                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Products</p>
+                    <h3 class="text-xl font-bold" id="sellerProductCount">0</h3>
+                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerActiveCount">0</span> active</p>
+                </div>
             </div>
 
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">My Active Products</h4>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">My Products</h4>
                     <button onclick="openModal('addProductModal')" class="text-[10px] font-bold text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">+ New Product</button>
                 </div>
                 <div id="sellerProductList" class="grid grid-cols-1 gap-3"></div>
@@ -159,13 +178,13 @@
         </main>
     </div>
 
-    <!-- Order Status & Buy Modals etc -->
+    <!-- Add Product Modal -->
     <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'addProductModal')">
         <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl" onclick="event.stopPropagation()">
             <h3 class="text-lg font-bold mb-4">List New Product</h3>
             <form id="productForm" class="space-y-4">
                 <input id="pName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
-                <input id="pPrice" type="number" placeholder="Price (₹)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <input id="pPrice" type="number" placeholder="Price (\u20b9)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Product Photo</label>
                     <div id="imagePreviewContainer" class="hidden mb-2"><img id="imagePreview" class="w-full h-32 object-contain rounded-xl bg-slate-50 border border-dashed border-slate-200"></div>
@@ -180,6 +199,23 @@
             </form>
         </div>
     </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center hidden" onclick="closeModal(event, 'editProductModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="text-lg font-bold mb-4">Edit Product</h3>
+            <form id="editProductForm" class="space-y-4">
+                <input type="hidden" id="epId">
+                <input id="epName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <input id="epPrice" type="number" placeholder="Price (\u20b9)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <textarea id="epDesc" placeholder="Brief description..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm resize-none" rows="3"></textarea>
+                <select id="epStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Save Changes</button>
+            </form>
+        </div>
     </div>
 
     <!-- In-App Notification (Toast) -->
@@ -403,7 +439,34 @@
                     <h2 class="text-lg font-bold text-dark">Community Market</h2>
                     <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100"><i class="fa-solid fa-circle text-[5px] animate-pulse mr-1"></i>LIVE</span>
                 </div>
-                <div class="grid grid-cols-2 gap-4" id="marketplaceList"></div>
+                <div class="market-hero glass-card p-4 sm:p-5 overflow-hidden relative">
+                    <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-indigo-200/40 blur-2xl pointer-events-none"></div>
+                    <div class="relative flex items-start justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-primary/80">Marketplace</p>
+                            <h3 class="text-xl font-black text-slate-900 mt-1">Shop from trusted society sellers</h3>
+                            <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Browse listings, see product photos, and track every order from placement to delivery.</p>
+                        </div>
+                        <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg shrink-0">
+                            <i class="fa-solid fa-bag-shopping"></i>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-4">
+                        <div class="bg-white/80 border border-white rounded-2xl p-3 shadow-sm">
+                            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Live Items</p>
+                            <h4 id="marketItemCount" class="text-base font-black text-slate-900 mt-1">0</h4>
+                        </div>
+                        <div class="bg-white/80 border border-white rounded-2xl p-3 shadow-sm">
+                            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">My Orders</p>
+                            <h4 id="marketOrderCount" class="text-base font-black text-slate-900 mt-1">0</h4>
+                        </div>
+                        <div class="bg-white/80 border border-white rounded-2xl p-3 shadow-sm">
+                            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Status</p>
+                            <h4 class="text-base font-black text-emerald-600 mt-1">Open</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="marketplaceList"></div>
                 <div class="pt-2">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
                     <div id="myOrdersList" class="space-y-4"></div>
@@ -705,6 +768,31 @@
             setTimeout(() => { m.classList.add('hidden'); _confirmCallback = null; }, 300);
         }
 
+        function escapeHtml(value = '') {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function escapeJsString(value = '') {
+            return String(value)
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/\r/g, '\\r')
+                .replace(/\n/g, '\\n');
+        }
+
+        function getMarketImage(src) {
+            return src || 'https://img.icons8.com/color/96/box--v1.png';
+        }
+
+        function getMarketImageOnError() {
+            return "this.onerror=null;this.src='https://img.icons8.com/color/96/box--v1.png';";
+        }
+
         document.getElementById('cModalBtn').addEventListener('click', () => {
             if (_confirmCallback) _confirmCallback();
             closeConfirmModal();
@@ -839,22 +927,39 @@
         function logoutSeller() { localStorage.removeItem('sellerToken'); const sv = document.getElementById('sellerView'); sv.classList.add('hidden'); sv.style.display = 'none'; }
         async function loadSellerDashboard() {
             try {
-                const [pRes, oRes] = await Promise.all([
+                const [pRes, oRes, aRes] = await Promise.all([
                     fetch(`${API_URL}/marketplace/seller/products`),
-                    fetch(`${API_URL}/marketplace/seller/orders`)
+                    fetch(`${API_URL}/marketplace/seller/orders`),
+                    fetch(`${API_URL}/marketplace/seller/analytics`)
                 ]);
                 const products = await pRes.json();
                 const orders = await oRes.json();
+                const stats = await aRes.json();
+                document.getElementById('sellerPaidRev').textContent = '\u20b9' + stats.paidRevenue;
+                document.getElementById('sellerPaidCount').textContent = stats.paidOrders;
+                document.getElementById('sellerPendingRev').textContent = '\u20b9' + stats.pendingRevenue;
+                document.getElementById('sellerPendingCount').textContent = stats.pendingOrders;
+                document.getElementById('sellerTotalRev').textContent = '\u20b9' + stats.totalRevenue;
+                document.getElementById('sellerTotalOrders').textContent = stats.totalOrders;
+                document.getElementById('sellerProductCount').textContent = stats.totalProducts;
+                document.getElementById('sellerActiveCount').textContent = stats.activeProducts;
                 
                 let p_html = '';
                 products.forEach(p => {
+                    const sc = p.status === 'Active' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-400 bg-slate-100';
+                    const eName = p.name.replace(/'/g,"\\'");
+                    const eDesc = (p.description||'').replace(/'/g,"\\'");
                     p_html += `
                         <div class="glass-card p-3 flex justify-between items-center">
                             <div class="flex items-center gap-3">
-                                <img src="${p.image}" class="w-10 h-10 rounded-lg">
-                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[10px] text-slate-500">₹${p.price}</p></div>
+                                <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover">
+                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[10px] text-slate-500">\u20b9${p.price}</p></div>
                             </div>
-                            <span class="text-[8px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded uppercase">${p.status}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[8px] font-bold ${sc} px-2 py-0.5 rounded uppercase">${p.status}</span>
+                                <button onclick="editProduct('${p._id}', '${eName}', ${p.price}, '${eDesc}', '${p.status}')" class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-primary hover:text-white transition text-[10px]"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteProduct('${p._id}', '${eName}')" class="w-7 h-7 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition text-[10px]"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>`;
                 });
                 document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings yet.</p>';
@@ -874,7 +979,7 @@
                             <div class="flex gap-2 flex-wrap">
                                 ${o.status === 'Placed' ? `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-blue-50 text-blue-600 font-bold text-[9px] py-1.5 rounded-lg border border-blue-100">Accept</button>` : ''}
                                 ${o.status === 'Processing' ? `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-orange-50 text-orange-600 font-bold text-[9px] py-1.5 rounded-lg border border-orange-100">Ship Now</button>` : ''}
-                                ${o.status === 'Shipped' ? `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-emerald-50 text-emerald-600 font-bold text-[9px] py-1.5 rounded-lg border border-emerald-100">Confirm Delivery</button>` : ''}
+                                ${o.status === 'Shipped' ? `<button onclick="deliverAndCollect('${o._id}')" class="flex-1 bg-emerald-50 text-emerald-600 font-bold text-[9px] py-1.5 rounded-lg border border-emerald-100">Mark Done</button>` : ''}
                                 ${o.status === 'Delivered' && !isPaid ? `<button onclick="collectPayment('${o._id}')" class="flex-1 bg-primary text-white font-bold text-[9px] py-1.5 rounded-lg shadow-sm">Collect \u20b9${o.price}</button>` : ''}
                                 ${isPaid ? `<span class="flex-1 text-center bg-slate-50 text-slate-400 font-bold text-[9px] py-1.5 rounded-lg">\u2713 Completed</span>` : ''}
                             </div>
@@ -891,6 +996,44 @@
             showConfirm("Collect Payment", "Confirm you have received payment from the buyer?", async () => {
                 await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {method: 'PUT', headers: {'Content-Type': 'application/json'}});
                 showToast("Payment recorded!", "Success");
+                loadSellerDashboard();
+            });
+        }
+        async function deliverAndCollect(id) {
+            showConfirm("Mark Order Done", "Mark this order as delivered? Payment will be recorded automatically.", async () => {
+                await fetch(`${API_URL}/marketplace/orders/${id}/status`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status: 'Delivered'})});
+                showToast("Order marked done and payment collected!", "Success");
+                loadSellerDashboard();
+            });
+        }
+        function editProduct(id, name, price, desc, status) {
+            document.getElementById('epId').value = id;
+            document.getElementById('epName').value = name;
+            document.getElementById('epPrice').value = price;
+            document.getElementById('epDesc').value = desc;
+            document.getElementById('epStatus').value = status;
+            document.getElementById('editProductModal').classList.remove('hidden');
+        }
+        document.getElementById('editProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('epId').value;
+            await fetch(`${API_URL}/marketplace/products/${id}`, {
+                method: 'PUT', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: document.getElementById('epName').value,
+                    price: document.getElementById('epPrice').value,
+                    description: document.getElementById('epDesc').value,
+                    status: document.getElementById('epStatus').value
+                })
+            });
+            document.getElementById('editProductModal').classList.add('hidden');
+            showToast("Product updated!", "Success");
+            loadSellerDashboard();
+        });
+        async function deleteProduct(id, name) {
+            showConfirm("Delete Product", `Remove "${name}" from your store?`, async () => {
+                await fetch(`${API_URL}/marketplace/products/${id}`, {method: 'DELETE'});
+                showToast("Product deleted.", "Success");
                 loadSellerDashboard();
             });
         }
@@ -946,30 +1089,51 @@
                 ]);
                 const products = await pRes.json();
                 const orders = await oRes.json();
+                document.getElementById('marketItemCount').innerText = products.length;
+                document.getElementById('marketOrderCount').innerText = orders.length;
                 
                 let p_html = '';
                 products.forEach(p => {
-                    const imgSrc = p.image || 'https://img.icons8.com/color/96/box--v1.png';
+                    const imgSrc = getMarketImage(p.image);
+                    const safeName = escapeHtml(p.name || 'Product');
+                    const safeDesc = escapeHtml(p.description || 'Fresh listing from your community marketplace.');
+                    const safeImg = escapeHtml(imgSrc);
+                    const jsName = escapeJsString(p.name || 'Product');
+                    const jsImg = escapeJsString(imgSrc);
                     p_html += `
-                        <div class="glass-card p-0 overflow-hidden flex flex-col">
-                            <img src="${imgSrc}" class="w-full h-28 object-cover bg-slate-50">
-                            <div class="p-3 flex flex-col gap-2 flex-1">
-                                <h4 class="text-xs font-bold text-dark leading-tight">${p.name}</h4>
-                                <p class="text-[9px] text-slate-500 line-clamp-2 flex-1">${p.description || ''}</p>
-                                <div class="flex justify-between items-center pt-1 border-t border-slate-100">
-                                    <span class="text-sm font-bold text-slate-700">\u20b9${p.price}</span>
-                                    <button onclick="buyProduct('${p._id}', '${p.name}', ${p.price}, '${imgSrc}')" class="bg-primary text-white text-[9px] font-bold px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition">Order</button>
+                        <div class="glass-card p-0 overflow-hidden flex flex-col border border-slate-100 shadow-soft hover:shadow-lg transition">
+                            <div class="relative">
+                                <img src="${safeImg}" onerror="${getMarketImageOnError()}" class="w-full h-40 object-cover bg-slate-50">
+                                <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-slate-950/65 via-slate-900/20 to-transparent">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Society Pick</span>
+                                        <span class="text-sm font-black text-white">\u20b9${p.price}</span>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="p-4 flex flex-col gap-3 flex-1">
+                                <div>
+                                    <h4 class="text-sm font-black text-dark leading-tight">${safeName}</h4>
+                                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed min-h-[2.75rem]">${safeDesc}</p>
+                                </div>
+                                <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                                    <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 rounded-full">
+                                        <i class="fa-solid fa-camera"></i> Photo Ready
+                                    </div>
+                                    <button onclick="buyProduct('${p._id}', '${jsName}', ${p.price}, '${jsImg}')" class="bg-slate-900 text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-sm active:scale-95 transition">Order Now</button>
+                                </div>
+                            </div> 
                         </div>`;
                 });
-                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">Vendors are stocking up. Check back soon!</p>';
+                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="sm:col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">Vendors are stocking up. Check back soon!</p>';
 
                 let o_html = '';
                 const steps = ['Placed', 'Processing', 'Shipped', 'Delivered'];
                 orders.forEach(o => {
                     const currentIdx = steps.indexOf(o.status);
                     const isPaid = o.paymentStatus === 'Paid';
+                    const orderImage = escapeHtml(getMarketImage(o.productImage));
+                    const orderName = escapeHtml(o.productName || 'Product');
                     let stepperHtml = '<div class="flex items-center justify-between w-full mt-3">';
                     steps.forEach((s, i) => {
                         const done = i <= currentIdx;
@@ -982,11 +1146,11 @@
                     o_html += `
                         <div class="glass-card p-4 space-y-3 border-l-4 ${o.status === 'Delivered' ? 'border-l-emerald-500' : 'border-l-primary'}">
                             <div class="flex gap-3">
-                                <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-14 h-14 rounded-xl object-cover bg-slate-50 shadow-sm">
+                                <img src="${orderImage}" onerror="${getMarketImageOnError()}" class="w-16 h-16 rounded-2xl object-cover bg-slate-50 shadow-sm border border-slate-100">
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
                                         <div>
-                                            <h4 class="text-[13px] font-bold text-dark">${o.productName}</h4>
+                                            <h4 class="text-[13px] font-bold text-dark">${orderName}</h4>
                                             <p class="text-[10px] text-slate-500">Ordered ${new Date(o.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</p>
                                         </div>
                                         <span class="text-sm font-bold text-primary">\u20b9${o.price}</span>

@@ -717,6 +717,44 @@ def add_product():
     products_col.insert_one(product)
     return jsonify({"message": "Product listed successfully"}), 201
 
+@app.route('/api/marketplace/products/<p_id>', methods=['PUT'])
+def update_product(p_id):
+    data = request.json
+    update_fields = {}
+    if data.get("name"): update_fields["name"] = data["name"]
+    if data.get("price"): update_fields["price"] = float(data["price"])
+    if data.get("description") is not None: update_fields["description"] = data["description"]
+    if data.get("image"): update_fields["image"] = data["image"]
+    if data.get("status"): update_fields["status"] = data["status"]
+    products_col.update_one({"_id": ObjectId(p_id)}, {"$set": update_fields})
+    return jsonify({"message": "Product updated"})
+
+@app.route('/api/marketplace/products/<p_id>', methods=['DELETE'])
+def delete_product(p_id):
+    products_col.delete_one({"_id": ObjectId(p_id)})
+    return jsonify({"message": "Product deleted"})
+
+@app.route('/api/marketplace/seller/analytics', methods=['GET'])
+def seller_analytics():
+    total_products = products_col.count_documents({})
+    active_products = products_col.count_documents({"status": "Active"})
+    all_orders = list(orders_col.find())
+    total_orders = len(all_orders)
+    total_revenue = sum(float(o.get("price", 0)) for o in all_orders)
+    paid_orders = [o for o in all_orders if o.get("paymentStatus") == "Paid"]
+    paid_revenue = sum(float(o.get("price", 0)) for o in paid_orders)
+    pending_revenue = total_revenue - paid_revenue
+    return jsonify({
+        "totalProducts": total_products,
+        "activeProducts": active_products,
+        "totalOrders": total_orders,
+        "totalRevenue": total_revenue,
+        "paidRevenue": paid_revenue,
+        "pendingRevenue": pending_revenue,
+        "paidOrders": len(paid_orders),
+        "pendingOrders": total_orders - len(paid_orders)
+    })
+
 @app.route('/api/marketplace/orders', methods=['POST'])
 @token_required
 def place_order():
@@ -724,15 +762,22 @@ def place_order():
     user_name = request.user_data.get('name')
     society_id = request.user_data.get('societyId')
     data = request.json
+    product = None
+    product_id = data.get("productId")
+    if product_id:
+        try:
+            product = products_col.find_one({"_id": ObjectId(product_id)})
+        except Exception:
+            product = None
     
     order = {
         "userId": user_id,
         "userName": user_name,
         "societyId": society_id,
-        "productId": data.get("productId"),
-        "productName": data.get("productName"),
-        "productImage": data.get("productImage", ""),
-        "price": data.get("price"),
+        "productId": product_id,
+        "productName": data.get("productName") or (product or {}).get("name", ""),
+        "productImage": data.get("productImage") or (product or {}).get("image", "https://img.icons8.com/color/96/box--v1.png"),
+        "price": data.get("price") if data.get("price") is not None else float((product or {}).get("price", 0)),
         "status": "Placed",
         "paymentStatus": "Pending",
         "timeline": [{"status": "Placed", "time": datetime.utcnow().isoformat()}],
@@ -758,19 +803,28 @@ def update_order_status(o_id):
     data = request.json
     new_status = data.get("status")
     update_fields = {"status": new_status}
+    timeline_entries = [{"status": new_status, "time": datetime.utcnow().isoformat()}]
     if new_status == "Delivered":
         update_fields["deliveredAt"] = datetime.utcnow().isoformat()
+        update_fields["paymentStatus"] = "Paid"
+        update_fields["paidAt"] = datetime.utcnow().isoformat()
+        timeline_entries.append({"status": "Payment Confirmed", "time": datetime.utcnow().isoformat()})
     orders_col.update_one(
         {"_id": ObjectId(o_id)},
         {
             "$set": update_fields,
-            "$push": {"timeline": {"status": new_status, "time": datetime.utcnow().isoformat()}}
+            "$push": {"timeline": {"$each": timeline_entries}}
         }
     )
     return jsonify({"message": "Order status updated"})
 
 @app.route('/api/marketplace/orders/<o_id>/pay', methods=['PUT'])
 def confirm_payment(o_id):
+    order = orders_col.find_one({"_id": ObjectId(o_id)})
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+    if order.get("paymentStatus") == "Paid":
+        return jsonify({"message": "Payment already confirmed"})
     orders_col.update_one(
         {"_id": ObjectId(o_id)},
         {
