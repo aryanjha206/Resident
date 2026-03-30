@@ -376,6 +376,21 @@
                     </div>
                 </div>
 
+                <div class="glass-card p-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h3 class="text-[14px] font-bold">Recent Activity</h3>
+                            <p class="text-[10px] text-slate-300">Your latest society actions in one place.</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                    </div>
+                    <div id="recentActivityList" class="space-y-2">
+                        <p class="text-[11px] text-slate-300 text-center"><i class="fa-solid fa-spinner fa-spin"></i> Loading your recent updates...</p>
+                    </div>
+                </div>
+
                 <!-- POLLS SECTION -->
                 <div id="pollsBoard" class="glass-card p-4 bg-gradient-to-br from-white to-slate-50">
                     <h3 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm flex items-center gap-2">
@@ -514,6 +529,10 @@
                             <option value="name">Name</option>
                         </select>
                     </div>
+                    <label class="inline-flex items-center gap-2 text-[11px] font-bold text-slate-500">
+                        <input id="marketFavoritesOnly" type="checkbox" class="rounded border-slate-300 text-primary focus:ring-primary/20">
+                        Favorites only
+                    </label>
                     <p id="marketResultMeta" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Browse active society listings</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="marketplaceList"></div>
@@ -670,6 +689,43 @@
         </div>
     </div>
 
+    <div id="productDetailModal" class="fixed inset-0 z-[520] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 hidden" onclick="document.getElementById('productDetailModal').classList.add('hidden')">
+        <div class="bg-white w-full sm:max-w-lg rounded-t-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
+            <div class="relative">
+                <img id="productDetailImage" src="" class="w-full h-64 object-cover bg-slate-100">
+                <button onclick="document.getElementById('productDetailModal').classList.add('hidden')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 text-slate-700 shadow-lg flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.25em] text-primary">Marketplace Pick</p>
+                        <h3 id="productDetailName" class="text-xl font-black text-slate-900 mt-1"></h3>
+                    </div>
+                    <button id="productDetailFavoriteBtn" class="w-11 h-11 rounded-2xl bg-pink-50 text-pink-500 border border-pink-100 flex items-center justify-center">
+                        <i class="fa-regular fa-heart"></i>
+                    </button>
+                </div>
+                <p id="productDetailDesc" class="text-sm text-slate-500 leading-relaxed"></p>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Price</p>
+                        <h4 id="productDetailPrice" class="text-lg font-black text-slate-900 mt-1"></h4>
+                    </div>
+                    <div class="bg-emerald-50 rounded-2xl p-3 border border-emerald-100">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Status</p>
+                        <h4 class="text-lg font-black text-emerald-700 mt-1">Available</h4>
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button id="productDetailBuyBtn" class="flex-1 bg-slate-900 text-white font-bold py-3 rounded-2xl shadow-lg">Order Now</button>
+                    <button onclick="document.getElementById('productDetailModal').classList.add('hidden')" class="px-5 bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-3xl w-[85%] max-w-xs p-6 shadow-2xl mx-auto flex flex-col items-center text-center transform scale-95 transition-transform duration-300" id="confirmContent">
@@ -783,6 +839,33 @@
         </div>
     </div>
 
+    <div id="profileModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'profileModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-primary text-xl"><i class="fa-solid fa-user-gear"></i></div>
+                    <h3 class="text-md font-bold text-dark">Edit Profile</h3>
+                </div>
+                <button onclick="closeModal(null, 'profileModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="profileForm" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Display Name</label>
+                    <input id="profileNameInput" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Resident Type</label>
+                    <select id="profileRoleInput" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold focus:outline-none">
+                        <option value="resident">Resident</option>
+                        <option value="tenant">Tenant</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Save Profile</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
@@ -790,6 +873,7 @@
         window.localNotifications = [];
         let deferredInstallPrompt = null;
         let marketplaceProductsCache = [];
+        let currentProductDetail = null;
 
         function showToast(message, title = 'Notification') {
             const toast = document.getElementById('toastNotification');
@@ -848,6 +932,47 @@
             return "this.onerror=null;this.src='https://img.icons8.com/color/96/box--v1.png';";
         }
 
+        function getFavoriteProductIds() {
+            try {
+                return JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
+            } catch {
+                return [];
+            }
+        }
+
+        function isFavoriteProduct(id) {
+            return getFavoriteProductIds().includes(id);
+        }
+
+        function toggleFavoriteProduct(id) {
+            const favorites = getFavoriteProductIds();
+            const next = favorites.includes(id) ? favorites.filter((x) => x !== id) : [...favorites, id];
+            localStorage.setItem('favoriteProducts', JSON.stringify(next));
+            if (marketplaceProductsCache.length) renderMarketplaceProducts(marketplaceProductsCache);
+            if (currentProductDetail && currentProductDetail._id === id) updateProductDetailFavoriteState(id);
+            showToast(next.includes(id) ? 'Added to favorites.' : 'Removed from favorites.', 'Marketplace');
+        }
+
+        function updateProductDetailFavoriteState(id) {
+            const btn = document.getElementById('productDetailFavoriteBtn');
+            const active = isFavoriteProduct(id);
+            btn.innerHTML = `<i class="fa-${active ? 'solid' : 'regular'} fa-heart"></i>`;
+            btn.className = `w-11 h-11 rounded-2xl border flex items-center justify-center ${active ? 'bg-pink-500 text-white border-pink-500' : 'bg-pink-50 text-pink-500 border-pink-100'}`;
+        }
+
+        function openProductDetails(product) {
+            currentProductDetail = product;
+            document.getElementById('productDetailImage').src = getMarketImage(product.image);
+            document.getElementById('productDetailImage').setAttribute('onerror', getMarketImageOnError());
+            document.getElementById('productDetailName').innerText = product.name || 'Product';
+            document.getElementById('productDetailDesc').innerText = product.description || 'Fresh listing from your community marketplace.';
+            document.getElementById('productDetailPrice').innerText = `₹${product.price}`;
+            document.getElementById('productDetailBuyBtn').onclick = () => buyProduct(product._id, product.name || 'Product', product.price, getMarketImage(product.image));
+            document.getElementById('productDetailFavoriteBtn').onclick = () => toggleFavoriteProduct(product._id);
+            updateProductDetailFavoriteState(product._id);
+            document.getElementById('productDetailModal').classList.remove('hidden');
+        }
+
         function isStandaloneMode() {
             return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
         }
@@ -872,11 +997,13 @@
             document.getElementById('marketItemCount').innerText = products.length;
             const search = (document.getElementById('marketSearchInput')?.value || '').trim().toLowerCase();
             const sort = document.getElementById('marketSortSelect')?.value || 'latest';
+            const favoritesOnly = !!document.getElementById('marketFavoritesOnly')?.checked;
             let filtered = products.filter((p) => {
                 if (!search) return true;
                 const haystack = `${p.name || ''} ${p.description || ''}`.toLowerCase();
                 return haystack.includes(search);
             });
+            if (favoritesOnly) filtered = filtered.filter((p) => isFavoriteProduct(p._id));
 
             filtered.sort((a, b) => {
                 if (sort === 'priceLow') return Number(a.price || 0) - Number(b.price || 0);
@@ -897,10 +1024,14 @@
                 const safeImg = escapeHtml(imgSrc);
                 const jsName = escapeJsString(p.name || 'Product');
                 const jsImg = escapeJsString(imgSrc);
+                const favorite = isFavoriteProduct(p._id);
                 p_html += `
                     <div class="glass-card p-0 overflow-hidden flex flex-col border border-slate-100 shadow-soft hover:shadow-lg transition">
                         <div class="relative">
                             <img src="${safeImg}" onerror="${getMarketImageOnError()}" class="w-full h-40 object-cover bg-slate-50">
+                            <button onclick="event.stopPropagation(); toggleFavoriteProduct('${p._id}')" class="absolute top-3 right-3 w-9 h-9 rounded-full ${favorite ? 'bg-pink-500 text-white' : 'bg-white/90 text-pink-500'} shadow-lg flex items-center justify-center border border-white/60">
+                                <i class="fa-${favorite ? 'solid' : 'regular'} fa-heart"></i>
+                            </button>
                             <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-slate-950/65 via-slate-900/20 to-transparent">
                                 <div class="flex items-center justify-between gap-2">
                                     <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Society Pick</span>
@@ -914,9 +1045,9 @@
                                 <p class="text-[11px] text-slate-500 mt-1 leading-relaxed min-h-[2.75rem]">${safeDesc}</p>
                             </div>
                             <div class="flex justify-between items-center pt-3 border-t border-slate-100">
-                                <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 rounded-full">
+                                <button onclick="openProductDetailsById('${p._id}')" class="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 rounded-full">
                                     <i class="fa-solid fa-camera"></i> Photo Ready
-                                </div>
+                                </button>
                                 <button onclick="buyProduct('${p._id}', '${jsName}', ${p.price}, '${jsImg}')" class="bg-slate-900 text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-sm active:scale-95 transition">Order Now</button>
                             </div>
                         </div> 
@@ -949,6 +1080,11 @@
             } catch (e) {}
         }
 
+        function openProductDetailsById(id) {
+            const product = marketplaceProductsCache.find((p) => p._id === id);
+            if (product) openProductDetails(product);
+        }
+
         document.getElementById('cModalBtn').addEventListener('click', () => {
             if (_confirmCallback) _confirmCallback();
             closeConfirmModal();
@@ -972,6 +1108,7 @@
                 document.getElementById('appContent').style.display = 'block';
                 if(userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
                 if(socName) document.getElementById('societyNameDisplay').innerText = socName;
+                if(!localStorage.getItem('userRole')) localStorage.setItem('userRole', 'resident');
                 
                 fetchDashboardData();
             }
@@ -1017,6 +1154,7 @@
                     localStorage.setItem('userToken', data.token);
                     localStorage.setItem('userId', data.user._id);
                     localStorage.setItem('userName', data.user.name);
+                    localStorage.setItem('userRole', data.user.role || 'resident');
                     localStorage.setItem('userSocietyName', data.user.societyName || 'Society Hub');
                     checkAuth();
                 } else {
@@ -1169,29 +1307,55 @@
             document.getElementById('epPrice').value = price;
             document.getElementById('epDesc').value = desc;
             document.getElementById('epStatus').value = status;
-            document.getElementById('editProductModal').classList.remove('hidden');
+            const modal = document.getElementById('editProductModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('active');
         }
         document.getElementById('editProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerText;
+            btn.innerText = 'Saving...';
             const id = document.getElementById('epId').value;
-            await fetch(`${API_URL}/marketplace/products/${id}`, {
-                method: 'PUT', headers: getSellerHeaders(),
-                body: JSON.stringify({
-                    name: document.getElementById('epName').value,
-                    price: document.getElementById('epPrice').value,
-                    description: document.getElementById('epDesc').value,
-                    status: document.getElementById('epStatus').value
-                })
-            });
-            document.getElementById('editProductModal').classList.add('hidden');
-            showToast("Product updated!", "Success");
-            loadSellerDashboard();
+            try {
+                const res = await fetch(`${API_URL}/marketplace/products/${id}`, {
+                    method: 'PUT', headers: getSellerHeaders(),
+                    body: JSON.stringify({
+                        name: document.getElementById('epName').value,
+                        price: document.getElementById('epPrice').value,
+                        description: document.getElementById('epDesc').value,
+                        status: document.getElementById('epStatus').value
+                    })
+                });
+                const data = await res.json().catch(() => ({}));
+                if(!res.ok) {
+                    showToast(data.error || "Unable to update product.", "Error");
+                    return;
+                }
+                closeModal(null, 'editProductModal');
+                document.getElementById('editProductModal').classList.add('hidden');
+                showToast("Product updated!", "Success");
+                loadSellerDashboard();
+            } catch (err) {
+                showToast("Unable to update product.", "Error");
+            } finally {
+                btn.innerText = originalText;
+            }
         });
         async function deleteProduct(id, name) {
             showConfirm("Delete Product", `Remove "${name}" from your store?`, async () => {
-                await fetch(`${API_URL}/marketplace/products/${id}`, {method: 'DELETE', headers: getSellerHeaders()});
-                showToast("Product deleted.", "Success");
-                loadSellerDashboard();
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/products/${id}`, {method: 'DELETE', headers: getSellerHeaders()});
+                    const data = await res.json().catch(() => ({}));
+                    if(!res.ok) {
+                        showToast(data.error || "Unable to delete product.", "Error");
+                        return;
+                    }
+                    showToast("Product deleted.", "Success");
+                    loadSellerDashboard();
+                } catch (err) {
+                    showToast("Unable to delete product.", "Error");
+                }
             });
         }
 
@@ -1354,20 +1518,23 @@
 
         // --- PROFILE / OWNERSHIP LOGIC ---
         function openProfile() {
-            showConfirm("Update Status", "Would you like to transfer ownership or list as Tenant?", async () => {
-                const newRole = prompt("Enter new role: 'resident' or 'tenant'");
-                if(newRole) {
-                    await fetch(`${API_URL}/users/profile`, {method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({role: newRole})});
-                    showToast("Status Updated. Role is now: " + newRole, "Success");
-                    location.reload();
-                }
-            });
+            document.getElementById('profileNameInput').value = localStorage.getItem('userName') || '';
+            document.getElementById('profileRoleInput').value = (localStorage.getItem('userRole') || 'resident').toLowerCase();
+            openModal('profileModal');
         }
 
-        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+            modal.classList.add('active');
+        }
         function closeModal(event, id) { 
             if(event && event.target !== event.currentTarget) return;
-            document.getElementById(id).classList.remove('active'); 
+            const modal = document.getElementById(id);
+            modal.classList.remove('active');
+            setTimeout(() => {
+                if(!modal.classList.contains('active')) modal.classList.add('hidden');
+            }, 300);
         }
 
         async function loadActiveSOSFeed() {
@@ -1393,6 +1560,86 @@
                     });
                 }
                 document.getElementById('residentSosList').innerHTML = html;
+            } catch (e) {}
+        }
+
+        async function loadRecentActivity() {
+            try {
+                const [ordersRes, bookingsRes, visitorsRes, complaintsRes] = await Promise.all([
+                    fetch(`${API_URL}/marketplace/orders`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/bookings`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/visitors`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/complaints`, { headers: getAuthHeaders() })
+                ]);
+
+                const activities = [];
+                if (ordersRes.ok) {
+                    const orders = await ordersRes.json();
+                    orders.slice(0, 2).forEach((o) => activities.push({
+                        time: o.createdAt,
+                        icon: 'fa-bag-shopping',
+                        color: 'text-pink-500',
+                        bg: 'bg-pink-50',
+                        title: o.productName || 'Marketplace order',
+                        subtitle: `Order ${o.status || 'Placed'}`
+                    }));
+                }
+                if (bookingsRes.ok) {
+                    const bookings = await bookingsRes.json();
+                    bookings.slice(0, 1).forEach((b) => activities.push({
+                        time: b.date,
+                        icon: 'fa-calendar-check',
+                        color: 'text-emerald-500',
+                        bg: 'bg-emerald-50',
+                        title: b.facility || 'Amenity booking',
+                        subtitle: `${b.slot || 'Reserved'}`
+                    }));
+                }
+                if (visitorsRes.ok) {
+                    const visitors = await visitorsRes.json();
+                    visitors.slice(0, 1).forEach((v) => activities.push({
+                        time: v.date || v.expectedDate,
+                        icon: 'fa-id-badge',
+                        color: 'text-indigo-500',
+                        bg: 'bg-indigo-50',
+                        title: v.visitorName || 'Visitor approved',
+                        subtitle: `${v.status || 'Expected'} visitor pass`
+                    }));
+                }
+                if (complaintsRes.ok) {
+                    const complaints = await complaintsRes.json();
+                    complaints.slice(0, 1).forEach((c) => activities.push({
+                        time: c.date,
+                        icon: 'fa-clipboard-list',
+                        color: 'text-amber-500',
+                        bg: 'bg-amber-50',
+                        title: c.category || 'Complaint',
+                        subtitle: `${c.status || 'Pending'} issue reported`
+                    }));
+                }
+
+                activities.sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')));
+                const top = activities.slice(0, 5);
+                let html = '';
+                if (!top.length) {
+                    html = '<p class="text-[11px] text-slate-300 text-center py-4">Your activity timeline will appear here as you use the app.</p>';
+                } else {
+                    top.forEach((item) => {
+                        html += `
+                            <div class="bg-white/8 border border-white/10 rounded-2xl p-3 flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shrink-0">
+                                    <i class="fa-solid ${item.icon}"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-sm font-bold text-white">${escapeHtml(item.title)}</h4>
+                                    <p class="text-[11px] text-slate-300 mt-0.5">${escapeHtml(item.subtitle)}</p>
+                                </div>
+                                <span class="text-[9px] text-slate-400 whitespace-nowrap">${new Date(item.time).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}</span>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('recentActivityList').innerHTML = html;
             } catch (e) {}
         }
 
@@ -1481,6 +1728,7 @@
                 }
 
                 loadActiveSOSFeed();
+                loadRecentActivity();
             } catch (err) {}
         }
 
@@ -1858,6 +2106,36 @@ This is a computer generated document.
             btn.innerText = ogTxt;
         });
 
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const ogTxt = btn.innerText;
+            btn.innerText = 'Saving...';
+            try {
+                const payload = {
+                    name: document.getElementById('profileNameInput').value.trim(),
+                    role: document.getElementById('profileRoleInput').value
+                };
+                const res = await fetch(`${API_URL}/users/profile`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    localStorage.setItem('userName', payload.name || localStorage.getItem('userName') || 'Resident');
+                    localStorage.setItem('userRole', payload.role);
+                    document.getElementById('userNameDisplay').innerText = `Welcome, ${(payload.name || 'Resident').split(' ')[0]}`;
+                    closeModal(null, 'profileModal');
+                    showToast('Profile updated successfully.', 'Success');
+                } else {
+                    showToast('Unable to update profile right now.', 'Error');
+                }
+            } catch (e2) {
+                showToast('Unable to update profile right now.', 'Error');
+            }
+            btn.innerText = ogTxt;
+        });
+
         async function triggerSOS() {
             showConfirm("TRIGGER SOS ALERT?", "This will immediately notify all security guards and neighbors that you need assistance. Proceed only in an EMERGENCY.", async () => {
                 try {
@@ -1946,6 +2224,7 @@ This is a computer generated document.
 
         document.getElementById('marketSearchInput').addEventListener('input', () => renderMarketplaceProducts(marketplaceProductsCache));
         document.getElementById('marketSortSelect').addEventListener('change', () => renderMarketplaceProducts(marketplaceProductsCache));
+        document.getElementById('marketFavoritesOnly').addEventListener('change', () => renderMarketplaceProducts(marketplaceProductsCache));
         document.getElementById('installAppBtn').addEventListener('click', promptInstallApp);
         document.getElementById('copyPasscodeBtn').addEventListener('click', async () => {
             const passcode = document.getElementById('generatedPasscode').innerText.trim();
