@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from datetime import datetime, timedelta
+from datetime import datetime
 import jwt
 import smtplib
 from email.mime.text import MIMEText
@@ -18,12 +18,9 @@ CORS(app)
 
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'society-hub-2026-secret')
 MONGODB_URI = os.environ.get('MONGODB_URI')
-DB_CONNECTED = False
-DB_ERROR = None
 
 try:
     client = MongoClient(MONGODB_URI)
-    client.admin.command('ping')
     db = client['society_hub']
     
     users_col = db['users'] 
@@ -42,10 +39,8 @@ try:
     products_col = db['products']
     orders_col = db['orders']
     messages_col = db['messages']
-    DB_CONNECTED = True
     print("Connected to MongoDB database successfully!")
 except Exception as e:
-    DB_ERROR = str(e)
     print(f"Error connecting to MongoDB: {e}")
 
 def format_doc(doc):
@@ -54,9 +49,6 @@ def format_doc(doc):
     if doc and 'societyId' in doc and type(doc['societyId']) == ObjectId:
         doc['societyId'] = str(doc['societyId'])
     return doc
-
-def format_docs(docs):
-    return [format_doc(doc) for doc in docs]
 
 # -------------- MIDDLEWARE --------------
 def token_required(f):
@@ -90,25 +82,6 @@ def admin_required(f):
             return jsonify({'error': 'Token is invalid'}), 401
         return f(*args, **kwargs)
     return decorated
-
-def build_scope_queries():
-    society_id = request.user_data.get('societyId')
-    if request.user_data.get('role') == 'admin':
-        society_filter = request.args.get('societyId')
-        scoped_query = {"societyId": society_filter} if society_filter else {}
-        user_query = {"societyId": society_filter} if society_filter else {}
-        return scoped_query, user_query, society_filter
-    scoped_query = {"societyId": society_id}
-    return scoped_query, {"societyId": society_id}, society_id
-
-@app.route('/api/health', methods=['GET'])
-def health_check():
-    return jsonify({
-        "status": "ok",
-        "database": "connected" if DB_CONNECTED else "disconnected",
-        "dbError": DB_ERROR,
-        "time": datetime.utcnow().isoformat() + "Z"
-    })
 
 # -------------- AUTHENTICATION & OTP --------------
 
@@ -597,64 +570,6 @@ def get_analytics():
         "my_dues_pending": my_pending
     })
 
-@app.route('/api/community/pulse', methods=['GET'])
-@token_required
-def get_community_pulse():
-    scope_query, user_query, scoped_society_id = build_scope_queries()
-    user_id = request.user_data.get('user_id')
-    now = datetime.utcnow()
-    upcoming_cutoff = (now + timedelta(days=7)).isoformat()
-    recent_cutoff = (now - timedelta(hours=24)).isoformat()
-
-    resident_visitors_query = {**scope_query}
-    resident_bookings_query = {**scope_query}
-    resident_messages_query = {**scope_query}
-
-    if request.user_data.get('role') != 'admin':
-        resident_visitors_query["userId"] = user_id
-        resident_bookings_query["userId"] = user_id
-
-    active_notices = notices_col.count_documents(scope_query)
-    open_complaints = complaints_col.count_documents({**scope_query, "status": "Pending"})
-    active_sos = sos_col.count_documents({**scope_query, "status": "Active"})
-    active_polls = polls_col.count_documents(scope_query)
-    expected_visitors = visitors_col.count_documents({
-        **resident_visitors_query,
-        "status": "Expected"
-    })
-    upcoming_bookings = bookings_col.count_documents({
-        **resident_bookings_query,
-        "date": {"$gte": now.date().isoformat(), "$lte": upcoming_cutoff[:10]}
-    })
-    unread_like_messages = messages_col.count_documents({
-        **resident_messages_query,
-        "createdAt": {"$gte": recent_cutoff}
-    })
-
-    latest_notice = notices_col.find_one(scope_query, sort=[("date", -1)])
-    next_booking = bookings_col.find_one(
-        {
-            **resident_bookings_query,
-            "date": {"$gte": now.date().isoformat(), "$lte": upcoming_cutoff[:10]}
-        },
-        sort=[("date", 1)]
-    )
-
-    return jsonify({
-        "scopeSocietyId": scoped_society_id,
-        "activeNotices": active_notices,
-        "openComplaints": open_complaints,
-        "activeSOS": active_sos,
-        "activePolls": active_polls,
-        "expectedVisitors": expected_visitors,
-        "upcomingBookings": upcoming_bookings,
-        "recentMessages": unread_like_messages,
-        "latestNotice": format_doc(latest_notice) if latest_notice else None,
-        "nextBooking": format_doc(next_booking) if next_booking else None,
-        "generatedAt": now.isoformat() + "Z",
-        "residentCount": users_col.count_documents(user_query)
-    })
-
 # -------------- POLLS / SURVEYS MODULE --------------
 @app.route('/api/polls', methods=['GET'])
 @token_required
@@ -911,4 +826,4 @@ def send_message():
     return jsonify({"message": "Message sent"}), 201
 
 if __name__ == '__main__':
-    app.run(debug=True, port=int(os.environ.get("BACKEND_PORT", "5000")))
+    app.run(debug=True, port=5000)

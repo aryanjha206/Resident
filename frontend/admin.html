@@ -139,48 +139,6 @@
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pending Complaints</p>
                     <h3 class="text-2xl font-bold text-dark" id="statComplaints">0</h3>
                 </div>
-                <div class="glass-card p-4 relative overflow-hidden group">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Active SOS</p>
-                    <h3 class="text-2xl font-bold text-dark" id="statSOS">0</h3>
-                </div>
-                <div class="glass-card p-4 relative overflow-hidden group">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Upcoming Bookings</p>
-                    <h3 class="text-2xl font-bold text-dark" id="statBookings">0</h3>
-                </div>
-            </div>
-
-            <div class="glass-card p-5 border border-slate-200 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300">Operations Snapshot</p>
-                        <h2 class="text-lg font-bold mt-2">Live community pulse</h2>
-                        <p id="opsUpdatedAt" class="text-[11px] text-slate-300 mt-1">Syncing dashboard...</p>
-                    </div>
-                    <button onclick="fetchAdminAnalytics(true)" class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition">
-                        <i class="fa-solid fa-rotate-right"></i>
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
-                        <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Residents</p>
-                        <h3 id="opsResidents" class="text-2xl font-black mt-1">-</h3>
-                    </div>
-                    <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
-                        <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Expected Visitors</p>
-                        <h3 id="opsVisitors" class="text-2xl font-black mt-1">-</h3>
-                    </div>
-                    <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
-                        <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Active Polls</p>
-                        <h3 id="opsPolls" class="text-2xl font-black mt-1">-</h3>
-                    </div>
-                    <div class="rounded-2xl bg-white/10 border border-white/10 p-3">
-                        <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Recent Messages</p>
-                        <h3 id="opsMessages" class="text-2xl font-black mt-1">-</h3>
-                    </div>
-                </div>
-                <div id="opsHighlights" class="mt-4 space-y-2">
-                    <p class="text-[11px] text-slate-300">No operational highlights yet.</p>
-                </div>
             </div>
 
 
@@ -440,53 +398,15 @@
             } catch(e) {}
         }
 
-        function formatOpsTime(iso) {
-            if(!iso) return 'Waiting for updates...';
-            return `Updated ${new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-        }
-
-        function renderAdminPulse(data) {
-            document.getElementById('opsUpdatedAt').innerText = formatOpsTime(data.generatedAt);
-            document.getElementById('statSOS').innerText = data.activeSOS || 0;
-            document.getElementById('statBookings').innerText = data.upcomingBookings || 0;
-            document.getElementById('opsResidents').innerText = data.residentCount || 0;
-            document.getElementById('opsVisitors').innerText = data.expectedVisitors || 0;
-            document.getElementById('opsPolls').innerText = data.activePolls || 0;
-            document.getElementById('opsMessages').innerText = data.recentMessages || 0;
-
-            const highlights = [];
-            if(data.latestNotice) {
-                highlights.push(`<div class="rounded-2xl bg-white/10 border border-white/10 p-3"><p class="text-[10px] uppercase tracking-widest text-slate-300 font-bold">Latest Notice</p><p class="text-sm font-bold mt-1">${data.latestNotice.title}</p><p class="text-[11px] text-slate-300 mt-1">${data.latestNotice.category || 'General'}</p></div>`);
-            }
-            if(data.activeSOS > 0) {
-                highlights.push(`<div class="rounded-2xl bg-red-500/20 border border-red-300/30 p-3"><p class="text-[10px] uppercase tracking-widest text-red-100 font-bold">Emergency Status</p><p class="text-sm font-bold mt-1">${data.activeSOS} active SOS alert${data.activeSOS === 1 ? '' : 's'}</p></div>`);
-            }
-            if(data.nextBooking) {
-                highlights.push(`<div class="rounded-2xl bg-white/10 border border-white/10 p-3"><p class="text-[10px] uppercase tracking-widest text-slate-300 font-bold">Next Booking</p><p class="text-sm font-bold mt-1">${data.nextBooking.facility}</p><p class="text-[11px] text-slate-300 mt-1">${data.nextBooking.date} &bull; ${data.nextBooking.slot || 'Flexible slot'}</p></div>`);
-            }
-
-            document.getElementById('opsHighlights').innerHTML = highlights.join('') || '<p class="text-[11px] text-slate-300">No operational highlights yet.</p>';
-        }
-
-        async function fetchAdminAnalytics(showToastFeedback = false) {
+        async function fetchAdminAnalytics() {
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
             try {
-                const [res, pulseRes] = await Promise.all([
-                    fetch(`${API_URL}/analytics${query}`, {headers: getAuthHeaders()}),
-                    fetch(`${API_URL}/community/pulse${query}`, {headers: getAuthHeaders()})
-                ]);
+                const res = await fetch(`${API_URL}/analytics${query}`, {headers: getAuthHeaders()});
                 if(res.ok){
                     const data = await res.json();
                     document.getElementById('statCollected').innerText = '₹' + (data.dues_collected || 0).toLocaleString();
                     document.getElementById('statComplaints').innerText = data.pending_complaints || 0;
-                }
-                if(pulseRes.ok) {
-                    const pulse = await pulseRes.json();
-                    renderAdminPulse(pulse);
-                }
-                if(showToastFeedback) {
-                    showToast("Operations snapshot refreshed.", "success", "Live Data");
                 }
             } catch(e) {}
         }
