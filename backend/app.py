@@ -695,19 +695,16 @@ def add_vehicle():
 @app.route('/api/marketplace/products', methods=['GET'])
 @token_required
 def get_products():
-    # Show products from the current society or global if societyId not specified
     products = list(products_col.find({"status": "Active"}).sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/seller/products', methods=['GET'])
 def get_seller_products():
-    # Seller doesn't necessarily have society scope in this simple version
     products = list(products_col.find().sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/products', methods=['POST'])
 def add_product():
-    # Simple check for seller role if token provided
     data = request.json
     product = {
         "name": data.get("name"),
@@ -734,8 +731,11 @@ def place_order():
         "societyId": society_id,
         "productId": data.get("productId"),
         "productName": data.get("productName"),
+        "productImage": data.get("productImage", ""),
         "price": data.get("price"),
-        "status": "Placed", # Placed, Processing, Delivered, Shipped
+        "status": "Placed",
+        "paymentStatus": "Pending",
+        "timeline": [{"status": "Placed", "time": datetime.utcnow().isoformat()}],
         "createdAt": datetime.utcnow().isoformat()
     }
     orders_col.insert_one(order)
@@ -756,8 +756,52 @@ def get_seller_orders():
 @app.route('/api/marketplace/orders/<o_id>/status', methods=['PUT'])
 def update_order_status(o_id):
     data = request.json
-    orders_col.update_one({"_id": ObjectId(o_id)}, {"$set": {"status": data.get("status")}})
+    new_status = data.get("status")
+    update_fields = {"status": new_status}
+    if new_status == "Delivered":
+        update_fields["deliveredAt"] = datetime.utcnow().isoformat()
+    orders_col.update_one(
+        {"_id": ObjectId(o_id)},
+        {
+            "$set": update_fields,
+            "$push": {"timeline": {"status": new_status, "time": datetime.utcnow().isoformat()}}
+        }
+    )
     return jsonify({"message": "Order status updated"})
+
+@app.route('/api/marketplace/orders/<o_id>/pay', methods=['PUT'])
+def confirm_payment(o_id):
+    orders_col.update_one(
+        {"_id": ObjectId(o_id)},
+        {
+            "$set": {
+                "paymentStatus": "Paid",
+                "paidAt": datetime.utcnow().isoformat()
+            },
+            "$push": {"timeline": {"status": "Payment Confirmed", "time": datetime.utcnow().isoformat()}}
+        }
+    )
+    return jsonify({"message": "Payment confirmed"})
+
+@app.route('/api/marketplace/orders/<o_id>/invoice', methods=['GET'])
+@token_required
+def get_invoice(o_id):
+    order = orders_col.find_one({"_id": ObjectId(o_id)})
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+    invoice = {
+        "invoiceId": f"INV-{str(order['_id'])[-6:].upper()}",
+        "orderId": str(order['_id']),
+        "productName": order.get("productName"),
+        "price": order.get("price"),
+        "buyerName": order.get("userName"),
+        "status": order.get("status"),
+        "paymentStatus": order.get("paymentStatus", "Pending"),
+        "orderedOn": order.get("createdAt"),
+        "deliveredOn": order.get("deliveredAt", ""),
+        "paidOn": order.get("paidAt", "")
+    }
+    return jsonify(invoice)
 
 # -------------- LIVE CHAT MODULE --------------
 @app.route('/api/chat/messages', methods=['GET'])
