@@ -36,9 +36,9 @@ try:
     polls_col = db['polls']
     sos_col = db['sos']
     vehicles_col = db['vehicles']
-    marketplace_col = db['marketplace']
+    products_col = db['products']
+    orders_col = db['orders']
     messages_col = db['messages']
-    units_col = db['units'] # New collection for units
     print("Connected to MongoDB database successfully!")
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")
@@ -143,23 +143,8 @@ def verify_otp():
             "role": "resident",
             "societyId": str(society["_id"]),
             "societyName": society["name"],
-            "unitNumber": data.get("unitNumber", "N/A"),
-            "residentType": "Owner", # Default to owner on direct signup
             "joinedAt": datetime.utcnow().isoformat()
         }
-        
-        # If a rental code was provided, link to the unit and mark as Tenant
-        rental_code = data.get("rentalCode")
-        if rental_code:
-            unit_record = units_col.find_one({"inviteCode": rental_code, "status": "Active"})
-            if unit_record:
-                new_user["unitNumber"] = unit_record["unitNumber"]
-                new_user["residentType"] = "Tenant"
-                new_user["linkedOwnerId"] = unit_record["ownerId"]
-                units_col.update_one({"_id": unit_record["_id"]}, {"$set": {"status": "Claimed", "tenantEmail": email}})
-            else:
-                return jsonify({"error": "Invalid or expired rental invite code"}), 400
-
         res = users_col.insert_one(new_user)
         user = users_col.find_one({"_id": res.inserted_id})
 
@@ -178,6 +163,14 @@ def admin_login():
     if data.get('pin') == "88786":
         token = jwt.encode({'role': 'admin', 'exp': datetime.utcnow().timestamp() + 86400}, app.config['SECRET_KEY'], algorithm='HS256')
         return jsonify({"token": token, "role": "admin"})
+    return jsonify({"error": "Invalid PIN"}), 401
+
+@app.route('/api/auth/seller-login', methods=['POST'])
+def seller_login():
+    data = request.json
+    if data.get('pin') == "55555":
+        token = jwt.encode({'role': 'seller', 'exp': datetime.utcnow().timestamp() + 86400, 'name': 'Verified Seller'}, app.config['SECRET_KEY'], algorithm='HS256')
+        return jsonify({"token": token, "role": "seller", "name": "Verified Seller"})
     return jsonify({"error": "Invalid PIN"}), 401
 
 # -------------- ADMIN: SOCIETIES MODULE --------------
@@ -203,6 +196,20 @@ def create_society():
     }
     societies_col.insert_one(society)
     return jsonify({"message": "Society created", "code": code}), 201
+
+@app.route('/api/users/profile', methods=['PUT'])
+@token_required
+def update_profile():
+    user_id = request.user_data.get('user_id')
+    data = request.json
+    
+    # Ownership/Rent transfer logic: Update the resident to become a 'Transfer/Rent' flag or just update details
+    update_data = {}
+    if 'role' in data: update_data['role'] = data['role'] # 'resident' or 'tenant'
+    if 'name' in data: update_data['name'] = data['name']
+    
+    users_col.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
+    return jsonify({"message": "Profile updated successfully"})
 
 # -------------- USERS DIRECTORY MODULE --------------
 @app.route('/api/users', methods=['GET'])
@@ -685,110 +692,94 @@ def add_vehicle():
     return jsonify({"message": "Vehicle registered"}), 201
 
 # -------------- MARKETPLACE MODULE --------------
-@app.route('/api/marketplace', methods=['GET'])
+@app.route('/api/marketplace/products', methods=['GET'])
 @token_required
-def get_marketplace():
-    society_id = request.user_data.get('societyId')
-    query = {"societyId": society_id}
-    items = list(marketplace_col.find(query).sort("createdAt", -1))
-    return jsonify([format_doc(i) for i in items])
+def get_products():
+    # Show products from the current society or global if societyId not specified
+    products = list(products_col.find({"status": "Active"}).sort("createdAt", -1))
+    return jsonify([format_doc(p) for p in products])
 
-@app.route('/api/marketplace', methods=['POST'])
-@token_required
-def add_marketplace_item():
-    society_id = request.user_data.get('societyId')
-    user_id = request.user_data.get('user_id')
+@app.route('/api/marketplace/seller/products', methods=['GET'])
+def get_seller_products():
+    # Seller doesn't necessarily have society scope in this simple version
+    products = list(products_col.find().sort("createdAt", -1))
+    return jsonify([format_doc(p) for p in products])
+
+@app.route('/api/marketplace/products', methods=['POST'])
+def add_product():
+    # Simple check for seller role if token provided
     data = request.json
-    
-    item = {
-        "societyId": society_id,
-        "userId": user_id,
-        "userName": request.user_data.get('name'),
-        "title": data.get("title"),
+    product = {
+        "name": data.get("name"),
+        "price": float(data.get("price", 0)),
         "description": data.get("description"),
-        "price": data.get("price"),
-        "category": data.get("category", "General"),
-        "contact": data.get("contact"),
+        "image": data.get("image", "https://img.icons8.com/color/96/box--v1.png"),
+        "status": "Active",
         "createdAt": datetime.utcnow().isoformat()
     }
-    marketplace_col.insert_one(item)
-    return jsonify({"message": "Item listed successfully"}), 201
+    products_col.insert_one(product)
+    return jsonify({"message": "Product listed successfully"}), 201
 
-@app.route('/api/marketplace/<item_id>', methods=['DELETE'])
+@app.route('/api/marketplace/orders', methods=['POST'])
 @token_required
-def delete_marketplace_item(item_id):
+def place_order():
     user_id = request.user_data.get('user_id')
-    # Check if the user is the owner or an admin
-    res = marketplace_col.delete_one({"_id": ObjectId(item_id), "userId": user_id})
-    if res.deleted_count > 0:
-        return jsonify({"message": "Item removed"})
-    return jsonify({"error": "Unauthorized or item not found"}), 403
+    user_name = request.user_data.get('name')
+    society_id = request.user_data.get('societyId')
+    data = request.json
+    
+    order = {
+        "userId": user_id,
+        "userName": user_name,
+        "societyId": society_id,
+        "productId": data.get("productId"),
+        "productName": data.get("productName"),
+        "price": data.get("price"),
+        "status": "Placed", # Placed, Processing, Delivered, Shipped
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    orders_col.insert_one(order)
+    return jsonify({"message": "Order placed successfully"}), 201
 
-# -------------- COMMUNITY CHAT ENGINE --------------
-@app.route('/api/messages', methods=['GET'])
+@app.route('/api/marketplace/orders', methods=['GET'])
+@token_required
+def get_orders():
+    user_id = request.user_data.get('user_id')
+    orders = list(orders_col.find({"userId": user_id}).sort("createdAt", -1))
+    return jsonify([format_doc(o) for o in orders])
+
+@app.route('/api/marketplace/seller/orders', methods=['GET'])
+def get_seller_orders():
+    orders = list(orders_col.find().sort("createdAt", -1))
+    return jsonify([format_doc(o) for o in orders])
+
+@app.route('/api/marketplace/orders/<o_id>/status', methods=['PUT'])
+def update_order_status(o_id):
+    data = request.json
+    orders_col.update_one({"_id": ObjectId(o_id)}, {"$set": {"status": data.get("status")}})
+    return jsonify({"message": "Order status updated"})
+
+# -------------- LIVE CHAT MODULE --------------
+@app.route('/api/chat/messages', methods=['GET'])
 @token_required
 def get_messages():
     society_id = request.user_data.get('societyId')
-    messages = list(messages_col.find({"societyId": society_id}).sort("createdAt", -1).limit(50))
-    messages.reverse() # Show oldest first for chat flow
+    messages = list(messages_col.find({"societyId": society_id}).sort("createdAt", 1))
     return jsonify([format_doc(m) for m in messages])
 
-@app.route('/api/messages', methods=['POST'])
+@app.route('/api/chat/messages', methods=['POST'])
 @token_required
-def post_message():
-    society_id = request.user_data.get('societyId')
-    user_id = request.user_data.get('user_id')
-    user_name = request.user_data.get('name')
+def send_message():
     data = request.json
-    
     message = {
-        "societyId": society_id,
-        "userId": user_id,
-        "userName": user_name,
-        "content": data.get("content"),
+        "societyId": request.user_data.get('societyId'),
+        "userId": request.user_data.get('user_id'),
+        "userName": request.user_data.get('name'),
+        "text": data.get("text"),
         "createdAt": datetime.utcnow().isoformat()
     }
     messages_col.insert_one(message)
     return jsonify({"message": "Message sent"}), 201
-
-# -------------- UNIT & RENTAL TRANSFERS --------------
-@app.route('/api/units/invite', methods=['POST'])
-@token_required
-def create_rental_invite():
-    user_id = request.user_data.get('user_id')
-    user = users_col.find_one({"_id": ObjectId(user_id)})
-    
-    unit_number = user.get("unitNumber")
-    if not unit_number or unit_number == "N/A":
-        return jsonify({"error": "You must have a registered unit to invite a tenant"}), 400
-        
-    invite_code = f"RENT-{random.randint(100000, 999999)}"
-    units_col.insert_one({
-        "ownerId": user_id,
-        "societyId": user.get("societyId"),
-        "unitNumber": unit_number,
-        "inviteCode": invite_code,
-        "status": "Active",
-        "createdAt": datetime.utcnow().isoformat()
-    })
-    
-    return jsonify({"inviteCode": invite_code, "message": "Invite generated! Give this code to your tenant."})
-
-@app.route('/api/units/info', methods=['GET'])
-@token_required
-def get_unit_info():
-    user_id = request.user_data.get('user_id')
-    user = users_col.find_one({"_id": ObjectId(user_id)})
-    
-    tenants = []
-    if user.get("residentType") == "Owner":
-        tenants = list(users_col.find({"linkedOwnerId": user_id}, {"name":1, "email":1, "joinedAt":1}))
-        
-    return jsonify({
-        "unitNumber": user.get("unitNumber", "Unassigned"),
-        "residentType": user.get("residentType", "Resident"),
-        "tenants": [format_doc(t) for t in tenants]
-    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

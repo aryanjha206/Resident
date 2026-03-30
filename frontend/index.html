@@ -96,14 +96,7 @@
                         <div id="registrationFields" class="hidden mb-6 space-y-4">
                             <div class="text-left"><span class="text-[10px] font-bold text-primary uppercase ml-2">New Resident details</span></div>
                             <input type="text" id="nameInput" placeholder="Your Official Name" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
-                            <div class="flex gap-4">
-                                <input type="text" id="societyCodeInput" placeholder="Society Code" class="w-1/2 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition uppercase">
-                                <input type="text" id="unitNumberInput" placeholder="Unit/Flat No" class="w-1/2 bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition uppercase">
-                            </div>
-                            <div class="relative">
-                                <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-slate-400">Optional</span>
-                                <input type="text" id="rentalCodeInput" placeholder="Rental/Invite Code (Tenants)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition uppercase">
-                            </div>
+                            <input type="text" id="societyCodeInput" placeholder="Society Code (SOC-XXXX)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition uppercase">
                         </div>
 
                         <button type="button" id="verifyOtpBtn" onclick="verifyOtp()" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-emerald-100 hover:bg-emerald-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
@@ -119,6 +112,63 @@
         <div class="mt-12 flex gap-8">
             <a href="guard.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-camera p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Security Dashboard</a>
             <a href="admin.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shield-halved p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Management Board</a>
+            <button onclick="toggleSellerLogin()" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shop p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Seller Portal</button>
+        </div>
+    </div>
+
+    <!-- Seller Login Modal -->
+    <div id="sellerLoginModal" class="fixed inset-0 z-[250] bg-slate-900 flex items-center justify-center p-6 hidden">
+        <div class="w-full max-w-sm glass-card bg-white p-8 rounded-[2.5rem] flex flex-col items-center">
+            <div class="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-3xl mb-6 shadow-xl"><i class="fa-solid fa-shop"></i></div>
+            <h3 class="text-2xl font-bold mb-2">Seller Access</h3>
+            <p class="text-xs text-slate-500 text-center mb-6">Enter your unique vendor PIN to manage products and orders.</p>
+            <input type="password" id="sellerPinInput" placeholder="Enter PIN" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-center tracking-[1em] text-lg font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 transition mb-4">
+            <button onclick="loginSeller()" class="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-indigo-600 transition">Get Access</button>
+            <button onclick="toggleSellerLogin()" class="mt-4 text-xs font-bold text-slate-400">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Seller Portal View -->
+    <div id="sellerView" class="fixed inset-0 z-[300] bg-slate-50 hidden flex-col">
+        <header class="glass-header px-5 py-4 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-shop text-primary"></i>
+                <h2 class="text-base font-bold">Seller Workspace</h2>
+            </div>
+            <button onclick="logoutSeller()" class="text-red-500 font-bold text-xs">Exit Workspace</button>
+        </header>
+        <main class="flex-1 overflow-y-auto p-5 space-y-6">
+            <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <h3 class="text-xl font-bold">Welcome, Vendor</h3>
+                <p class="text-xs text-indigo-100 opacity-80 mt-1">Manage your storefront and track incoming orders.</p>
+                <i class="fa-solid fa-box-open absolute top-4 right-4 text-5xl opacity-20"></i>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">My Active Products</h4>
+                    <button onclick="openModal('addProductModal')" class="text-[10px] font-bold text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">+ New Product</button>
+                </div>
+                <div id="sellerProductList" class="grid grid-cols-1 gap-3"></div>
+            </div>
+
+            <div class="space-y-4 pt-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Customer Orders</h4>
+                <div id="sellerOrderList" class="space-y-3"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Order Status & Buy Modals etc -->
+    <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'addProductModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl" onclick="event.stopPropagation()">
+            <h3 class="text-lg font-bold mb-4">List New Product</h3>
+            <form id="productForm" class="space-y-4">
+                <input id="pName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <input id="pPrice" type="number" placeholder="Price (₹)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <textarea id="pDesc" placeholder="Brief description..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm resize-none" rows="3"></textarea>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Publish Listing</button>
+            </form>
         </div>
     </div>
     </div>
@@ -149,6 +199,9 @@
             <div class="flex items-center gap-4 text-slate-600 relative">
                 <button onclick="triggerSOS()" class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center animate-pulse border-2 border-red-200">
                     <i class="fa-solid fa-truck-medical text-lg"></i>
+                </button>
+                <button onclick="openProfile()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:text-primary transition border border-slate-200">
+                    <i class="fa-solid fa-user-gear"></i>
                 </button>
                 <button onclick="toggleNotifications()" class="relative hover:text-primary transition">
                     <i class="fa-solid fa-bell text-xl"></i>
@@ -234,6 +287,14 @@
                             <div class="w-[42px] h-[42px] rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-calendar-check"></i></div>
                             <span class="text-[10px] font-bold text-emerald-600">Amenities</span>
                         </button>
+                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="switchTab('marketplace')">
+                            <div class="w-[42px] h-[42px] rounded-full bg-pink-50 text-pink-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-cart-shopping"></i></div>
+                            <span class="text-[10px] font-bold text-pink-600">Market</span>
+                        </button>
+                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="toggleChat()">
+                            <div class="w-[42px] h-[42px] rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-comments"></i></div>
+                            <span class="text-[10px] font-bold text-purple-600">Live Chat</span>
+                        </button>
                     </div>
                 </div>
 
@@ -311,12 +372,29 @@
 
             <!-- PEOPLE TAB -->
             <div id="tab-people" class="tab-view space-y-6">
-                <h2 class="text-lg font-bold text-dark">Society Directory</h2>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-dark">Society Directory</h2>
+                    <button onclick="toggleChat()" class="text-[10px] font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-1.5"><i class="fa-solid fa-comments"></i> Society Chat</button>
+                </div>
                 <div class="glass-card p-4">
                     <input type="text" placeholder="Search residents..." class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
                     <div id="mySocietyUsersList" class="space-y-3">
                         <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- MARKETPLACE TAB -->
+            <div id="tab-marketplace" class="tab-view space-y-6">
+                <h2 class="text-lg font-bold text-dark">Community Market</h2>
+                <div class="flex flex-col gap-4">
+                    <div class="grid grid-cols-2 gap-4" id="marketplaceList">
+                        <!-- Loaded via JS -->
+                    </div>
+                </div>
+                <div class="pt-6">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-3">My Market Activity</h3>
+                    <div id="myOrdersList" class="space-y-3"></div>
                 </div>
             </div>
 
@@ -348,30 +426,6 @@
                     <button onclick="openModal('vehicleModal')" class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-100 transition shadow-sm mb-6">+ Register New Vehicle</button>
                 </div>
 
-                <!-- UNIT MANAGEMENT & RENTALS -->
-                <div class="bg-indigo-50 border border-indigo-100 p-5 rounded-3xl mb-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-sm font-bold text-indigo-900" id="myUnitLabel">My Unit</h3>
-                            <p class="text-[10px] text-indigo-600 font-bold uppercase tracking-widest" id="myRoleLabel">Resident Owner</p>
-                        </div>
-                        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-500 shadow-sm"><i class="fa-solid fa-key"></i></div>
-                    </div>
-                    
-                    <div id="ownerControls" class="hidden">
-                        <button onclick="generateRentalInvite()" class="w-full bg-indigo-600 text-white text-[11px] font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg mb-4 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-user-plus"></i> Invite/Transfer Tenant
-                        </button>
-                        <div id="rentalInviteDisplay" class="hidden bg-white/50 border border-indigo-200 p-3 rounded-xl mb-4 text-center">
-                            <p class="text-[10px] text-slate-500 mb-1">Share this code with your tenant:</p>
-                            <h2 id="rentalCodeDisplay" class="text-2xl font-black text-indigo-700 tracking-widest uppercase"></h2>
-                        </div>
-                        <div id="tenantsList" class="space-y-2">
-                             <!-- Tenants will show up here -->
-                        </div>
-                    </div>
-                </div>
-
                 <!-- COMPLAINTS -->
                 <div>
                     <div class="flex justify-between items-center mb-2">
@@ -384,48 +438,40 @@
                 </div>
             </div>
 
-            <!-- CHAT TAB -->
-            <div id="tab-chat" class="tab-view h-[calc(100vh-140px)] flex flex-col">
-                <div class="flex justify-between items-center mb-4 shrink-0">
-                    <h2 class="text-xl font-bold text-dark">Society Hub Wall</h2>
-                    <span class="text-[10px] font-black text-primary bg-indigo-50 px-2 py-1 rounded-full uppercase"><i class="fa-solid fa-circle text-[6px] animate-pulse mr-1"></i> Live Chat</span>
-                </div>
-                
-                <div id="chatMessages" class="flex-1 overflow-y-auto space-y-4 mb-4 carousel-hide-scrollbar pr-2">
-                     <!-- Chat bubbles here -->
-                </div>
-                
-                <form id="chatForm" class="shrink-0 flex gap-2">
-                    <input id="chatInput" type="text" placeholder="Speak to the community..." class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-primary/5 transition">
-                    <button type="submit" class="w-12 h-12 bg-primary text-white rounded-2xl shadow-glow flex items-center justify-center active:scale-90 transition"><i class="fa-solid fa-paper-plane"></i></button>
-                </form>
-            </div>
-
-            <!-- MARKETPLACE TAB -->
-            <div id="tab-marketplace" class="tab-view space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-dark">Resident Market</h2>
-                    <button onclick="openModal('marketModal')" class="bg-primary text-white text-[10px] font-bold px-4 py-2 rounded-full shadow-lg active:scale-95 transition">+ List Item</button>
-                </div>
-                
-                <div id="marketList" class="grid grid-cols-2 gap-4">
-                     <!-- Market items here -->
-                </div>
-            </div>
-
         </main>
 
         <!-- Bottom Navigation -->
-        <!-- Bottom Navigation -->
         <nav class="bottom-nav pb-safe flex justify-between px-6 pt-3 h-[70px]">
             <a href="#" class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="#" class="nav-item" onclick="switchTab('marketplace')"><i class="fa-solid fa-bag-shopping"></i><span>Market</span></a>
+            <a href="#" class="nav-item relative" onclick="switchTab('money')"><i class="fa-solid fa-wallet"></i><span>Money</span></a>
             <div class="relative flex justify-center w-16 px-2">
                 <button class="absolute -top-7 floating-add active:scale-95 transition" onclick="openModal('complaintModal')"><i class="fa-solid fa-plus text-xl"></i></button>
             </div>
-            <a href="#" class="nav-item" onclick="switchTab('chat')"><i class="fa-solid fa-comments"></i><span>Chat</span></a>
-            <a href="#" class="nav-item" onclick="switchTab('property')"><i class="fa-solid fa-building"></i><span>Unit</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i><span>People</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('marketplace')"><i class="fa-solid fa-cart-shopping"></i><span>Market</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('property')"><i class="fa-solid fa-building"></i><span>Property</span></a>
         </nav>
+    </div>
+
+    <!-- Live Chat Modal -->
+    <div id="chatModal" class="fixed inset-0 z-[400] bg-white flex flex-col hidden slide-up">
+        <header class="glass-header px-5 py-4 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs shadow-md"><i class="fa-solid fa-comments"></i></div>
+                <div>
+                    <h3 class="text-sm font-bold">Society Hub Chat</h3>
+                    <span class="text-[9px] text-emerald-500 font-bold uppercase tracking-wider">Live & Direct</span>
+                </div>
+            </div>
+            <button onclick="toggleChat()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+        </header>
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50">
+            <!-- Messages load here -->
+        </div>
+        <div class="p-4 bg-white border-top border-slate-100 flex gap-2 shrink-0">
+            <input type="text" id="chatInput" placeholder="Type community message..." class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none">
+            <button onclick="sendMessage()" class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg active:scale-95 transition"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
     </div>
 
     <!-- Complaint Modal -->
@@ -592,29 +638,6 @@
         </div>
     </div>
 
-    <!-- Market Modal -->
-    <div id="marketModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'marketModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-lg font-bold text-dark">List Your Item</h3>
-                <button onclick="closeModal(null, 'marketModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="marketForm" class="space-y-4">
-                <input id="mTitle" type="text" placeholder="Title (e.g. Comfy Sofa)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                <div class="grid grid-cols-2 gap-4">
-                    <input id="mPrice" type="text" placeholder="Price (₹)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    <select id="mCat" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none">
-                        <option>Electronics</option><option>Furniture</option><option>Vehicles</option><option>Books</option><option>Other</option>
-                    </select>
-                </div>
-                <input id="mContact" type="text" placeholder="Contact/WhatsApp No" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none">
-                <textarea id="mDesc" rows="3" placeholder="Condition and other details..." required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none resize-none"></textarea>
-                <button type="submit" class="w-full bg-primary text-white font-bold py-3.5 rounded-xl shadow-lg active:scale-95 transition">Publish to Marketplace</button>
-            </form>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
@@ -710,9 +733,7 @@
                     email: document.getElementById('emailInput').value,
                     otp: document.getElementById('otpInput').value,
                     name: document.getElementById('nameInput').value,
-                    societyCode: document.getElementById('societyCodeInput').value,
-                    unitNumber: document.getElementById('unitNumberInput').value,
-                    rentalCode: document.getElementById('rentalCodeInput').value
+                    societyCode: document.getElementById('societyCodeInput').value
                 };
 
                 const res = await fetch(`${API_URL}/auth/verify-otp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
@@ -761,9 +782,172 @@
             
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
-            if(tabId === 'chat') { loadChat(); startChatPolling(); } else { stopChatPolling(); }
             if(tabId === 'marketplace') loadMarketplace();
-            if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); loadUserVehicles(); loadUnitInfo(); }
+            if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); loadUserVehicles(); }
+        }
+
+        // --- SELLER PORTAL LOGIC ---
+        function toggleSellerLogin() { document.getElementById('sellerLoginModal').classList.toggle('hidden'); }
+        async function loginSeller() {
+            const pin = document.getElementById('sellerPinInput').value;
+            try {
+                const res = await fetch(`${API_URL}/auth/seller-login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ pin }) });
+                if(res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('sellerToken', data.token);
+                    toggleSellerLogin();
+                    showSellerPortal();
+                } else { showToast("Invalid Seller PIN", "Error"); }
+            } catch(e) {}
+        }
+        function showSellerPortal() {
+            document.getElementById('sellerView').classList.remove('hidden');
+            loadSellerDashboard();
+        }
+        function logoutSeller() { localStorage.removeItem('sellerToken'); document.getElementById('sellerView').classList.add('hidden'); }
+        async function loadSellerDashboard() {
+            try {
+                const [pRes, oRes] = await Promise.all([
+                    fetch(`${API_URL}/marketplace/seller/products`),
+                    fetch(`${API_URL}/marketplace/seller/orders`)
+                ]);
+                const products = await pRes.json();
+                const orders = await oRes.json();
+                
+                let p_html = '';
+                products.forEach(p => {
+                    p_html += `
+                        <div class="glass-card p-3 flex justify-between items-center">
+                            <div class="flex items-center gap-3">
+                                <img src="${p.image}" class="w-10 h-10 rounded-lg">
+                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[10px] text-slate-500">₹${p.price}</p></div>
+                            </div>
+                            <span class="text-[8px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded uppercase">${p.status}</span>
+                        </div>`;
+                });
+                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings yet.</p>';
+
+                let o_html = '';
+                orders.forEach(o => {
+                    o_html += `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                            <div class="flex justify-between items-start">
+                                <div><h4 class="text-xs font-bold">${o.productName}</h4><p class="text-[9px] text-slate-500">Buyer: ${o.userName} (SocID: ${o.societyId})</p></div>
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded ${o.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${o.status}</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-slate-100 text-slate-600 font-bold text-[9px] py-1.5 rounded-lg">Scale: Processing</button>
+                                <button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-slate-100 text-slate-600 font-bold text-[9px] py-1.5 rounded-lg">Scale: Shipped</button>
+                                <button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-primary text-white font-bold text-[9px] py-1.5 rounded-lg">Mark Delivered</button>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('sellerOrderList').innerHTML = o_html || '<p class="text-xs text-slate-400">Ready for first order.</p>';
+            } catch(e) {}
+        }
+        async function updateOrderStatus(id, status) {
+            await fetch(`${API_URL}/marketplace/orders/${id}/status`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status})});
+            loadSellerDashboard();
+        }
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(`${API_URL}/marketplace/products`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name: document.getElementById('pName').value, price: document.getElementById('pPrice').value, description: document.getElementById('pDesc').value})
+            });
+            closeModal(null, 'addProductModal');
+            loadSellerDashboard();
+        });
+
+        // --- MARKETPLACE LOGIC ---
+        async function loadMarketplace() {
+            try {
+                const [pRes, oRes] = await Promise.all([
+                    fetch(`${API_URL}/marketplace/products`, {headers: getAuthHeaders()}),
+                    fetch(`${API_URL}/marketplace/orders`, {headers: getAuthHeaders()})
+                ]);
+                const products = await pRes.json();
+                const orders = await oRes.json();
+                
+                let p_html = '';
+                products.forEach(p => {
+                    p_html += `
+                        <div class="glass-card p-4 flex flex-col gap-3">
+                            <img src="${p.image}" class="w-full h-24 object-contain rounded-xl bg-slate-50">
+                            <div><h4 class="text-xs font-bold text-dark">${p.name}</h4><p class="text-[10px] text-slate-500 line-clamp-2">${p.description}</p></div>
+                            <div class="flex justify-between items-center mt-auto">
+                                <span class="text-sm font-bold text-slate-700">₹${p.price}</span>
+                                <button onclick="buyProduct('${p._id}', '${p.name}', ${p.price})" class="bg-primary text-white text-[9px] font-bold px-3 py-1.5 rounded-lg shadow-sm">Order Now</button>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="text-xs text-slate-400">Market is restocking.</p>';
+
+                let o_html = '';
+                orders.forEach(o => {
+                    let color = 'text-amber-500';
+                    if(o.status === 'Delivered') color = 'text-emerald-500';
+                    o_html += `
+                        <div class="flex justify-between items-center p-3 border-b border-slate-100 last:border-0">
+                            <div><h4 class="text-[11px] font-bold text-dark">${o.productName}</h4><p class="text-[9px] text-slate-400">Ordered: ${new Date(o.createdAt).toLocaleDateString()}</p></div>
+                            <span class="text-[10px] font-bold ${color}">${o.status}</span>
+                        </div>`;
+                });
+                document.getElementById('myOrdersList').innerHTML = o_html || '<p class="text-xs text-slate-400">No recent activity.</p>';
+            } catch(e) {}
+        }
+        async function buyProduct(productId, productName, price) {
+            showConfirm("Confirm Order", `Place order for ${productName} (₹${price})?`, async () => {
+                const res = await fetch(`${API_URL}/marketplace/orders`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({productId, productName, price})
+                });
+                if(res.ok) { pushNotif("Order Success", "Product delivery status will be updated by vendor.", "fa-cart-shopping", "text-pink-500", "bg-pink-50"); loadMarketplace(); }
+            });
+        }
+
+        // --- CHAT LOGIC ---
+        function toggleChat() { document.getElementById('chatModal').classList.toggle('hidden'); if(!document.getElementById('chatModal').classList.contains('hidden')) loadMessages(); }
+        async function loadMessages() {
+            try {
+                const res = await fetch(`${API_URL}/chat/messages`, {headers: getAuthHeaders()});
+                const msgs = await res.json();
+                const myId = localStorage.getItem('userId');
+                let html = '';
+                msgs.forEach(m => {
+                    const isMe = m.userId === myId;
+                    html += `
+                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full">
+                            <div class="${isMe ? 'bg-primary text-white ml-12 rounded-t-2xl rounded-bl-2xl' : 'bg-white text-slate-700 mr-12 rounded-t-2xl rounded-br-2xl border border-slate-100 shadow-sm'} p-3 px-4 relative">
+                                ${!isMe ? `<span class="text-[8px] font-black text-slate-400 block mb-1 uppercase tracking-widest">${m.userName}</span>` : ''}
+                                <p class="text-xs leading-relaxed font-medium">${m.text}</p>
+                                <span class="text-[7px] ${isMe ? 'text-indigo-200' : 'text-slate-300'} block mt-1 text-right">${new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('chatMessages').innerHTML = html || '<p class="text-[10px] text-slate-400 text-center py-10">Start the community conversation.</p>';
+                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+            } catch(e) {}
+        }
+        async function sendMessage() {
+            const txt = document.getElementById('chatInput').value;
+            if(!txt.trim()) return;
+            await fetch(`${API_URL}/chat/messages`, {method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({text: txt})});
+            document.getElementById('chatInput').value = '';
+            loadMessages();
+        }
+        setInterval(() => { if(!document.getElementById('chatModal').classList.contains('hidden')) loadMessages(); }, 5000);
+
+        // --- PROFILE / OWNERSHIP LOGIC ---
+        function openProfile() {
+            showConfirm("Update Status", "Would you like to transfer ownership or list as Tenant?", async () => {
+                const newRole = prompt("Enter new role: 'resident' or 'tenant'");
+                if(newRole) {
+                    await fetch(`${API_URL}/users/profile`, {method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({role: newRole})});
+                    showToast("Status Updated. Role is now: " + newRole, "Success");
+                    location.reload();
+                }
+            });
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -1230,161 +1414,6 @@ This is a computer generated document.
                 }
             } catch(e) {}
             btn.innerText = ogTxt;
-        });
-
-        // UNIT & RENTAL LOGIC
-        async function loadUnitInfo() {
-            try {
-                const res = await fetch(`${API_URL}/units/info`, { headers: getAuthHeaders() });
-                const data = await res.json();
-                
-                document.getElementById('myUnitLabel').innerText = `Unit ${data.unitNumber}`;
-                document.getElementById('myRoleLabel').innerText = `Resident ${data.residentType}`;
-                
-                if(data.residentType === 'Owner') {
-                    document.getElementById('ownerControls').classList.remove('hidden');
-                    let html = '<h4 class="text-[10px] font-bold text-slate-400 uppercase mb-2">Linked Tenants</h4>';
-                    if(data.tenants.length === 0) html += '<p class="text-[10px] text-slate-400">No active tenants linked.</p>';
-                    data.tenants.forEach(t => {
-                        html += `
-                            <div class="bg-white/80 p-3 rounded-xl flex justify-between items-center">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-xs"><i class="fa-solid fa-user"></i></div>
-                                    <span class="text-xs font-bold text-slate-700">${t.name}</span>
-                                </div>
-                                <span class="text-[9px] text-slate-400">${new Date(t.joinedAt).toLocaleDateString()}</span>
-                            </div>
-                        `;
-                    });
-                    document.getElementById('tenantsList').innerHTML = html;
-                }
-            } catch(e) {}
-        }
-
-        async function generateRentalInvite() {
-            try {
-                const res = await fetch(`${API_URL}/units/invite`, { method: 'POST', headers: getAuthHeaders() });
-                const data = await res.json();
-                if(res.ok) {
-                    document.getElementById('rentalInviteDisplay').classList.remove('hidden');
-                    document.getElementById('rentalCodeDisplay').innerText = data.inviteCode;
-                    pushNotif('Invite Generated', 'Share the code with your tenant.', 'fa-key', 'text-indigo-600', 'bg-indigo-50');
-                }
-            } catch(e) {}
-        }
-
-        // MARKETPLACE LOGIC
-        async function loadMarketplace() {
-            try {
-                const res = await fetch(`${API_URL}/marketplace`, { headers: getAuthHeaders() });
-                const items = await res.json();
-                const userId = localStorage.getItem('userId');
-                let html = '';
-                if(items.length === 0) html = '<div class="col-span-2 py-10 text-center text-slate-400 text-xs">No items listed yet. Be the first!</div>';
-                
-                items.forEach(i => {
-                    html += `
-                        <div class="glass-card p-3 flex flex-col gap-2 relative group">
-                            ${i.userId === userId ? `<button onclick="deleteMarketItem('${i._id}')" class="absolute top-2 right-2 p-1.5 bg-red-50 text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash text-[10px]"></i></button>` : ''}
-                            <div class="w-full aspect-square bg-slate-100 rounded-xl flex items-center justify-center text-slate-300 text-3xl overflow-hidden shadow-inner">
-                                <i class="fa-solid fa-box"></i>
-                            </div>
-                            <div class="flex flex-col flex-1">
-                                <div class="flex justify-between items-start mb-1 leading-tight">
-                                    <h4 class="text-[11px] font-bold text-dark truncate pr-2">${i.title}</h4>
-                                    <span class="text-[8px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest">${i.category}</span>
-                                </div>
-                                <p class="text-[9px] text-slate-400 mb-3 line-clamp-1 h-3">${i.description}</p>
-                                <div class="mt-auto pt-2 border-t border-slate-50 flex justify-between items-center">
-                                    <div>
-                                        <p class="text-[8px] font-black text-primary truncate w-20 mb-0.5">${i.userName}</p>
-                                        <span class="text-xs font-black text-emerald-600">₹${i.price}</span>
-                                    </div>
-                                    <a href="https://wa.me/${i.contact}" target="_blank" class="w-8 h-8 bg-emerald-500 text-white rounded-lg flex items-center justify-center shadow-lg transform active:scale-90 hover:bg-emerald-600 transition"><i class="fa-solid fa-whatsapp text-lg"></i></a>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                document.getElementById('marketList').innerHTML = html;
-            } catch(e) {}
-        }
-
-        document.getElementById('marketForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            try {
-                const res = await fetch(`${API_URL}/marketplace`, {
-                    method: 'POST', headers: getAuthHeaders(),
-                    body: JSON.stringify({
-                        title: document.getElementById('mTitle').value,
-                        price: document.getElementById('mPrice').value,
-                        category: document.getElementById('mCat').value,
-                        contact: document.getElementById('mContact').value,
-                        description: document.getElementById('mDesc').value
-                    })
-                });
-                if(res.ok) {
-                    closeModal(null, 'marketModal');
-                    loadMarketplace();
-                    pushNotif('Item Published', 'Your item is now visible to all residents.', 'fa-bag-shopping', 'text-emerald-500', 'bg-emerald-50');
-                    e.target.reset();
-                }
-            } catch(e) {}
-        });
-
-        async function deleteMarketItem(id) {
-            showConfirm("Remove Item", "Are you sure you want to remove this listing?", async () => {
-                try {
-                    await fetch(`${API_URL}/marketplace/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                    loadMarketplace();
-                } catch(e) {}
-            });
-        }
-
-        // CHAT LOGIC
-        let chatInterval = null;
-        function startChatPolling() { if(!chatInterval) chatInterval = setInterval(loadChat, 3000); }
-        function stopChatPolling() { if(chatInterval) { clearInterval(chatInterval); chatInterval = null; } }
-
-        async function loadChat() {
-            try {
-                const res = await fetch(`${API_URL}/messages`, { headers: getAuthHeaders() });
-                const messages = await res.json();
-                const userId = localStorage.getItem('userId');
-                const chatBox = document.getElementById('chatMessages');
-                const isAtBottom = chatBox.scrollHeight - chatBox.scrollTop <= chatBox.clientHeight + 100;
-                
-                let html = '';
-                messages.forEach(m => {
-                    const isMe = m.userId === userId;
-                    html += `
-                        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
-                            <div class="flex items-center gap-1.5 mb-1 px-1">
-                                <span class="text-[9px] font-bold text-slate-500">${m.userName}</span>
-                                <span class="text-[7px] text-slate-400">${new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span>
-                            </div>
-                            <div class="${isMe ? 'bg-primary text-white rounded-tr-none shadow-glow' : 'bg-slate-100 text-slate-700 rounded-tl-none'} px-4 py-2.5 rounded-2xl text-xs font-medium max-w-[85%] break-words">
-                                ${m.content}
-                            </div>
-                        </div>
-                    `;
-                });
-                chatBox.innerHTML = html;
-                if(isAtBottom) chatBox.scrollTop = chatBox.scrollHeight;
-            } catch(e) {}
-        }
-
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('chatInput');
-            if(!input.value.trim()) return;
-            try {
-                const res = await fetch(`${API_URL}/messages`, {
-                    method: 'POST', headers: getAuthHeaders(),
-                    body: JSON.stringify({ content: input.value })
-                });
-                if(res.ok) { input.value = ''; loadChat(); }
-            } catch(e) {}
         });
 
         async function triggerSOS() {
