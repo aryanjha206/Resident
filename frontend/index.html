@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Society Hub</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.svg">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -39,6 +43,12 @@
         .modal-content { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-overlay.active .modal-content { transform: translateY(0); }
         .market-hero { background: radial-gradient(circle at top left, rgba(79,70,229,0.18), transparent 42%), linear-gradient(135deg, #ffffff 0%, #eef2ff 52%, #f8fafc 100%); }
+        .standalone-only { display: none; }
+        .browser-only { display: block; }
+        @media (display-mode: standalone) {
+            .standalone-only { display: block; }
+            .browser-only { display: none !important; }
+        }
         
         #authOverlay { background: #F8FAFC; z-index: 100; opacity: 1; visibility: visible; }
         #appContent { display: none; }
@@ -368,6 +378,19 @@
                 <div>
                     <h2 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Highlight Features</h2>
                     <div class="flex gap-4 overflow-x-auto carousel-hide-scrollbar pb-3 snap-x" id="featureCarousel">
+                        <div id="installPromoCard" class="browser-only carousel-item snap-start min-w-[85%] bg-gradient-to-br from-slate-900 to-slate-700 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0 hidden">
+                            <div class="relative z-10 flex justify-between items-center">
+                                <div>
+                                    <span class="bg-white/15 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">Install</span>
+                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Add Society Hub to Chrome</h3>
+                                    <p id="installHintText" class="text-[11px] text-slate-300 mt-1 mb-4 w-5/6 leading-relaxed">Get an app-like home screen icon, faster launch, and offline-ready shell support.</p>
+                                    <button id="installAppBtn" class="bg-white text-slate-900 text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95">Install App</button>
+                                </div>
+                                <i class="fa-solid fa-download text-5xl opacity-70 rotate-12 drop-shadow-2xl text-slate-200"></i>
+                            </div>
+                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl"></div>
+                        </div>
+
                         <div class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-primary to-indigo-800 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
                             <div class="relative z-10 flex justify-between items-center">
                                 <div>
@@ -465,6 +488,21 @@
                             <h4 class="text-base font-black text-emerald-600 mt-1">Open</h4>
                         </div>
                     </div>
+                </div>
+                <div class="glass-card p-4 space-y-3">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="relative flex-1">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                            <input id="marketSearchInput" type="text" placeholder="Search products, snacks, groceries..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
+                        </div>
+                        <select id="marketSortSelect" class="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 focus:outline-none focus:ring-4 focus:ring-primary/10">
+                            <option value="latest">Latest</option>
+                            <option value="priceLow">Price: Low to High</option>
+                            <option value="priceHigh">Price: High to Low</option>
+                            <option value="name">Name</option>
+                        </select>
+                    </div>
+                    <p id="marketResultMeta" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Browse active society listings</p>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="marketplaceList"></div>
                 <div class="pt-2">
@@ -735,7 +773,9 @@
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
         
         window.localNotifications = [];
-        
+        let deferredInstallPrompt = null;
+        let marketplaceProductsCache = [];
+
         function showToast(message, title = 'Notification') {
             const toast = document.getElementById('toastNotification');
             document.getElementById('toastMessage').innerText = message;
@@ -791,6 +831,107 @@
 
         function getMarketImageOnError() {
             return "this.onerror=null;this.src='https://img.icons8.com/color/96/box--v1.png';";
+        }
+
+        function isStandaloneMode() {
+            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+        }
+
+        function updateInstallCardVisibility() {
+            const card = document.getElementById('installPromoCard');
+            if (!card) return;
+            if (isStandaloneMode()) {
+                card.classList.add('hidden');
+                return;
+            }
+            if (deferredInstallPrompt) {
+                card.classList.remove('hidden');
+                document.getElementById('installHintText').innerText = 'Get an app-like home screen icon, faster launch, and offline-ready shell support.';
+            } else {
+                card.classList.remove('hidden');
+                document.getElementById('installHintText').innerText = 'If Chrome does not show install automatically, open the browser menu and choose "Install app".';
+            }
+        }
+
+        function renderMarketplaceProducts(products) {
+            document.getElementById('marketItemCount').innerText = products.length;
+            const search = (document.getElementById('marketSearchInput')?.value || '').trim().toLowerCase();
+            const sort = document.getElementById('marketSortSelect')?.value || 'latest';
+            let filtered = products.filter((p) => {
+                if (!search) return true;
+                const haystack = `${p.name || ''} ${p.description || ''}`.toLowerCase();
+                return haystack.includes(search);
+            });
+
+            filtered.sort((a, b) => {
+                if (sort === 'priceLow') return Number(a.price || 0) - Number(b.price || 0);
+                if (sort === 'priceHigh') return Number(b.price || 0) - Number(a.price || 0);
+                if (sort === 'name') return String(a.name || '').localeCompare(String(b.name || ''));
+                return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+            });
+
+            document.getElementById('marketResultMeta').innerText = filtered.length === products.length
+                ? `Showing ${filtered.length} active listing${filtered.length === 1 ? '' : 's'}`
+                : `${filtered.length} of ${products.length} listing${products.length === 1 ? '' : 's'} match your search`;
+
+            let p_html = '';
+            filtered.forEach(p => {
+                const imgSrc = getMarketImage(p.image);
+                const safeName = escapeHtml(p.name || 'Product');
+                const safeDesc = escapeHtml(p.description || 'Fresh listing from your community marketplace.');
+                const safeImg = escapeHtml(imgSrc);
+                const jsName = escapeJsString(p.name || 'Product');
+                const jsImg = escapeJsString(imgSrc);
+                p_html += `
+                    <div class="glass-card p-0 overflow-hidden flex flex-col border border-slate-100 shadow-soft hover:shadow-lg transition">
+                        <div class="relative">
+                            <img src="${safeImg}" onerror="${getMarketImageOnError()}" class="w-full h-40 object-cover bg-slate-50">
+                            <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-slate-950/65 via-slate-900/20 to-transparent">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Society Pick</span>
+                                    <span class="text-sm font-black text-white">\u20b9${p.price}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 flex flex-col gap-3 flex-1">
+                            <div>
+                                <h4 class="text-sm font-black text-dark leading-tight">${safeName}</h4>
+                                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed min-h-[2.75rem]">${safeDesc}</p>
+                            </div>
+                            <div class="flex justify-between items-center pt-3 border-t border-slate-100">
+                                <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 rounded-full">
+                                    <i class="fa-solid fa-camera"></i> Photo Ready
+                                </div>
+                                <button onclick="buyProduct('${p._id}', '${jsName}', ${p.price}, '${jsImg}')" class="bg-slate-900 text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-sm active:scale-95 transition">Order Now</button>
+                            </div>
+                        </div> 
+                    </div>`;
+            });
+
+            document.getElementById('marketplaceList').innerHTML = p_html || '<p class="sm:col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">No products match this search right now.</p>';
+        }
+
+        async function promptInstallApp() {
+            if (isStandaloneMode()) {
+                showToast('Society Hub is already installed on this device.', 'Installed');
+                return;
+            }
+            if (!deferredInstallPrompt) {
+                showToast('Open Chrome menu and tap "Install app" to add Society Hub.', 'Install');
+                return;
+            }
+            deferredInstallPrompt.prompt();
+            const choice = await deferredInstallPrompt.userChoice;
+            deferredInstallPrompt = null;
+            updateInstallCardVisibility();
+            if (choice.outcome === 'accepted') showToast('Society Hub is being installed.', 'Install');
+        }
+
+        async function registerPwa() {
+            if (!('serviceWorker' in navigator)) return;
+            try {
+                await navigator.serviceWorker.register('/sw.js');
+            } catch (e) {}
         }
 
         document.getElementById('cModalBtn').addEventListener('click', () => {
@@ -1089,43 +1230,9 @@
                 ]);
                 const products = await pRes.json();
                 const orders = await oRes.json();
-                document.getElementById('marketItemCount').innerText = products.length;
+                marketplaceProductsCache = Array.isArray(products) ? products : [];
                 document.getElementById('marketOrderCount').innerText = orders.length;
-                
-                let p_html = '';
-                products.forEach(p => {
-                    const imgSrc = getMarketImage(p.image);
-                    const safeName = escapeHtml(p.name || 'Product');
-                    const safeDesc = escapeHtml(p.description || 'Fresh listing from your community marketplace.');
-                    const safeImg = escapeHtml(imgSrc);
-                    const jsName = escapeJsString(p.name || 'Product');
-                    const jsImg = escapeJsString(imgSrc);
-                    p_html += `
-                        <div class="glass-card p-0 overflow-hidden flex flex-col border border-slate-100 shadow-soft hover:shadow-lg transition">
-                            <div class="relative">
-                                <img src="${safeImg}" onerror="${getMarketImageOnError()}" class="w-full h-40 object-cover bg-slate-50">
-                                <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-slate-950/65 via-slate-900/20 to-transparent">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Society Pick</span>
-                                        <span class="text-sm font-black text-white">\u20b9${p.price}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="p-4 flex flex-col gap-3 flex-1">
-                                <div>
-                                    <h4 class="text-sm font-black text-dark leading-tight">${safeName}</h4>
-                                    <p class="text-[11px] text-slate-500 mt-1 leading-relaxed min-h-[2.75rem]">${safeDesc}</p>
-                                </div>
-                                <div class="flex justify-between items-center pt-3 border-t border-slate-100">
-                                    <div class="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 rounded-full">
-                                        <i class="fa-solid fa-camera"></i> Photo Ready
-                                    </div>
-                                    <button onclick="buyProduct('${p._id}', '${jsName}', ${p.price}, '${jsImg}')" class="bg-slate-900 text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-sm active:scale-95 transition">Order Now</button>
-                                </div>
-                            </div> 
-                        </div>`;
-                });
-                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="sm:col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">Vendors are stocking up. Check back soon!</p>';
+                renderMarketplaceProducts(marketplaceProductsCache);
 
                 let o_html = '';
                 const steps = ['Placed', 'Processing', 'Shipped', 'Delivered'];
@@ -1792,6 +1899,27 @@ This is a computer generated document.
             await ogFetchDashboardData();
             loadPolls();
         }
+
+        document.getElementById('marketSearchInput').addEventListener('input', () => renderMarketplaceProducts(marketplaceProductsCache));
+        document.getElementById('marketSortSelect').addEventListener('change', () => renderMarketplaceProducts(marketplaceProductsCache));
+        document.getElementById('installAppBtn').addEventListener('click', promptInstallApp);
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            updateInstallCardVisibility();
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredInstallPrompt = null;
+            updateInstallCardVisibility();
+            showToast('Society Hub was installed successfully.', 'Installed');
+        });
+
+        window.addEventListener('load', () => {
+            registerPwa();
+            updateInstallCardVisibility();
+        });
 
         checkAuth();
     </script>
