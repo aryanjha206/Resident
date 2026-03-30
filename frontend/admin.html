@@ -119,14 +119,14 @@
                     <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10"></div>
                     <div class="flex justify-between items-end mb-3">
                         <div>
-                            <h2 class="text-xs font-bold text-primary uppercase tracking-wider mb-1"><i class="fa-solid fa-earth-americas mr-1"></i> Workspace Filter</h2>
-                            <p class="text-[10px] text-slate-500">Filter datasets locally to a single society.</p>
+                            <h2 class="text-xs font-bold text-primary uppercase tracking-wider mb-1"><i class="fa-solid fa-earth-americas mr-1"></i> Society Scope</h2>
+                            <p class="text-[10px] text-slate-500">Select a society to filter all dashboard data.</p>
                         </div>
                     </div>
                     <select id="adminSocietySelect" class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 font-bold text-dark focus:outline-none focus:ring-2 focus:ring-primary shadow-sm appearance-none mb-3" onchange="fetchAdminAnalytics()">
                         <option value="">Aggregate All (Global)</option>
                     </select>
-                    <button onclick="toggleSection('createSocietyManager')" class="w-full text-xs font-bold text-indigo-700 bg-indigo-50 py-2.5 rounded-xl hover:bg-indigo-100 transition border border-indigo-100 shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Register New Society Protocol</button>
+                    <button onclick="toggleSection('createSocietyManager')" class="w-full text-xs font-bold text-indigo-700 bg-indigo-50 py-2.5 rounded-xl hover:bg-indigo-100 transition border border-indigo-100 shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Add New Society</button>
                 </div>
 
             <!-- Quick Stats Row (Live Data Only) -->
@@ -141,15 +141,10 @@
                 </div>
             </div>
 
-            <!-- Registered Societies Panel -->
-            <div id="societiesListPanel" class="hidden glass-card p-4">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Registered Societies</h3>
-                <div id="societiesListContent" class="space-y-2"></div>
-            </div>
 
             <!-- Management Sections -->
             <div>
-                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Manage Modules</h2>
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Administration</h2>
                 <div class="grid grid-cols-1 gap-4">
                     <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadNotices()">
                         <div class="flex items-center gap-4">
@@ -397,8 +392,7 @@
                         `;
                     });
                     if(societies.length > 0) {
-                        document.getElementById('societiesListPanel').classList.remove('hidden');
-                        document.getElementById('societiesListContent').innerHTML = htmlList;
+                        // Societies loaded into dropdown
                     }
                 }
             } catch(e) {}

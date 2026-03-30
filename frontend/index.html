@@ -861,16 +861,22 @@
 
                 let o_html = '';
                 orders.forEach(o => {
+                    const isPaid = o.paymentStatus === 'Paid';
                     o_html += `
                         <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
                             <div class="flex justify-between items-start">
-                                <div><h4 class="text-xs font-bold">${o.productName}</h4><p class="text-[9px] text-slate-500">Buyer: ${o.userName} (SocID: ${o.societyId})</p></div>
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded ${o.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${o.status}</span>
+                                <div><h4 class="text-xs font-bold">${o.productName}</h4><p class="text-[9px] text-slate-500">Buyer: ${o.userName}</p><p class="text-[9px] text-primary font-bold">\u20b9${o.price}</p></div>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded ${o.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${o.status}</span>
+                                    <span class="text-[8px] font-bold ${isPaid ? 'text-emerald-500' : 'text-red-400'}">${isPaid ? '\u2713 PAID' : '\u2022 UNPAID'}</span>
+                                </div>
                             </div>
-                            <div class="flex gap-2">
-                                <button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-slate-100 text-slate-600 font-bold text-[9px] py-1.5 rounded-lg">Scale: Processing</button>
-                                <button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-slate-100 text-slate-600 font-bold text-[9px] py-1.5 rounded-lg">Scale: Shipped</button>
-                                <button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-primary text-white font-bold text-[9px] py-1.5 rounded-lg">Mark Delivered</button>
+                            <div class="flex gap-2 flex-wrap">
+                                ${o.status === 'Placed' ? `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-blue-50 text-blue-600 font-bold text-[9px] py-1.5 rounded-lg border border-blue-100">Accept</button>` : ''}
+                                ${o.status === 'Processing' ? `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-orange-50 text-orange-600 font-bold text-[9px] py-1.5 rounded-lg border border-orange-100">Ship Now</button>` : ''}
+                                ${o.status === 'Shipped' ? `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-emerald-50 text-emerald-600 font-bold text-[9px] py-1.5 rounded-lg border border-emerald-100">Confirm Delivery</button>` : ''}
+                                ${o.status === 'Delivered' && !isPaid ? `<button onclick="collectPayment('${o._id}')" class="flex-1 bg-primary text-white font-bold text-[9px] py-1.5 rounded-lg shadow-sm">Collect \u20b9${o.price}</button>` : ''}
+                                ${isPaid ? `<span class="flex-1 text-center bg-slate-50 text-slate-400 font-bold text-[9px] py-1.5 rounded-lg">\u2713 Completed</span>` : ''}
                             </div>
                         </div>`;
                 });
@@ -881,19 +887,53 @@
             await fetch(`${API_URL}/marketplace/orders/${id}/status`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status})});
             loadSellerDashboard();
         }
+        async function collectPayment(id) {
+            showConfirm("Collect Payment", "Confirm you have received payment from the buyer?", async () => {
+                await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {method: 'PUT', headers: {'Content-Type': 'application/json'}});
+                showToast("Payment recorded!", "Success");
+                loadSellerDashboard();
+            });
+        }
+
+        function previewProductImage(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                    document.getElementById('uploadLabel').textContent = input.files[0].name;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const imageUrl = document.getElementById('pImage').value.trim();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.innerText = "Publishing...";
+            let imageData = "https://img.icons8.com/color/96/box--v1.png";
+            const fileInput = document.getElementById('pImage');
+            if(fileInput.files && fileInput.files[0]) {
+                imageData = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => resolve(ev.target.result);
+                    reader.readAsDataURL(fileInput.files[0]);
+                });
+            }
             await fetch(`${API_URL}/marketplace/products`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     name: document.getElementById('pName').value,
                     price: document.getElementById('pPrice').value,
                     description: document.getElementById('pDesc').value,
-                    image: imageUrl || undefined
+                    image: imageData
                 })
             });
             closeModal(null, 'addProductModal');
+            e.target.reset();
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+            document.getElementById('uploadLabel').textContent = 'Upload image';
+            btn.innerText = "Publish Listing";
             loadSellerDashboard();
         });
 
@@ -909,39 +949,87 @@
                 
                 let p_html = '';
                 products.forEach(p => {
+                    const imgSrc = p.image || 'https://img.icons8.com/color/96/box--v1.png';
                     p_html += `
-                        <div class="glass-card p-4 flex flex-col gap-3">
-                            <img src="${p.image}" class="w-full h-24 object-contain rounded-xl bg-slate-50">
-                            <div><h4 class="text-xs font-bold text-dark">${p.name}</h4><p class="text-[10px] text-slate-500 line-clamp-2">${p.description}</p></div>
-                            <div class="flex justify-between items-center mt-auto">
-                                <span class="text-sm font-bold text-slate-700">₹${p.price}</span>
-                                <button onclick="buyProduct('${p._id}', '${p.name}', ${p.price})" class="bg-primary text-white text-[9px] font-bold px-3 py-1.5 rounded-lg shadow-sm">Order Now</button>
+                        <div class="glass-card p-0 overflow-hidden flex flex-col">
+                            <img src="${imgSrc}" class="w-full h-28 object-cover bg-slate-50">
+                            <div class="p-3 flex flex-col gap-2 flex-1">
+                                <h4 class="text-xs font-bold text-dark leading-tight">${p.name}</h4>
+                                <p class="text-[9px] text-slate-500 line-clamp-2 flex-1">${p.description || ''}</p>
+                                <div class="flex justify-between items-center pt-1 border-t border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">\u20b9${p.price}</span>
+                                    <button onclick="buyProduct('${p._id}', '${p.name}', ${p.price}, '${imgSrc}')" class="bg-primary text-white text-[9px] font-bold px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition">Order</button>
+                                </div>
                             </div>
                         </div>`;
                 });
-                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="text-xs text-slate-400">Market is restocking.</p>';
+                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">Vendors are stocking up. Check back soon!</p>';
 
                 let o_html = '';
+                const steps = ['Placed', 'Processing', 'Shipped', 'Delivered'];
                 orders.forEach(o => {
-                    let color = 'text-amber-500';
-                    if(o.status === 'Delivered') color = 'text-emerald-500';
+                    const currentIdx = steps.indexOf(o.status);
+                    const isPaid = o.paymentStatus === 'Paid';
+                    let stepperHtml = '<div class="flex items-center justify-between w-full mt-3">';
+                    steps.forEach((s, i) => {
+                        const done = i <= currentIdx;
+                        const isCurrent = i === currentIdx;
+                        stepperHtml += `<div class="flex flex-col items-center flex-1"><div class="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold shadow-sm ${done ? (isCurrent ? 'bg-primary text-white ring-4 ring-primary/20' : 'bg-emerald-500 text-white') : 'bg-slate-100 text-slate-400'}">${done ? '<i class="fa-solid fa-check"></i>' : i + 1}</div><span class="text-[7px] font-bold mt-1 ${done ? 'text-slate-700' : 'text-slate-300'}">${s}</span></div>`;
+                        if(i < steps.length - 1) stepperHtml += `<div class="h-0.5 flex-1 mx-1 rounded ${i < currentIdx ? 'bg-emerald-400' : 'bg-slate-100'}"></div>`;
+                    });
+                    stepperHtml += '</div>';
+
                     o_html += `
-                        <div class="flex justify-between items-center p-3 border-b border-slate-100 last:border-0">
-                            <div><h4 class="text-[11px] font-bold text-dark">${o.productName}</h4><p class="text-[9px] text-slate-400">Ordered: ${new Date(o.createdAt).toLocaleDateString()}</p></div>
-                            <span class="text-[10px] font-bold ${color}">${o.status}</span>
+                        <div class="glass-card p-4 space-y-3 border-l-4 ${o.status === 'Delivered' ? 'border-l-emerald-500' : 'border-l-primary'}">
+                            <div class="flex gap-3">
+                                <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-14 h-14 rounded-xl object-cover bg-slate-50 shadow-sm">
+                                <div class="flex-1">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h4 class="text-[13px] font-bold text-dark">${o.productName}</h4>
+                                            <p class="text-[10px] text-slate-500">Ordered ${new Date(o.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</p>
+                                        </div>
+                                        <span class="text-sm font-bold text-primary">\u20b9${o.price}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            ${stepperHtml}
+                            <div class="flex gap-2 pt-2">
+                                ${o.status === 'Delivered' && isPaid ? `<button onclick="viewInvoice('${o._id}')" class="flex-1 bg-slate-900 text-white font-bold text-[10px] py-2.5 rounded-xl flex items-center justify-center gap-1.5"><i class="fa-solid fa-file-invoice"></i> View Invoice</button>` : ''}
+                                ${o.status === 'Delivered' && !isPaid ? `<span class="flex-1 text-center text-[10px] font-bold text-amber-600 bg-amber-50 py-2.5 rounded-xl border border-amber-100"><i class="fa-solid fa-clock mr-1"></i>Awaiting Payment</span>` : ''}
+                                ${o.status !== 'Delivered' ? `<span class="flex-1 text-center text-[10px] font-bold text-primary bg-indigo-50 py-2.5 rounded-xl border border-indigo-100"><i class="fa-solid fa-truck-fast mr-1"></i>In Transit</span>` : ''}
+                            </div>
                         </div>`;
                 });
-                document.getElementById('myOrdersList').innerHTML = o_html || '<p class="text-xs text-slate-400">No recent activity.</p>';
+                document.getElementById('myOrdersList').innerHTML = o_html || '<p class="text-xs text-slate-400 text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Your orders will appear here.</p>';
             } catch(e) {}
         }
-        async function buyProduct(productId, productName, price) {
-            showConfirm("Confirm Order", `Place order for ${productName} (₹${price})?`, async () => {
+        async function buyProduct(productId, productName, price, productImage) {
+            showConfirm("Confirm Order", `Place order for ${productName} (\u20b9${price})?`, async () => {
                 const res = await fetch(`${API_URL}/marketplace/orders`, {
                     method: 'POST', headers: getAuthHeaders(),
-                    body: JSON.stringify({productId, productName, price})
+                    body: JSON.stringify({productId, productName, price, productImage: productImage || ''})
                 });
-                if(res.ok) { pushNotif("Order Success", "Product delivery status will be updated by vendor.", "fa-cart-shopping", "text-pink-500", "bg-pink-50"); loadMarketplace(); }
+                if(res.ok) { pushNotif("Order Placed", "Track your delivery in the Market tab.", "fa-cart-shopping", "text-pink-500", "bg-pink-50"); loadMarketplace(); }
             });
+        }
+        async function viewInvoice(orderId) {
+            try {
+                const res = await fetch(`${API_URL}/marketplace/orders/${orderId}/invoice`, {headers: getAuthHeaders()});
+                const inv = await res.json();
+                document.getElementById('invIdDisplay').textContent = inv.invoiceId;
+                document.getElementById('invoiceBody').innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Product</span><span class="text-xs font-bold text-dark">${inv.productName}</span></div>
+                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Amount</span><span class="text-xs font-bold text-dark">\u20b9${inv.price}</span></div>
+                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Buyer</span><span class="text-xs font-bold text-dark">${inv.buyerName}</span></div>
+                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Ordered</span><span class="text-xs font-bold text-dark">${new Date(inv.orderedOn).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})}</span></div>
+                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Delivered</span><span class="text-xs font-bold text-dark">${inv.deliveredOn ? new Date(inv.deliveredOn).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '-'}</span></div>
+                        <div class="flex justify-between py-2"><span class="text-xs text-slate-500">Payment</span><span class="text-xs font-bold ${inv.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-red-500'}">${inv.paymentStatus === 'Paid' ? '\u2713 Paid' : 'Pending'}</span></div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-3 text-center mt-4"><p class="text-[9px] text-slate-400">Auto-generated invoice from Society Hub Marketplace.</p></div>`;
+                document.getElementById('invoiceModal').classList.remove('hidden');
+            } catch(e) {}
         }
 
         // --- CHAT LOGIC ---
