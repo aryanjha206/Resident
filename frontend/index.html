@@ -311,6 +311,43 @@
                     </div>
                 </div>
 
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="glass-card p-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white overflow-hidden relative">
+                        <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/5"></div>
+                        <div class="flex items-start justify-between gap-4 relative z-10">
+                            <div>
+                                <p class="text-[10px] uppercase tracking-[0.3em] text-slate-300 font-bold">Community Pulse</p>
+                                <h3 class="text-xl font-bold mt-2">Live society activity</h3>
+                                <p id="pulseTimestamp" class="text-[11px] text-slate-300 mt-1">Syncing latest updates...</p>
+                            </div>
+                            <button onclick="loadCommunityPulse(true)" class="shrink-0 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 transition text-white">
+                                <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mt-5 relative z-10">
+                            <div class="rounded-2xl bg-white/10 p-3 border border-white/10">
+                                <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Expected Visitors</p>
+                                <h4 id="pulseVisitors" class="text-2xl font-black mt-1">-</h4>
+                            </div>
+                            <div class="rounded-2xl bg-white/10 p-3 border border-white/10">
+                                <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Upcoming Bookings</p>
+                                <h4 id="pulseBookings" class="text-2xl font-black mt-1">-</h4>
+                            </div>
+                            <div class="rounded-2xl bg-white/10 p-3 border border-white/10">
+                                <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Active Polls</p>
+                                <h4 id="pulsePolls" class="text-2xl font-black mt-1">-</h4>
+                            </div>
+                            <div class="rounded-2xl bg-white/10 p-3 border border-white/10">
+                                <p class="text-[10px] uppercase tracking-wider text-slate-300 font-bold">Recent Messages</p>
+                                <h4 id="pulseMessages" class="text-2xl font-black mt-1">-</h4>
+                            </div>
+                        </div>
+                        <div id="pulseHighlights" class="mt-4 space-y-2 relative z-10">
+                            <p class="text-[11px] text-slate-300">No major activity yet.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <div id="noticeBoard" class="glass-card p-4">
                     <h3 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Notice Board</h3>
                     <div id="noticesList" class="space-y-3">
@@ -1083,6 +1120,45 @@
             document.getElementById(id).classList.remove('active'); 
         }
 
+        function formatPulseTime(iso) {
+            if(!iso) return 'Waiting for live data...';
+            return `Updated ${new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        }
+
+        function renderPulse(data) {
+            document.getElementById('pulseTimestamp').innerText = formatPulseTime(data.generatedAt);
+            document.getElementById('pulseVisitors').innerText = data.expectedVisitors ?? 0;
+            document.getElementById('pulseBookings').innerText = data.upcomingBookings ?? 0;
+            document.getElementById('pulsePolls').innerText = data.activePolls ?? 0;
+            document.getElementById('pulseMessages').innerText = data.recentMessages ?? 0;
+
+            const highlights = [];
+            if(data.latestNotice) {
+                highlights.push(`<div class="rounded-2xl bg-white/10 border border-white/10 p-3"><p class="text-[10px] uppercase tracking-widest text-slate-300 font-bold">Latest Notice</p><p class="text-sm font-bold mt-1">${data.latestNotice.title}</p><p class="text-[11px] text-slate-300 mt-1">${data.latestNotice.category || 'General'}</p></div>`);
+            }
+            if(data.nextBooking) {
+                highlights.push(`<div class="rounded-2xl bg-white/10 border border-white/10 p-3"><p class="text-[10px] uppercase tracking-widest text-slate-300 font-bold">Next Booking</p><p class="text-sm font-bold mt-1">${data.nextBooking.facility}</p><p class="text-[11px] text-slate-300 mt-1">${data.nextBooking.date} &bull; ${data.nextBooking.slot || 'Flexible slot'}</p></div>`);
+            }
+            if(data.activeSOS > 0) {
+                highlights.push(`<div class="rounded-2xl bg-red-500/20 border border-red-300/30 p-3"><p class="text-[10px] uppercase tracking-widest text-red-100 font-bold">Emergency Status</p><p class="text-sm font-bold mt-1">${data.activeSOS} active SOS alert${data.activeSOS === 1 ? '' : 's'}</p></div>`);
+            }
+
+            document.getElementById('pulseHighlights').innerHTML = highlights.join('') || '<p class="text-[11px] text-slate-300">No major activity yet.</p>';
+        }
+
+        async function loadCommunityPulse(showFeedback = false) {
+            try {
+                const res = await fetch(`${API_URL}/community/pulse`, { headers: getAuthHeaders() });
+                if(!res.ok) return null;
+                const data = await res.json();
+                renderPulse(data);
+                if(showFeedback) showToast("Community pulse refreshed.", "success", "Live Data");
+                return data;
+            } catch (err) {
+                return null;
+            }
+        }
+
         async function fetchDashboardData() {
             try {
                 let notifications = [...(window.localNotifications || [])];
@@ -1137,6 +1213,17 @@
                         });
                     }
                     document.getElementById('noticesList').innerHTML = html;
+                }
+
+                const pulse = await loadCommunityPulse(false);
+                if(pulse?.activeSOS > 0) {
+                    notifications.push({
+                        title: 'Active SOS Alert',
+                        msg: `${pulse.activeSOS} emergency alert${pulse.activeSOS === 1 ? '' : 's'} currently active in your society.`,
+                        icon: 'fa-truck-medical',
+                        color: 'text-red-500',
+                        bg: 'bg-red-50'
+                    });
                 }
                 
                 // Update Notifications UI
