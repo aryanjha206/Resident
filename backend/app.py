@@ -83,6 +83,23 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def seller_or_admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            token = token.split(" ")[1]
+            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            if data.get('role') not in ['seller', 'admin']:
+                return jsonify({'error': 'Seller or admin privileges required'}), 403
+            request.user_data = data
+        except Exception:
+            return jsonify({'error': 'Token is invalid'}), 401
+        return f(*args, **kwargs)
+    return decorated
+
 # -------------- AUTHENTICATION & OTP --------------
 
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
@@ -367,7 +384,14 @@ def add_bulk_dues():
 @app.route('/api/dues/<d_id>/pay', methods=['PUT'])
 @token_required
 def pay_due(d_id):
-    payments_col.update_one({"_id": ObjectId(d_id)}, {"$set": {"status": "Paid"}})
+    user_id = request.user_data.get('user_id')
+    society_id = request.user_data.get('societyId')
+    query = {"_id": ObjectId(d_id)}
+    if request.user_data.get('role') != 'admin':
+        query.update({"userId": user_id, "societyId": society_id})
+    res = payments_col.update_one(query, {"$set": {"status": "Paid", "paidAt": datetime.utcnow().isoformat()}})
+    if res.matched_count == 0:
+        return jsonify({"error": "Due not found or unauthorized"}), 404
     return jsonify({"message": "Payment successful"})
 
 # -------------- SERVICES / HELPDESK MODULE --------------
@@ -645,8 +669,15 @@ def trigger_sos():
 @app.route('/api/sos', methods=['GET'])
 @token_required
 def get_sos_alerts():
-    society_id = request.user_data.get('societyId')
-    alerts = list(sos_col.find({"societyId": society_id, "status": "Active"}).sort("createdAt", -1))
+    if request.user_data.get('role') == 'admin':
+        society_filter = request.args.get('societyId')
+        query = {"status": "Active"}
+        if society_filter:
+            query["societyId"] = society_filter
+    else:
+        society_id = request.user_data.get('societyId')
+        query = {"societyId": society_id, "status": "Active"}
+    alerts = list(sos_col.find(query).sort("createdAt", -1))
     return jsonify([format_doc(a) for a in alerts])
 
 @app.route('/api/sos/<s_id>/resolve', methods=['PUT'])
@@ -699,11 +730,13 @@ def get_products():
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/seller/products', methods=['GET'])
+@seller_or_admin_required
 def get_seller_products():
     products = list(products_col.find().sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/products', methods=['POST'])
+@seller_or_admin_required
 def add_product():
     data = request.json
     product = {
@@ -718,6 +751,7 @@ def add_product():
     return jsonify({"message": "Product listed successfully"}), 201
 
 @app.route('/api/marketplace/products/<p_id>', methods=['PUT'])
+@seller_or_admin_required
 def update_product(p_id):
     data = request.json
     update_fields = {}
@@ -730,11 +764,13 @@ def update_product(p_id):
     return jsonify({"message": "Product updated"})
 
 @app.route('/api/marketplace/products/<p_id>', methods=['DELETE'])
+@seller_or_admin_required
 def delete_product(p_id):
     products_col.delete_one({"_id": ObjectId(p_id)})
     return jsonify({"message": "Product deleted"})
 
 @app.route('/api/marketplace/seller/analytics', methods=['GET'])
+@seller_or_admin_required
 def seller_analytics():
     total_products = products_col.count_documents({})
     active_products = products_col.count_documents({"status": "Active"})
@@ -794,11 +830,13 @@ def get_orders():
     return jsonify([format_doc(o) for o in orders])
 
 @app.route('/api/marketplace/seller/orders', methods=['GET'])
+@seller_or_admin_required
 def get_seller_orders():
     orders = list(orders_col.find().sort("createdAt", -1))
     return jsonify([format_doc(o) for o in orders])
 
 @app.route('/api/marketplace/orders/<o_id>/status', methods=['PUT'])
+@seller_or_admin_required
 def update_order_status(o_id):
     data = request.json
     new_status = data.get("status")
@@ -809,16 +847,19 @@ def update_order_status(o_id):
         update_fields["paymentStatus"] = "Paid"
         update_fields["paidAt"] = datetime.utcnow().isoformat()
         timeline_entries.append({"status": "Payment Confirmed", "time": datetime.utcnow().isoformat()})
-    orders_col.update_one(
+    res = orders_col.update_one(
         {"_id": ObjectId(o_id)},
         {
             "$set": update_fields,
             "$push": {"timeline": {"$each": timeline_entries}}
         }
     )
+    if res.matched_count == 0:
+        return jsonify({"error": "Order not found"}), 404
     return jsonify({"message": "Order status updated"})
 
 @app.route('/api/marketplace/orders/<o_id>/pay', methods=['PUT'])
+@seller_or_admin_required
 def confirm_payment(o_id):
     order = orders_col.find_one({"_id": ObjectId(o_id)})
     if not order:
@@ -840,7 +881,10 @@ def confirm_payment(o_id):
 @app.route('/api/marketplace/orders/<o_id>/invoice', methods=['GET'])
 @token_required
 def get_invoice(o_id):
-    order = orders_col.find_one({"_id": ObjectId(o_id)})
+    query = {"_id": ObjectId(o_id)}
+    if request.user_data.get('role') != 'admin':
+        query["userId"] = request.user_data.get('user_id')
+    order = orders_col.find_one(query)
     if not order:
         return jsonify({"error": "Order not found"}), 404
     invoice = {

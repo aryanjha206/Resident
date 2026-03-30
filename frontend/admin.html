@@ -1001,8 +1001,8 @@
 
             try {
                 const [pRes, oRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/seller/products`),
-                    fetch(`${API_URL}/marketplace/seller/orders`)
+                    fetch(`${API_URL}/marketplace/seller/products`, {headers: getAuthHeaders()}),
+                    fetch(`${API_URL}/marketplace/seller/orders`, {headers: getAuthHeaders()})
                 ]);
                 const products = await pRes.json();
                 const orders = await oRes.json();
