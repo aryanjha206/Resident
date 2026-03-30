@@ -33,6 +33,9 @@ try:
     societies_col = db['societies']
     visitors_col = db['visitors']
     bookings_col = db['bookings']
+    polls_col = db['polls']
+    sos_col = db['sos']
+    vehicles_col = db['vehicles']
     print("Connected to MongoDB database successfully!")
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")
@@ -541,6 +544,127 @@ def get_analytics():
         "dues_pending": society_pending,
         "my_dues_pending": my_pending
     })
+
+# -------------- POLLS / SURVEYS MODULE --------------
+@app.route('/api/polls', methods=['GET'])
+@token_required
+def get_polls():
+    society_id = request.user_data.get('societyId')
+    if request.user_data.get('role') == 'admin':
+        society_filter = request.args.get('societyId')
+        query = {"societyId": society_filter} if society_filter else {}
+    else:
+        query = {"societyId": society_id}
+        
+    polls = list(polls_col.find(query).sort("createdAt", -1))
+    return jsonify([format_doc(p) for p in polls])
+
+@app.route('/api/polls', methods=['POST'])
+@admin_required
+def create_poll():
+    data = request.json
+    society_id = data.get('societyId')
+    if not society_id: return jsonify({"error": "Society ID required"}), 400
+    
+    poll = {
+        "societyId": society_id,
+        "question": data.get("question"),
+        "options": [{"text": opt, "votes": 0} for opt in data.get("options", [])],
+        "voters": [],
+        "createdAt": datetime.utcnow().isoformat(),
+        "expiresAt": data.get("expiresAt")
+    }
+    polls_col.insert_one(poll)
+    return jsonify({"message": "Poll created"}), 201
+
+@app.route('/api/polls/<p_id>/vote', methods=['POST'])
+@token_required
+def vote_poll(p_id):
+    user_id = request.user_data.get('user_id')
+    option_index = request.json.get('optionIndex')
+    
+    poll = polls_col.find_one({"_id": ObjectId(p_id)})
+    if not poll: return jsonify({"error": "Poll not found"}), 404
+    
+    if user_id in poll.get('voters', []):
+        return jsonify({"error": "Already voted"}), 400
+        
+    polls_col.update_one(
+        {"_id": ObjectId(p_id)},
+        {
+            "$inc": {f"options.{option_index}.votes": 1},
+            "$push": {"voters": user_id}
+        }
+    )
+    return jsonify({"message": "Vote recorded"})
+
+# -------------- EMERGENCY / SOS MODULE --------------
+@app.route('/api/sos', methods=['POST'])
+@token_required
+def trigger_sos():
+    society_id = request.user_data.get('societyId')
+    user_id = request.user_data.get('user_id')
+    user_name = request.user_data.get('name')
+    
+    sos_alert = {
+        "societyId": society_id,
+        "userId": user_id,
+        "userName": user_name,
+        "location": request.json.get('location', 'Unknown'),
+        "status": "Active",
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    sos_col.insert_one(sos_alert)
+    return jsonify({"message": "SOS Alert Broadcasted! Help is on the way."}), 201
+
+@app.route('/api/sos', methods=['GET'])
+@token_required
+def get_sos_alerts():
+    society_id = request.user_data.get('societyId')
+    alerts = list(sos_col.find({"societyId": society_id, "status": "Active"}).sort("createdAt", -1))
+    return jsonify([format_doc(a) for a in alerts])
+
+@app.route('/api/sos/<s_id>/resolve', methods=['PUT'])
+@admin_required
+def resolve_sos(s_id):
+    sos_col.update_one({"_id": ObjectId(s_id)}, {"$set": {"status": "Resolved"}})
+    return jsonify({"message": "SOS Alert Resolved"})
+
+# -------------- VEHICLE REGISTRY MODULE --------------
+@app.route('/api/vehicles', methods=['GET'])
+@token_required
+def get_vehicles():
+    society_id = request.user_data.get('societyId')
+    user_id = request.user_data.get('user_id')
+    
+    if request.user_data.get('role') == 'admin':
+        society_filter = request.args.get('societyId')
+        query = {"societyId": society_filter} if society_filter else {}
+    else:
+        query = {"userId": user_id, "societyId": society_id}
+        
+    vehicles = list(vehicles_col.find(query).sort("createdAt", -1))
+    return jsonify([format_doc(v) for v in vehicles])
+
+@app.route('/api/vehicles', methods=['POST'])
+@token_required
+def add_vehicle():
+    society_id = request.user_data.get('societyId')
+    user_id = request.user_data.get('user_id')
+    data = request.json
+    
+    vehicle = {
+        "societyId": society_id,
+        "userId": user_id,
+        "userName": request.user_data.get('name'),
+        "vehicleNumber": data.get("vehicleNumber"),
+        "vehicleType": data.get("vehicleType"), # Car, Bike, etc.
+        "model": data.get("model"),
+        "parkingSlot": data.get("parkingSlot"),
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    vehicles_col.insert_one(vehicle)
+    return jsonify({"message": "Vehicle registered"}), 201
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

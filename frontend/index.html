@@ -140,6 +140,9 @@
                 </div>
             </div>
             <div class="flex items-center gap-4 text-slate-600 relative">
+                <button onclick="triggerSOS()" class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center animate-pulse border-2 border-red-200">
+                    <i class="fa-solid fa-truck-medical text-lg"></i>
+                </button>
                 <button onclick="toggleNotifications()" class="relative hover:text-primary transition">
                     <i class="fa-solid fa-bell text-xl"></i>
                     <span id="notifBadge" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
@@ -234,6 +237,16 @@
                     </div>
                 </div>
 
+                <!-- POLLS SECTION -->
+                <div id="pollsBoard" class="glass-card p-4 bg-gradient-to-br from-white to-slate-50">
+                    <h3 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-square-poll-vertical text-primary"></i> Society Polls
+                    </h3>
+                    <div id="pollsList" class="space-y-4">
+                        <p class="text-[11px] text-slate-500 text-center"><i class="fa-solid fa-spinner fa-spin"></i> Fetching polls...</p>
+                    </div>
+                </div>
+
                 <!-- New Features Carousel -->
                 <div>
                     <h2 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Highlight Features</h2>
@@ -318,6 +331,14 @@
                     <div id="myVisitorsList" class="space-y-3 mb-6">
                         <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
                     </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">My Vehicle Registry</h3>
+                    <div id="myVehiclesList" class="space-y-3 mb-6">
+                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                    </div>
+                    <button onclick="openModal('vehicleModal')" class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-100 transition shadow-sm mb-6">+ Register New Vehicle</button>
                 </div>
 
                 <!-- COMPLAINTS -->
@@ -471,6 +492,45 @@
         </div>
     </div>
 
+    <!-- Vehicle Modal -->
+    <div id="vehicleModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'vehicleModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-primary text-xl"><i class="fa-solid fa-car"></i></div>
+                    <h3 class="text-md font-bold text-dark">Vehicle Registry</h3>
+                </div>
+                <button onclick="closeModal(null, 'vehicleModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="vehicleForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Vehicle Type</label>
+                        <select id="vType" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                            <option value="Car">Car</option>
+                            <option value="Bike">Bike</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Number Plate</label>
+                        <input id="vNumber" type="text" placeholder="MH-12-XX-0000" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none uppercase">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Model / Make</label>
+                    <input id="vModel" type="text" placeholder="e.g. White Tesla Model 3" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Parking Slot</label>
+                    <input id="vParking" type="text" placeholder="e.g. SLT-204" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none uppercase">
+                </div>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95 mt-2">Complete Registration</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
@@ -615,7 +675,7 @@
             
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
-            if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); }
+            if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); loadUserVehicles(); }
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -1026,6 +1086,148 @@ This is a computer generated document.
                 document.getElementById('visitorSuccess').classList.add('hidden');
             }
             ogOpenModal(id);
+        }
+
+        async function loadUserVehicles() {
+            try {
+                const res = await fetch(`${API_URL}/vehicles`, { headers: getAuthHeaders() });
+                const vehicles = await res.json();
+                let html = '';
+                if(vehicles.length === 0) {
+                    html = '<p class="text-[10px] text-slate-400 py-4 text-center border-2 border-dashed border-slate-100 rounded-xl">Register your car or bike for easier identification.</p>';
+                } else {
+                    vehicles.forEach(v => {
+                        const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
+                        html += `
+                            <div class="glass-card p-4 border-l-4 border-l-primary flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg"><i class="fa-solid ${icon}"></i></div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-dark">${v.vehicleNumber}</h4>
+                                        <p class="text-[10px] text-slate-500 font-medium">${v.model}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full font-black text-slate-600 uppercase tracking-widest">${v.parkingSlot || 'N/A'}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('myVehiclesList').innerHTML = html;
+            } catch(e) {}
+        }
+
+        document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const ogTxt = btn.innerText;
+            btn.innerText = "Registering...";
+            try {
+                const payload = {
+                    vehicleNumber: document.getElementById('vNumber').value,
+                    vehicleType: document.getElementById('vType').value,
+                    model: document.getElementById('vModel').value,
+                    parkingSlot: document.getElementById('vParking').value
+                };
+                const res = await fetch(`${API_URL}/vehicles`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    pushNotif('Vehicle Registered', 'Your vehicle details are now synced with society records.', 'fa-car', 'text-indigo-500', 'bg-indigo-50');
+                    closeModal(null, 'vehicleModal');
+                    loadUserVehicles();
+                    e.target.reset();
+                }
+            } catch(e) {}
+            btn.innerText = ogTxt;
+        });
+
+        async function triggerSOS() {
+            showConfirm("TRIGGER SOS ALERT?", "This will immediately notify all security guards and neighbors that you need assistance. Proceed only in an EMERGENCY.", async () => {
+                try {
+                    const res = await fetch(`${API_URL}/sos`, {
+                        method: 'POST',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ location: 'Current Resident Unit' })
+                    });
+                    if(res.ok) {
+                        pushNotif('SOS BROADCASTED', 'Help is being dispatched to your location.', 'fa-truck-medical', 'text-red-600', 'bg-red-50');
+                    }
+                } catch(e) {
+                    showToast("Failed to trigger SOS. Check connection.", "Error");
+                }
+            });
+        }
+
+        async function loadPolls() {
+            try {
+                const res = await fetch(`${API_URL}/polls`, { headers: getAuthHeaders() });
+                const polls = await res.json();
+                const userId = localStorage.getItem('userId');
+                let html = '';
+                
+                if(polls.length === 0) {
+                    html = '<p class="text-[10px] text-slate-400 text-center py-2">No active polls at the moment.</p>';
+                } else {
+                    polls.forEach(p => {
+                        const hasVoted = p.voters.includes(userId);
+                        const totalVotes = p.options.reduce((acc, opt) => acc + opt.votes, 0);
+                        
+                        html += `
+                            <div class="p-3 bg-white border border-slate-100 rounded-xl shadow-sm">
+                                <h4 class="text-xs font-bold text-dark mb-2">${p.question}</h4>
+                                <div class="space-y-2">
+                                    ${p.options.map((opt, idx) => {
+                                        const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+                                        if(hasVoted) {
+                                            return `
+                                                <div class="relative w-full h-8 bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
+                                                    <div class="absolute top-0 left-0 h-full bg-primary/10 transition-all duration-1000" style="width: ${percent}%"></div>
+                                                    <div class="relative z-10 h-full flex justify-between items-center px-3 text-[10px]">
+                                                        <span class="font-bold text-slate-700">${opt.text}</span>
+                                                        <span class="font-bold text-primary">${percent}%</span>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        } else {
+                                            return `
+                                                <button onclick="votePoll('${p._id}', ${idx})" class="w-full text-left p-2.5 bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-primary/30 rounded-lg text-xs font-medium text-slate-600 transition active:scale-[0.98]">
+                                                    ${opt.text}
+                                                </button>
+                                            `;
+                                        }
+                                    }).join('')}
+                                </div>
+                                <p class="text-[9px] text-slate-400 mt-2 font-medium"><i class="fa-solid fa-users"></i> ${totalVotes} residents participated</p>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('pollsList').innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function votePoll(pollId, optionIndex) {
+            try {
+                const res = await fetch(`${API_URL}/polls/${pollId}/vote`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ optionIndex })
+                });
+                if(res.ok) {
+                    showToast("Your vote has been recorded.", "Poll Update");
+                    loadPolls();
+                }
+            } catch(e) {}
+        }
+
+        // Updated fetchDashboardData to include polls
+        const ogFetchDashboardData = fetchDashboardData;
+        fetchDashboardData = async function() {
+            await ogFetchDashboardData();
+            loadPolls();
         }
 
         checkAuth();
