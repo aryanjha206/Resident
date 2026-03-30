@@ -760,13 +760,23 @@ def update_product(p_id):
     if data.get("description") is not None: update_fields["description"] = data["description"]
     if data.get("image"): update_fields["image"] = data["image"]
     if data.get("status"): update_fields["status"] = data["status"]
-    products_col.update_one({"_id": ObjectId(p_id)}, {"$set": update_fields})
+    try:
+        res = products_col.update_one({"_id": ObjectId(p_id)}, {"$set": update_fields})
+    except Exception:
+        return jsonify({"error": "Invalid product id"}), 400
+    if res.matched_count == 0:
+        return jsonify({"error": "Product not found"}), 404
     return jsonify({"message": "Product updated"})
 
 @app.route('/api/marketplace/products/<p_id>', methods=['DELETE'])
 @seller_or_admin_required
 def delete_product(p_id):
-    products_col.delete_one({"_id": ObjectId(p_id)})
+    try:
+        res = products_col.delete_one({"_id": ObjectId(p_id)})
+    except Exception:
+        return jsonify({"error": "Invalid product id"}), 400
+    if res.deleted_count == 0:
+        return jsonify({"error": "Product not found"}), 404
     return jsonify({"message": "Product deleted"})
 
 @app.route('/api/marketplace/seller/analytics', methods=['GET'])

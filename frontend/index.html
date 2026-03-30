@@ -178,6 +178,14 @@
                     <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">My Products</h4>
                     <button onclick="openModal('addProductModal')" class="text-[10px] font-bold text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">+ New Product</button>
                 </div>
+                <div class="flex gap-2">
+                    <input id="sellerProductSearch" type="text" placeholder="Search my products..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/10">
+                    <select id="sellerStatusFilter" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/10">
+                        <option value="All">All</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
                 <div id="sellerProductList" class="grid grid-cols-1 gap-3"></div>
             </div>
 
@@ -1097,6 +1105,18 @@
         
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` }; }
         function getSellerHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('sellerToken')}` }; }
+        function handleSellerAuthFailure(res, fallbackMessage = 'Seller session expired. Please login again.') {
+            if (res && (res.status === 401 || res.status === 403)) {
+                localStorage.removeItem('sellerToken');
+                const sv = document.getElementById('sellerView');
+                sv.classList.add('hidden');
+                sv.style.display = 'none';
+                showToast(fallbackMessage, 'Seller Login');
+                document.getElementById('sellerLoginModal').classList.remove('hidden');
+                return true;
+            }
+            return false;
+        }
 
         function checkAuth() {
             const token = localStorage.getItem('userToken');
@@ -1227,6 +1247,7 @@
                     fetch(`${API_URL}/marketplace/seller/orders`, {headers: getSellerHeaders()}),
                     fetch(`${API_URL}/marketplace/seller/analytics`, {headers: getSellerHeaders()})
                 ]);
+                if (handleSellerAuthFailure(pRes) || handleSellerAuthFailure(oRes) || handleSellerAuthFailure(aRes)) return;
                 const products = await pRes.json();
                 const orders = await oRes.json();
                 const stats = await aRes.json();
@@ -1239,8 +1260,16 @@
                 document.getElementById('sellerProductCount').textContent = stats.totalProducts;
                 document.getElementById('sellerActiveCount').textContent = stats.activeProducts;
                 
+                const sellerSearch = (document.getElementById('sellerProductSearch')?.value || '').trim().toLowerCase();
+                const sellerStatus = document.getElementById('sellerStatusFilter')?.value || 'All';
+                const filteredProducts = products.filter((p) => {
+                    const matchesSearch = !sellerSearch || `${p.name || ''} ${p.description || ''}`.toLowerCase().includes(sellerSearch);
+                    const matchesStatus = sellerStatus === 'All' || p.status === sellerStatus;
+                    return matchesSearch && matchesStatus;
+                });
+
                 let p_html = '';
-                products.forEach(p => {
+                filteredProducts.forEach(p => {
                     const sc = p.status === 'Active' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-400 bg-slate-100';
                     const eName = p.name.replace(/'/g,"\\'");
                     const eDesc = (p.description||'').replace(/'/g,"\\'");
@@ -1257,7 +1286,7 @@
                             </div>
                         </div>`;
                 });
-                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings yet.</p>';
+                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings match your filters.</p>';
 
                 let o_html = '';
                 orders.forEach(o => {
@@ -1327,6 +1356,7 @@
                         status: document.getElementById('epStatus').value
                     })
                 });
+                if (handleSellerAuthFailure(res)) return;
                 const data = await res.json().catch(() => ({}));
                 if(!res.ok) {
                     showToast(data.error || "Unable to update product.", "Error");
@@ -1346,6 +1376,7 @@
             showConfirm("Delete Product", `Remove "${name}" from your store?`, async () => {
                 try {
                     const res = await fetch(`${API_URL}/marketplace/products/${id}`, {method: 'DELETE', headers: getSellerHeaders()});
+                    if (handleSellerAuthFailure(res)) return;
                     const data = await res.json().catch(() => ({}));
                     if(!res.ok) {
                         showToast(data.error || "Unable to delete product.", "Error");
@@ -2225,6 +2256,8 @@ This is a computer generated document.
         document.getElementById('marketSearchInput').addEventListener('input', () => renderMarketplaceProducts(marketplaceProductsCache));
         document.getElementById('marketSortSelect').addEventListener('change', () => renderMarketplaceProducts(marketplaceProductsCache));
         document.getElementById('marketFavoritesOnly').addEventListener('change', () => renderMarketplaceProducts(marketplaceProductsCache));
+        document.getElementById('sellerProductSearch').addEventListener('input', () => loadSellerDashboard());
+        document.getElementById('sellerStatusFilter').addEventListener('change', () => loadSellerDashboard());
         document.getElementById('installAppBtn').addEventListener('click', promptInstallApp);
         document.getElementById('copyPasscodeBtn').addEventListener('click', async () => {
             const passcode = document.getElementById('generatedPasscode').innerText.trim();
