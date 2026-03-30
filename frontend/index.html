@@ -129,7 +129,7 @@
     </div>
 
     <!-- Seller Portal View -->
-    <div id="sellerView" class="fixed inset-0 z-[300] bg-slate-50 hidden flex-col">
+    <div id="sellerView" class="fixed inset-0 z-[300] bg-slate-50 hidden overflow-hidden" style="display:none;">
         <header class="glass-header px-5 py-4 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
                 <i class="fa-solid fa-shop text-primary"></i>
@@ -166,6 +166,7 @@
             <form id="productForm" class="space-y-4">
                 <input id="pName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
                 <input id="pPrice" type="number" placeholder="Price (₹)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <input id="pImage" type="url" placeholder="Product Image URL (optional)" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
                 <textarea id="pDesc" placeholder="Brief description..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm resize-none" rows="3"></textarea>
                 <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Publish Listing</button>
             </form>
@@ -294,6 +295,10 @@
                         <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="toggleChat()">
                             <div class="w-[42px] h-[42px] rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-comments"></i></div>
                             <span class="text-[10px] font-bold text-purple-600">Live Chat</span>
+                        </button>
+                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="openModal('vehicleModal')">
+                            <div class="w-[42px] h-[42px] rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-car"></i></div>
+                            <span class="text-[10px] font-bold text-slate-600">Vehicles</span>
                         </button>
                     </div>
                 </div>
@@ -448,7 +453,6 @@
                 <button class="absolute -top-7 floating-add active:scale-95 transition" onclick="openModal('complaintModal')"><i class="fa-solid fa-plus text-xl"></i></button>
             </div>
             <a href="#" class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i><span>People</span></a>
-            <a href="#" class="nav-item" onclick="switchTab('marketplace')"><i class="fa-solid fa-cart-shopping"></i><span>Market</span></a>
             <a href="#" class="nav-item" onclick="switchTab('property')"><i class="fa-solid fa-building"></i><span>Property</span></a>
         </nav>
     </div>
@@ -801,10 +805,13 @@
             } catch(e) {}
         }
         function showSellerPortal() {
-            document.getElementById('sellerView').classList.remove('hidden');
+            const sv = document.getElementById('sellerView');
+            sv.classList.remove('hidden');
+            sv.style.display = 'flex';
+            sv.style.flexDirection = 'column';
             loadSellerDashboard();
         }
-        function logoutSeller() { localStorage.removeItem('sellerToken'); document.getElementById('sellerView').classList.add('hidden'); }
+        function logoutSeller() { localStorage.removeItem('sellerToken'); const sv = document.getElementById('sellerView'); sv.classList.add('hidden'); sv.style.display = 'none'; }
         async function loadSellerDashboard() {
             try {
                 const [pRes, oRes] = await Promise.all([
@@ -851,9 +858,15 @@
         }
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const imageUrl = document.getElementById('pImage').value.trim();
             await fetch(`${API_URL}/marketplace/products`, {
                 method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name: document.getElementById('pName').value, price: document.getElementById('pPrice').value, description: document.getElementById('pDesc').value})
+                body: JSON.stringify({
+                    name: document.getElementById('pName').value,
+                    price: document.getElementById('pPrice').value,
+                    description: document.getElementById('pDesc').value,
+                    image: imageUrl || undefined
+                })
             });
             closeModal(null, 'addProductModal');
             loadSellerDashboard();
@@ -937,6 +950,7 @@
             loadMessages();
         }
         setInterval(() => { if(!document.getElementById('chatModal').classList.contains('hidden')) loadMessages(); }, 5000);
+        document.getElementById('chatInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
 
         // --- PROFILE / OWNERSHIP LOGIC ---
         function openProfile() {

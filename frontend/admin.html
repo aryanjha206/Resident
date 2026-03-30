@@ -141,6 +141,12 @@
                 </div>
             </div>
 
+            <!-- Registered Societies Panel -->
+            <div id="societiesListPanel" class="hidden glass-card p-4">
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Registered Societies</h3>
+                <div id="societiesListContent" class="space-y-2"></div>
+            </div>
+
             <!-- Management Sections -->
             <div>
                 <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Manage Modules</h2>
@@ -229,6 +235,16 @@
                             <div class="w-12 h-12 rounded-2xl bg-slate-200 text-slate-800 flex items-center justify-center shadow-sm"><i class="fa-solid fa-car text-xl"></i></div>
                             <div>
                                 <h3 class="text-base font-bold text-dark">Vehicle Registry</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadMarketplaceAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-cart-shopping text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Marketplace Orders</h3>
                             </div>
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
@@ -984,6 +1000,58 @@
                 showToast("Network error publishing service.", "error");
                 btn.innerText = og;
             }
+        }
+        async function loadMarketplaceAdmin() {
+            openModule("Marketplace Activity");
+            const content = document.getElementById('moduleContent');
+
+            try {
+                const [pRes, oRes] = await Promise.all([
+                    fetch(`${API_URL}/marketplace/seller/products`),
+                    fetch(`${API_URL}/marketplace/seller/orders`)
+                ]);
+                const products = await pRes.json();
+                const orders = await oRes.json();
+                
+                let html = '<h4 class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Listed Products</h4>';
+                if(products.length === 0) {
+                    html += '<p class="text-xs text-slate-400 text-center py-4">No products listed yet.</p>';
+                } else {
+                    products.forEach(p => {
+                        html += `
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <img src="${p.image}" class="w-10 h-10 rounded-lg">
+                                    <div>
+                                        <h4 class="text-sm font-bold text-dark">${p.name}</h4>
+                                        <p class="text-[10px] text-slate-500">${p.description || ''}</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-primary">\u20b9${p.price}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                html += '<h4 class="text-xs font-bold text-slate-500 mb-3 mt-6 uppercase tracking-wide">All Orders</h4>';
+                if(orders.length === 0) {
+                    html += '<p class="text-xs text-slate-400 text-center py-4">No orders placed yet.</p>';
+                } else {
+                    orders.forEach(o => {
+                        let color = o.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
+                        html += `
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between mb-2">
+                                <div>
+                                    <h4 class="text-sm font-bold text-dark">${o.productName}</h4>
+                                    <p class="text-[10px] text-slate-500"><i class="fa-solid fa-user"></i> ${o.userName} \u2022 ${new Date(o.createdAt).toLocaleDateString()}</p>
+                                </div>
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded ${color}">${o.status}</span>
+                            </div>
+                        `;
+                    });
+                }
+                content.innerHTML = `<div class="space-y-1">${html}</div>`;
+            } catch(e) {}
         }
     </script>
 </body>

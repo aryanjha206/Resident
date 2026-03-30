@@ -3,15 +3,15 @@ import os
 import sys
 import threading
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def run_backend():
     print("Starting Flask Backend on port 5000...")
-    os.chdir(os.path.join(os.path.dirname(__file__), 'backend'))
-    subprocess.run([sys.executable, "app.py"])
+    subprocess.run([sys.executable, os.path.join(BASE_DIR, "backend", "app.py")], cwd=os.path.join(BASE_DIR, "backend"))
 
 def run_frontend():
     print("Starting Frontend on port 8000...")
-    os.chdir(os.path.join(os.path.dirname(__file__), 'frontend'))
-    subprocess.run([sys.executable, "-m", "http.server", "8000"])
+    subprocess.run([sys.executable, "-m", "http.server", "8000"], cwd=os.path.join(BASE_DIR, "frontend"))
 
 if __name__ == '__main__':
     t1 = threading.Thread(target=run_backend)
