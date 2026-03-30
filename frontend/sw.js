@@ -1,41 +1,25 @@
-const CACHE_NAME = 'society-hub-v2';
+const CACHE_NAME = 'society-hub-v1';
 const ASSETS = [
     '/',
     '/index.html',
     '/admin.html',
-    '/guard.html',
     '/manifest.json',
-    '/sw.js',
-    '/icons/icon-192.svg',
-    '/icons/icon-512.svg'
+    'https://cdn.tailwindcss.com',
+    'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
 ];
 
 self.addEventListener('install', (e) => {
     e.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS);
+            return cache.addAll(ASSETS).catch(err => {
+                console.warn('Failed to cache completely, might be cross-origin restrictions:', err);
+            });
         })
     );
-    self.skipWaiting();
-});
-
-self.addEventListener('activate', (e) => {
-    e.waitUntil(
-        caches.keys().then((keys) =>
-            Promise.all(
-                keys
-                    .filter((key) => key !== CACHE_NAME)
-                    .map((key) => caches.delete(key))
-            )
-        )
-    );
-    self.clients.claim();
 });
 
 self.addEventListener('fetch', (e) => {
-    if (e.request.method !== 'GET') return;
-    const url = new URL(e.request.url);
-
     if (e.request.url.includes('/api/')) {
         // Network first for API calls, fallback to cache
         e.respondWith(
@@ -45,20 +29,12 @@ self.addEventListener('fetch', (e) => {
                 return res;
             }).catch(() => caches.match(e.request))
         );
-    } else if (url.origin === self.location.origin) {
-        e.respondWith(
-            caches.match(e.request).then((cached) => {
-                if (cached) return cached;
-                return fetch(e.request).then((response) => {
-                    const copy = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
-                    return response;
-                });
-            })
-        );
     } else {
+        // Cache first for static assets
         e.respondWith(
-            fetch(e.request).catch(() => caches.match(e.request))
+            caches.match(e.request).then(res => {
+                return res || fetch(e.request);
+            })
         );
     }
 });

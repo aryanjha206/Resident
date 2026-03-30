@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#4F46E5">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Society Hub</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icons/icon-192.svg">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -42,13 +38,6 @@
         .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-content { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .modal-overlay.active .modal-content { transform: translateY(0); }
-        .market-hero { background: radial-gradient(circle at top left, rgba(79,70,229,0.18), transparent 42%), linear-gradient(135deg, #ffffff 0%, #eef2ff 52%, #f8fafc 100%); }
-        .standalone-only { display: none; }
-        .browser-only { display: block; }
-        @media (display-mode: standalone) {
-            .standalone-only { display: block; }
-            .browser-only { display: none !important; }
-        }
         
         #authOverlay { background: #F8FAFC; z-index: 100; opacity: 1; visibility: visible; }
         #appContent { display: none; }
@@ -149,42 +138,16 @@
             <button onclick="logoutSeller()" class="text-red-500 font-bold text-xs">Exit Workspace</button>
         </header>
         <main class="flex-1 overflow-y-auto p-5 space-y-6">
-            <!-- Revenue Stats -->
-            <div class="grid grid-cols-2 gap-3" id="sellerStatsGrid">
-                <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-4 text-white shadow-lg">
-                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Collected</p>
-                    <h3 class="text-xl font-bold" id="sellerPaidRev">\u20b90</h3>
-                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerPaidCount">0</span> paid orders</p>
-                </div>
-                <div class="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl p-4 text-white shadow-lg">
-                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Pending</p>
-                    <h3 class="text-xl font-bold" id="sellerPendingRev">\u20b90</h3>
-                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerPendingCount">0</span> unpaid</p>
-                </div>
-                <div class="bg-gradient-to-br from-primary to-indigo-700 rounded-2xl p-4 text-white shadow-lg">
-                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Total Revenue</p>
-                    <h3 class="text-xl font-bold" id="sellerTotalRev">\u20b90</h3>
-                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerTotalOrders">0</span> orders</p>
-                </div>
-                <div class="bg-gradient-to-br from-slate-700 to-slate-900 rounded-2xl p-4 text-white shadow-lg">
-                    <p class="text-[9px] font-bold uppercase opacity-70 tracking-wider">Products</p>
-                    <h3 class="text-xl font-bold" id="sellerProductCount">0</h3>
-                    <p class="text-[8px] mt-1 opacity-60"><span id="sellerActiveCount">0</span> active</p>
-                </div>
+            <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <h3 class="text-xl font-bold">Welcome, Vendor</h3>
+                <p class="text-xs text-indigo-100 opacity-80 mt-1">Manage your storefront and track incoming orders.</p>
+                <i class="fa-solid fa-box-open absolute top-4 right-4 text-5xl opacity-20"></i>
             </div>
 
             <div class="space-y-4">
                 <div class="flex justify-between items-center">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">My Products</h4>
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">My Active Products</h4>
                     <button onclick="openModal('addProductModal')" class="text-[10px] font-bold text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">+ New Product</button>
-                </div>
-                <div class="flex gap-2">
-                    <input id="sellerProductSearch" type="text" placeholder="Search my products..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-primary/10">
-                    <select id="sellerStatusFilter" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/10">
-                        <option value="All">All</option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                    </select>
                 </div>
                 <div id="sellerProductList" class="grid grid-cols-1 gap-3"></div>
             </div>
@@ -196,13 +159,13 @@
         </main>
     </div>
 
-    <!-- Add Product Modal -->
+    <!-- Order Status & Buy Modals etc -->
     <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'addProductModal')">
         <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl" onclick="event.stopPropagation()">
             <h3 class="text-lg font-bold mb-4">List New Product</h3>
             <form id="productForm" class="space-y-4">
                 <input id="pName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
-                <input id="pPrice" type="number" placeholder="Price (\u20b9)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <input id="pPrice" type="number" placeholder="Price (₹)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Product Photo</label>
                     <div id="imagePreviewContainer" class="hidden mb-2"><img id="imagePreview" class="w-full h-32 object-contain rounded-xl bg-slate-50 border border-dashed border-slate-200"></div>
@@ -217,23 +180,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Edit Product Modal -->
-    <div id="editProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center hidden" onclick="closeModal(event, 'editProductModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl" onclick="event.stopPropagation()">
-            <h3 class="text-lg font-bold mb-4">Edit Product</h3>
-            <form id="editProductForm" class="space-y-4">
-                <input type="hidden" id="epId">
-                <input id="epName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
-                <input id="epPrice" type="number" placeholder="Price (\u20b9)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
-                <textarea id="epDesc" placeholder="Brief description..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm resize-none" rows="3"></textarea>
-                <select id="epStatus" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold">
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                </select>
-                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Save Changes</button>
-            </form>
-        </div>
     </div>
 
     <!-- In-App Notification (Toast) -->
@@ -262,9 +208,6 @@
             <div class="flex items-center gap-4 text-slate-600 relative">
                 <button onclick="triggerSOS()" class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center animate-pulse border-2 border-red-200">
                     <i class="fa-solid fa-truck-medical text-lg"></i>
-                </button>
-                <button onclick="openQuickActions()" class="w-10 h-10 rounded-full bg-indigo-50 text-primary flex items-center justify-center hover:bg-indigo-100 transition border border-indigo-100">
-                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </button>
                 <button onclick="openProfile()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:text-primary transition border border-slate-200">
                     <i class="fa-solid fa-user-gear"></i>
@@ -375,33 +318,6 @@
                     </div>
                 </div>
 
-                <div id="residentSosBoard" class="glass-card p-4 bg-gradient-to-br from-red-50 to-white border border-red-100">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                        <h3 class="text-[14px] font-bold text-dark flex items-center gap-2">
-                            <i class="fa-solid fa-siren-on text-red-500"></i> Community SOS Status
-                        </h3>
-                        <span class="text-[9px] font-bold text-red-600 bg-red-100 px-2 py-1 rounded-full border border-red-200">LIVE</span>
-                    </div>
-                    <div id="residentSosList" class="space-y-2">
-                        <p class="text-[11px] text-slate-500 text-center"><i class="fa-solid fa-spinner fa-spin"></i> Checking emergency feed...</p>
-                    </div>
-                </div>
-
-                <div class="glass-card p-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-                    <div class="flex items-center justify-between gap-3 mb-3">
-                        <div>
-                            <h3 class="text-[14px] font-bold">Recent Activity</h3>
-                            <p class="text-[10px] text-slate-300">Your latest society actions in one place.</p>
-                        </div>
-                        <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                        </div>
-                    </div>
-                    <div id="recentActivityList" class="space-y-2">
-                        <p class="text-[11px] text-slate-300 text-center"><i class="fa-solid fa-spinner fa-spin"></i> Loading your recent updates...</p>
-                    </div>
-                </div>
-
                 <!-- POLLS SECTION -->
                 <div id="pollsBoard" class="glass-card p-4 bg-gradient-to-br from-white to-slate-50">
                     <h3 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm flex items-center gap-2">
@@ -416,19 +332,6 @@
                 <div>
                     <h2 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Highlight Features</h2>
                     <div class="flex gap-4 overflow-x-auto carousel-hide-scrollbar pb-3 snap-x" id="featureCarousel">
-                        <div id="installPromoCard" class="browser-only carousel-item snap-start min-w-[85%] bg-gradient-to-br from-slate-900 to-slate-700 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0 hidden">
-                            <div class="relative z-10 flex justify-between items-center">
-                                <div>
-                                    <span class="bg-white/15 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">Install</span>
-                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Add Society Hub to Chrome</h3>
-                                    <p id="installHintText" class="text-[11px] text-slate-300 mt-1 mb-4 w-5/6 leading-relaxed">Get an app-like home screen icon, faster launch, and offline-ready shell support.</p>
-                                    <button id="installAppBtn" class="bg-white text-slate-900 text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95">Install App</button>
-                                </div>
-                                <i class="fa-solid fa-download text-5xl opacity-70 rotate-12 drop-shadow-2xl text-slate-200"></i>
-                            </div>
-                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl"></div>
-                        </div>
-
                         <div class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-primary to-indigo-800 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
                             <div class="relative z-10 flex justify-between items-center">
                                 <div>
@@ -500,53 +403,7 @@
                     <h2 class="text-lg font-bold text-dark">Community Market</h2>
                     <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100"><i class="fa-solid fa-circle text-[5px] animate-pulse mr-1"></i>LIVE</span>
                 </div>
-                <div class="market-hero glass-card p-4 sm:p-5 overflow-hidden relative">
-                    <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-indigo-200/40 blur-2xl pointer-events-none"></div>
-                    <div class="relative flex items-start justify-between gap-4">
-                        <div>
-                            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-primary/80">Marketplace</p>
-                            <h3 class="text-xl font-black text-slate-900 mt-1">Shop from trusted society sellers</h3>
-                            <p class="text-[11px] text-slate-500 mt-2 leading-relaxed">Browse listings, see product photos, and track every order from placement to delivery.</p>
-                        </div>
-                        <div class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg shrink-0">
-                            <i class="fa-solid fa-bag-shopping"></i>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 mt-4">
-                        <div class="bg-white/80 border border-white rounded-2xl p-3 shadow-sm">
-                            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Live Items</p>
-                            <h4 id="marketItemCount" class="text-base font-black text-slate-900 mt-1">0</h4>
-                        </div>
-                        <div class="bg-white/80 border border-white rounded-2xl p-3 shadow-sm">
-                            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">My Orders</p>
-                            <h4 id="marketOrderCount" class="text-base font-black text-slate-900 mt-1">0</h4>
-                        </div>
-                        <div class="bg-white/80 border border-white rounded-2xl p-3 shadow-sm">
-                            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Status</p>
-                            <h4 class="text-base font-black text-emerald-600 mt-1">Open</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="glass-card p-4 space-y-3">
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <div class="relative flex-1">
-                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                            <input id="marketSearchInput" type="text" placeholder="Search products, snacks, groceries..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-10 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
-                        </div>
-                        <select id="marketSortSelect" class="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm font-bold text-slate-600 focus:outline-none focus:ring-4 focus:ring-primary/10">
-                            <option value="latest">Latest</option>
-                            <option value="priceLow">Price: Low to High</option>
-                            <option value="priceHigh">Price: High to Low</option>
-                            <option value="name">Name</option>
-                        </select>
-                    </div>
-                    <label class="inline-flex items-center gap-2 text-[11px] font-bold text-slate-500">
-                        <input id="marketFavoritesOnly" type="checkbox" class="rounded border-slate-300 text-primary focus:ring-primary/20">
-                        Favorites only
-                    </label>
-                    <p id="marketResultMeta" class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Browse active society listings</p>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="marketplaceList"></div>
+                <div class="grid grid-cols-2 gap-4" id="marketplaceList"></div>
                 <div class="pt-2">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
                     <div id="myOrdersList" class="space-y-4"></div>
@@ -693,61 +550,6 @@
                 <div class="bg-indigo-50 border-2 border-dashed border-indigo-200 p-4 rounded-xl">
                     <h2 id="generatedPasscode" class="text-3xl font-bold tracking-[0.2em] text-primary">000000</h2>
                 </div>
-                <button id="copyPasscodeBtn" type="button" class="mt-4 w-full bg-slate-900 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-slate-800 transition">
-                    <i class="fa-solid fa-copy mr-2"></i>Copy Passcode
-                </button>
-                <button id="sharePasscodeBtn" type="button" class="mt-3 w-full bg-indigo-50 text-primary font-bold py-3 rounded-xl border border-indigo-100 hover:bg-indigo-100 transition">
-                    <i class="fa-solid fa-share-nodes mr-2"></i>Share Passcode
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="quickActionsModal" class="fixed inset-0 z-[420] bg-black/40 backdrop-blur-sm flex items-start justify-center p-4 hidden" onclick="document.getElementById('quickActionsModal').classList.add('hidden')">
-        <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden mt-16" onclick="event.stopPropagation()">
-            <div class="p-4 border-b border-slate-100">
-                <div class="relative">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input id="quickActionSearch" type="text" placeholder="Search actions like dues, market, visitors..." class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-3 pl-11 pr-4 text-sm font-medium focus:outline-none focus:ring-4 focus:ring-primary/10">
-                </div>
-            </div>
-            <div id="quickActionsList" class="p-3 max-h-[60vh] overflow-y-auto space-y-2"></div>
-        </div>
-    </div>
-
-    <div id="productDetailModal" class="fixed inset-0 z-[520] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 hidden" onclick="document.getElementById('productDetailModal').classList.add('hidden')">
-        <div class="bg-white w-full sm:max-w-lg rounded-t-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
-            <div class="relative">
-                <img id="productDetailImage" src="" class="w-full h-64 object-cover bg-slate-100">
-                <button onclick="document.getElementById('productDetailModal').classList.add('hidden')" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 text-slate-700 shadow-lg flex items-center justify-center">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <div class="p-5 space-y-4">
-                <div class="flex items-start justify-between gap-3">
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.25em] text-primary">Marketplace Pick</p>
-                        <h3 id="productDetailName" class="text-xl font-black text-slate-900 mt-1"></h3>
-                    </div>
-                    <button id="productDetailFavoriteBtn" class="w-11 h-11 rounded-2xl bg-pink-50 text-pink-500 border border-pink-100 flex items-center justify-center">
-                        <i class="fa-regular fa-heart"></i>
-                    </button>
-                </div>
-                <p id="productDetailDesc" class="text-sm text-slate-500 leading-relaxed"></p>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Price</p>
-                        <h4 id="productDetailPrice" class="text-lg font-black text-slate-900 mt-1"></h4>
-                    </div>
-                    <div class="bg-emerald-50 rounded-2xl p-3 border border-emerald-100">
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Status</p>
-                        <h4 class="text-lg font-black text-emerald-700 mt-1">Available</h4>
-                    </div>
-                </div>
-                <div class="flex gap-3">
-                    <button id="productDetailBuyBtn" class="flex-1 bg-slate-900 text-white font-bold py-3 rounded-2xl shadow-lg">Order Now</button>
-                    <button onclick="document.getElementById('productDetailModal').classList.add('hidden')" class="px-5 bg-slate-100 text-slate-600 font-bold py-3 rounded-2xl">Close</button>
-                </div>
             </div>
         </div>
     </div>
@@ -865,52 +667,12 @@
         </div>
     </div>
 
-    <div id="profileModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'profileModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
-            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-primary text-xl"><i class="fa-solid fa-user-gear"></i></div>
-                    <h3 class="text-md font-bold text-dark">Edit Profile</h3>
-                </div>
-                <button onclick="closeModal(null, 'profileModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="profileForm" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Display Name</label>
-                    <input id="profileNameInput" type="text" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Resident Type</label>
-                    <select id="profileRoleInput" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm font-bold focus:outline-none">
-                        <option value="resident">Resident</option>
-                        <option value="tenant">Tenant</option>
-                    </select>
-                </div>
-                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Save Profile</button>
-            </form>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
         
         window.localNotifications = [];
-        let deferredInstallPrompt = null;
-        let marketplaceProductsCache = [];
-        let currentProductDetail = null;
-        const quickActions = [
-            { label: 'Pay Dues', keywords: 'money dues payment bill', action: () => switchTab('money') },
-            { label: 'Open Marketplace', keywords: 'market shop product order', action: () => switchTab('marketplace') },
-            { label: 'Raise Complaint', keywords: 'complaint issue support', action: () => openModal('complaintModal') },
-            { label: 'Generate Visitor Pass', keywords: 'visitor pass gate guest delivery', action: () => openModal('visitorModal') },
-            { label: 'Book Amenity', keywords: 'amenity booking clubhouse pool', action: () => openModal('bookingModal') },
-            { label: 'Open Society Chat', keywords: 'chat message people', action: () => toggleChat() },
-            { label: 'Register Vehicle', keywords: 'vehicle parking car bike', action: () => openModal('vehicleModal') },
-            { label: 'Edit Profile', keywords: 'profile account name role', action: () => openProfile() }
-        ];
-
+        
         function showToast(message, title = 'Notification') {
             const toast = document.getElementById('toastNotification');
             document.getElementById('toastMessage').innerText = message;
@@ -943,209 +705,6 @@
             setTimeout(() => { m.classList.add('hidden'); _confirmCallback = null; }, 300);
         }
 
-        function escapeHtml(value = '') {
-            return String(value)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function escapeJsString(value = '') {
-            return String(value)
-                .replace(/\\/g, '\\\\')
-                .replace(/'/g, "\\'")
-                .replace(/\r/g, '\\r')
-                .replace(/\n/g, '\\n');
-        }
-
-        function getMarketImage(src) {
-            return src || 'https://img.icons8.com/color/96/box--v1.png';
-        }
-
-        function getMarketImageOnError() {
-            return "this.onerror=null;this.src='https://img.icons8.com/color/96/box--v1.png';";
-        }
-
-        function getFavoriteProductIds() {
-            try {
-                return JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
-            } catch {
-                return [];
-            }
-        }
-
-        function isFavoriteProduct(id) {
-            return getFavoriteProductIds().includes(id);
-        }
-
-        function toggleFavoriteProduct(id) {
-            const favorites = getFavoriteProductIds();
-            const next = favorites.includes(id) ? favorites.filter((x) => x !== id) : [...favorites, id];
-            localStorage.setItem('favoriteProducts', JSON.stringify(next));
-            if (marketplaceProductsCache.length) renderMarketplaceProducts(marketplaceProductsCache);
-            if (currentProductDetail && currentProductDetail._id === id) updateProductDetailFavoriteState(id);
-            showToast(next.includes(id) ? 'Added to favorites.' : 'Removed from favorites.', 'Marketplace');
-        }
-
-        function updateProductDetailFavoriteState(id) {
-            const btn = document.getElementById('productDetailFavoriteBtn');
-            const active = isFavoriteProduct(id);
-            btn.innerHTML = `<i class="fa-${active ? 'solid' : 'regular'} fa-heart"></i>`;
-            btn.className = `w-11 h-11 rounded-2xl border flex items-center justify-center ${active ? 'bg-pink-500 text-white border-pink-500' : 'bg-pink-50 text-pink-500 border-pink-100'}`;
-        }
-
-        function openProductDetails(product) {
-            currentProductDetail = product;
-            document.getElementById('productDetailImage').src = getMarketImage(product.image);
-            document.getElementById('productDetailImage').setAttribute('onerror', getMarketImageOnError());
-            document.getElementById('productDetailName').innerText = product.name || 'Product';
-            document.getElementById('productDetailDesc').innerText = product.description || 'Fresh listing from your community marketplace.';
-            document.getElementById('productDetailPrice').innerText = `₹${product.price}`;
-            document.getElementById('productDetailBuyBtn').onclick = () => buyProduct(product._id, product.name || 'Product', product.price, getMarketImage(product.image));
-            document.getElementById('productDetailFavoriteBtn').onclick = () => toggleFavoriteProduct(product._id);
-            updateProductDetailFavoriteState(product._id);
-            document.getElementById('productDetailModal').classList.remove('hidden');
-        }
-
-        function isStandaloneMode() {
-            return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-        }
-
-        function updateInstallCardVisibility() {
-            const card = document.getElementById('installPromoCard');
-            if (!card) return;
-            if (isStandaloneMode()) {
-                card.classList.add('hidden');
-                return;
-            }
-            if (deferredInstallPrompt) {
-                card.classList.remove('hidden');
-                document.getElementById('installHintText').innerText = 'Get an app-like home screen icon, faster launch, and offline-ready shell support.';
-            } else {
-                card.classList.remove('hidden');
-                document.getElementById('installHintText').innerText = 'If Chrome does not show install automatically, open the browser menu and choose "Install app".';
-            }
-        }
-
-        function renderMarketplaceProducts(products) {
-            document.getElementById('marketItemCount').innerText = products.length;
-            const search = (document.getElementById('marketSearchInput')?.value || '').trim().toLowerCase();
-            const sort = document.getElementById('marketSortSelect')?.value || 'latest';
-            const favoritesOnly = !!document.getElementById('marketFavoritesOnly')?.checked;
-            let filtered = products.filter((p) => {
-                if (!search) return true;
-                const haystack = `${p.name || ''} ${p.description || ''}`.toLowerCase();
-                return haystack.includes(search);
-            });
-            if (favoritesOnly) filtered = filtered.filter((p) => isFavoriteProduct(p._id));
-
-            filtered.sort((a, b) => {
-                if (sort === 'priceLow') return Number(a.price || 0) - Number(b.price || 0);
-                if (sort === 'priceHigh') return Number(b.price || 0) - Number(a.price || 0);
-                if (sort === 'name') return String(a.name || '').localeCompare(String(b.name || ''));
-                return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
-            });
-
-            document.getElementById('marketResultMeta').innerText = filtered.length === products.length
-                ? `Showing ${filtered.length} active listing${filtered.length === 1 ? '' : 's'}`
-                : `${filtered.length} of ${products.length} listing${products.length === 1 ? '' : 's'} match your search`;
-
-            let p_html = '';
-            filtered.forEach(p => {
-                const imgSrc = getMarketImage(p.image);
-                const safeName = escapeHtml(p.name || 'Product');
-                const safeDesc = escapeHtml(p.description || 'Fresh listing from your community marketplace.');
-                const safeImg = escapeHtml(imgSrc);
-                const jsName = escapeJsString(p.name || 'Product');
-                const jsImg = escapeJsString(imgSrc);
-                const favorite = isFavoriteProduct(p._id);
-                p_html += `
-                    <div class="glass-card p-0 overflow-hidden flex flex-col border border-slate-100 shadow-soft hover:shadow-lg transition">
-                        <div class="relative">
-                            <img src="${safeImg}" onerror="${getMarketImageOnError()}" class="w-full h-40 object-cover bg-slate-50">
-                            <button onclick="event.stopPropagation(); toggleFavoriteProduct('${p._id}')" class="absolute top-3 right-3 w-9 h-9 rounded-full ${favorite ? 'bg-pink-500 text-white' : 'bg-white/90 text-pink-500'} shadow-lg flex items-center justify-center border border-white/60">
-                                <i class="fa-${favorite ? 'solid' : 'regular'} fa-heart"></i>
-                            </button>
-                            <div class="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-slate-950/65 via-slate-900/20 to-transparent">
-                                <div class="flex items-center justify-between gap-2">
-                                    <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">Society Pick</span>
-                                    <span class="text-sm font-black text-white">\u20b9${p.price}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-4 flex flex-col gap-3 flex-1">
-                            <div>
-                                <h4 class="text-sm font-black text-dark leading-tight">${safeName}</h4>
-                                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed min-h-[2.75rem]">${safeDesc}</p>
-                            </div>
-                            <div class="flex justify-between items-center pt-3 border-t border-slate-100">
-                                <button onclick="openProductDetailsById('${p._id}')" class="flex items-center gap-2 text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-2.5 py-1.5 rounded-full">
-                                    <i class="fa-solid fa-camera"></i> Photo Ready
-                                </button>
-                                <button onclick="buyProduct('${p._id}', '${jsName}', ${p.price}, '${jsImg}')" class="bg-slate-900 text-white text-[10px] font-bold px-4 py-2 rounded-xl shadow-sm active:scale-95 transition">Order Now</button>
-                            </div>
-                        </div> 
-                    </div>`;
-            });
-
-            document.getElementById('marketplaceList').innerHTML = p_html || '<p class="sm:col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">No products match this search right now.</p>';
-        }
-
-        async function promptInstallApp() {
-            if (isStandaloneMode()) {
-                showToast('Society Hub is already installed on this device.', 'Installed');
-                return;
-            }
-            if (!deferredInstallPrompt) {
-                showToast('Open Chrome menu and tap "Install app" to add Society Hub.', 'Install');
-                return;
-            }
-            deferredInstallPrompt.prompt();
-            const choice = await deferredInstallPrompt.userChoice;
-            deferredInstallPrompt = null;
-            updateInstallCardVisibility();
-            if (choice.outcome === 'accepted') showToast('Society Hub is being installed.', 'Install');
-        }
-
-        async function registerPwa() {
-            if (!('serviceWorker' in navigator)) return;
-            try {
-                await navigator.serviceWorker.register('/sw.js');
-            } catch (e) {}
-        }
-
-        function openProductDetailsById(id) {
-            const product = marketplaceProductsCache.find((p) => p._id === id);
-            if (product) openProductDetails(product);
-        }
-
-        function renderQuickActions() {
-            const search = (document.getElementById('quickActionSearch')?.value || '').trim().toLowerCase();
-            const list = document.getElementById('quickActionsList');
-            const filtered = quickActions.filter((item) => !search || `${item.label} ${item.keywords}`.toLowerCase().includes(search));
-            list.innerHTML = filtered.map((item) => `
-                <button class="w-full text-left p-3 rounded-2xl border border-slate-100 hover:bg-slate-50 transition flex items-center justify-between" onclick="runQuickAction('${escapeJsString(item.label)}')">
-                    <span class="text-sm font-bold text-slate-700">${escapeHtml(item.label)}</span>
-                    <i class="fa-solid fa-arrow-up-right-from-square text-slate-300"></i>
-                </button>
-            `).join('') || '<p class="text-xs text-slate-400 text-center py-6">No matching actions found.</p>';
-        }
-
-        function runQuickAction(label) {
-            const item = quickActions.find((entry) => entry.label === label);
-            document.getElementById('quickActionsModal').classList.add('hidden');
-            if (item) item.action();
-        }
-
-        function openQuickActions() {
-            document.getElementById('quickActionsModal').classList.remove('hidden');
-            document.getElementById('quickActionSearch').value = '';
-            renderQuickActions();
-            setTimeout(() => document.getElementById('quickActionSearch').focus(), 50);
-        }
-
         document.getElementById('cModalBtn').addEventListener('click', () => {
             if (_confirmCallback) _confirmCallback();
             closeConfirmModal();
@@ -1157,19 +716,6 @@
         }
         
         function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` }; }
-        function getSellerHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('sellerToken')}` }; }
-        function handleSellerAuthFailure(res, fallbackMessage = 'Seller session expired. Please login again.') {
-            if (res && (res.status === 401 || res.status === 403)) {
-                localStorage.removeItem('sellerToken');
-                const sv = document.getElementById('sellerView');
-                sv.classList.add('hidden');
-                sv.style.display = 'none';
-                showToast(fallbackMessage, 'Seller Login');
-                document.getElementById('sellerLoginModal').classList.remove('hidden');
-                return true;
-            }
-            return false;
-        }
 
         function checkAuth() {
             const token = localStorage.getItem('userToken');
@@ -1181,7 +727,6 @@
                 document.getElementById('appContent').style.display = 'block';
                 if(userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
                 if(socName) document.getElementById('societyNameDisplay').innerText = socName;
-                if(!localStorage.getItem('userRole')) localStorage.setItem('userRole', 'resident');
                 
                 fetchDashboardData();
             }
@@ -1227,7 +772,6 @@
                     localStorage.setItem('userToken', data.token);
                     localStorage.setItem('userId', data.user._id);
                     localStorage.setItem('userName', data.user.name);
-                    localStorage.setItem('userRole', data.user.role || 'resident');
                     localStorage.setItem('userSocietyName', data.user.societyName || 'Society Hub');
                     checkAuth();
                 } else {
@@ -1295,51 +839,25 @@
         function logoutSeller() { localStorage.removeItem('sellerToken'); const sv = document.getElementById('sellerView'); sv.classList.add('hidden'); sv.style.display = 'none'; }
         async function loadSellerDashboard() {
             try {
-                const [pRes, oRes, aRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/seller/products`, {headers: getSellerHeaders()}),
-                    fetch(`${API_URL}/marketplace/seller/orders`, {headers: getSellerHeaders()}),
-                    fetch(`${API_URL}/marketplace/seller/analytics`, {headers: getSellerHeaders()})
+                const [pRes, oRes] = await Promise.all([
+                    fetch(`${API_URL}/marketplace/seller/products`),
+                    fetch(`${API_URL}/marketplace/seller/orders`)
                 ]);
-                if (handleSellerAuthFailure(pRes) || handleSellerAuthFailure(oRes) || handleSellerAuthFailure(aRes)) return;
                 const products = await pRes.json();
                 const orders = await oRes.json();
-                const stats = await aRes.json();
-                document.getElementById('sellerPaidRev').textContent = '\u20b9' + stats.paidRevenue;
-                document.getElementById('sellerPaidCount').textContent = stats.paidOrders;
-                document.getElementById('sellerPendingRev').textContent = '\u20b9' + stats.pendingRevenue;
-                document.getElementById('sellerPendingCount').textContent = stats.pendingOrders;
-                document.getElementById('sellerTotalRev').textContent = '\u20b9' + stats.totalRevenue;
-                document.getElementById('sellerTotalOrders').textContent = stats.totalOrders;
-                document.getElementById('sellerProductCount').textContent = stats.totalProducts;
-                document.getElementById('sellerActiveCount').textContent = stats.activeProducts;
                 
-                const sellerSearch = (document.getElementById('sellerProductSearch')?.value || '').trim().toLowerCase();
-                const sellerStatus = document.getElementById('sellerStatusFilter')?.value || 'All';
-                const filteredProducts = products.filter((p) => {
-                    const matchesSearch = !sellerSearch || `${p.name || ''} ${p.description || ''}`.toLowerCase().includes(sellerSearch);
-                    const matchesStatus = sellerStatus === 'All' || p.status === sellerStatus;
-                    return matchesSearch && matchesStatus;
-                });
-
                 let p_html = '';
-                filteredProducts.forEach(p => {
-                    const sc = p.status === 'Active' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-400 bg-slate-100';
-                    const eName = p.name.replace(/'/g,"\\'");
-                    const eDesc = (p.description||'').replace(/'/g,"\\'");
+                products.forEach(p => {
                     p_html += `
                         <div class="glass-card p-3 flex justify-between items-center">
                             <div class="flex items-center gap-3">
-                                <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover">
-                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[10px] text-slate-500">\u20b9${p.price}</p></div>
+                                <img src="${p.image}" class="w-10 h-10 rounded-lg">
+                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[10px] text-slate-500">₹${p.price}</p></div>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-[8px] font-bold ${sc} px-2 py-0.5 rounded uppercase">${p.status}</span>
-                                <button onclick="editProduct('${p._id}', '${eName}', ${p.price}, '${eDesc}', '${p.status}')" class="w-7 h-7 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-primary hover:text-white transition text-[10px]"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deleteProduct('${p._id}', '${eName}')" class="w-7 h-7 rounded-lg bg-red-50 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-white transition text-[10px]"><i class="fa-solid fa-trash"></i></button>
-                            </div>
+                            <span class="text-[8px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded uppercase">${p.status}</span>
                         </div>`;
                 });
-                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings match your filters.</p>';
+                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings yet.</p>';
 
                 let o_html = '';
                 orders.forEach(o => {
@@ -1356,7 +874,7 @@
                             <div class="flex gap-2 flex-wrap">
                                 ${o.status === 'Placed' ? `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-blue-50 text-blue-600 font-bold text-[9px] py-1.5 rounded-lg border border-blue-100">Accept</button>` : ''}
                                 ${o.status === 'Processing' ? `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-orange-50 text-orange-600 font-bold text-[9px] py-1.5 rounded-lg border border-orange-100">Ship Now</button>` : ''}
-                                ${o.status === 'Shipped' ? `<button onclick="deliverAndCollect('${o._id}')" class="flex-1 bg-emerald-50 text-emerald-600 font-bold text-[9px] py-1.5 rounded-lg border border-emerald-100">Mark Done</button>` : ''}
+                                ${o.status === 'Shipped' ? `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-emerald-50 text-emerald-600 font-bold text-[9px] py-1.5 rounded-lg border border-emerald-100">Confirm Delivery</button>` : ''}
                                 ${o.status === 'Delivered' && !isPaid ? `<button onclick="collectPayment('${o._id}')" class="flex-1 bg-primary text-white font-bold text-[9px] py-1.5 rounded-lg shadow-sm">Collect \u20b9${o.price}</button>` : ''}
                                 ${isPaid ? `<span class="flex-1 text-center bg-slate-50 text-slate-400 font-bold text-[9px] py-1.5 rounded-lg">\u2713 Completed</span>` : ''}
                             </div>
@@ -1366,80 +884,14 @@
             } catch(e) {}
         }
         async function updateOrderStatus(id, status) {
-            await fetch(`${API_URL}/marketplace/orders/${id}/status`, {method: 'PUT', headers: getSellerHeaders(), body: JSON.stringify({status})});
+            await fetch(`${API_URL}/marketplace/orders/${id}/status`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status})});
             loadSellerDashboard();
         }
         async function collectPayment(id) {
             showConfirm("Collect Payment", "Confirm you have received payment from the buyer?", async () => {
-                await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {method: 'PUT', headers: getSellerHeaders()});
+                await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {method: 'PUT', headers: {'Content-Type': 'application/json'}});
                 showToast("Payment recorded!", "Success");
                 loadSellerDashboard();
-            });
-        }
-        async function deliverAndCollect(id) {
-            showConfirm("Mark Order Done", "Mark this order as delivered? Payment will be recorded automatically.", async () => {
-                await fetch(`${API_URL}/marketplace/orders/${id}/status`, {method: 'PUT', headers: getSellerHeaders(), body: JSON.stringify({status: 'Delivered'})});
-                showToast("Order marked done and payment collected!", "Success");
-                loadSellerDashboard();
-            });
-        }
-        function editProduct(id, name, price, desc, status) {
-            document.getElementById('epId').value = id;
-            document.getElementById('epName').value = name;
-            document.getElementById('epPrice').value = price;
-            document.getElementById('epDesc').value = desc;
-            document.getElementById('epStatus').value = status;
-            const modal = document.getElementById('editProductModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('active');
-        }
-        document.getElementById('editProductForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalText = btn.innerText;
-            btn.innerText = 'Saving...';
-            const id = document.getElementById('epId').value;
-            try {
-                const res = await fetch(`${API_URL}/marketplace/products/${id}`, {
-                    method: 'PUT', headers: getSellerHeaders(),
-                    body: JSON.stringify({
-                        name: document.getElementById('epName').value,
-                        price: document.getElementById('epPrice').value,
-                        description: document.getElementById('epDesc').value,
-                        status: document.getElementById('epStatus').value
-                    })
-                });
-                if (handleSellerAuthFailure(res)) return;
-                const data = await res.json().catch(() => ({}));
-                if(!res.ok) {
-                    showToast(data.error || "Unable to update product.", "Error");
-                    return;
-                }
-                closeModal(null, 'editProductModal');
-                document.getElementById('editProductModal').classList.add('hidden');
-                showToast("Product updated!", "Success");
-                loadSellerDashboard();
-            } catch (err) {
-                showToast("Unable to update product.", "Error");
-            } finally {
-                btn.innerText = originalText;
-            }
-        });
-        async function deleteProduct(id, name) {
-            showConfirm("Delete Product", `Remove "${name}" from your store?`, async () => {
-                try {
-                    const res = await fetch(`${API_URL}/marketplace/products/${id}`, {method: 'DELETE', headers: getSellerHeaders()});
-                    if (handleSellerAuthFailure(res)) return;
-                    const data = await res.json().catch(() => ({}));
-                    if(!res.ok) {
-                        showToast(data.error || "Unable to delete product.", "Error");
-                        return;
-                    }
-                    showToast("Product deleted.", "Success");
-                    loadSellerDashboard();
-                } catch (err) {
-                    showToast("Unable to delete product.", "Error");
-                }
             });
         }
 
@@ -1469,7 +921,7 @@
                 });
             }
             await fetch(`${API_URL}/marketplace/products`, {
-                method: 'POST', headers: getSellerHeaders(),
+                method: 'POST', headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     name: document.getElementById('pName').value,
                     price: document.getElementById('pPrice').value,
@@ -1494,17 +946,30 @@
                 ]);
                 const products = await pRes.json();
                 const orders = await oRes.json();
-                marketplaceProductsCache = Array.isArray(products) ? products : [];
-                document.getElementById('marketOrderCount').innerText = orders.length;
-                renderMarketplaceProducts(marketplaceProductsCache);
+                
+                let p_html = '';
+                products.forEach(p => {
+                    const imgSrc = p.image || 'https://img.icons8.com/color/96/box--v1.png';
+                    p_html += `
+                        <div class="glass-card p-0 overflow-hidden flex flex-col">
+                            <img src="${imgSrc}" class="w-full h-28 object-cover bg-slate-50">
+                            <div class="p-3 flex flex-col gap-2 flex-1">
+                                <h4 class="text-xs font-bold text-dark leading-tight">${p.name}</h4>
+                                <p class="text-[9px] text-slate-500 line-clamp-2 flex-1">${p.description || ''}</p>
+                                <div class="flex justify-between items-center pt-1 border-t border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">\u20b9${p.price}</span>
+                                    <button onclick="buyProduct('${p._id}', '${p.name}', ${p.price}, '${imgSrc}')" class="bg-primary text-white text-[9px] font-bold px-3 py-1.5 rounded-lg shadow-sm active:scale-95 transition">Order</button>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">Vendors are stocking up. Check back soon!</p>';
 
                 let o_html = '';
                 const steps = ['Placed', 'Processing', 'Shipped', 'Delivered'];
                 orders.forEach(o => {
                     const currentIdx = steps.indexOf(o.status);
                     const isPaid = o.paymentStatus === 'Paid';
-                    const orderImage = escapeHtml(getMarketImage(o.productImage));
-                    const orderName = escapeHtml(o.productName || 'Product');
                     let stepperHtml = '<div class="flex items-center justify-between w-full mt-3">';
                     steps.forEach((s, i) => {
                         const done = i <= currentIdx;
@@ -1517,11 +982,11 @@
                     o_html += `
                         <div class="glass-card p-4 space-y-3 border-l-4 ${o.status === 'Delivered' ? 'border-l-emerald-500' : 'border-l-primary'}">
                             <div class="flex gap-3">
-                                <img src="${orderImage}" onerror="${getMarketImageOnError()}" class="w-16 h-16 rounded-2xl object-cover bg-slate-50 shadow-sm border border-slate-100">
+                                <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-14 h-14 rounded-xl object-cover bg-slate-50 shadow-sm">
                                 <div class="flex-1">
                                     <div class="flex justify-between items-start">
                                         <div>
-                                            <h4 class="text-[13px] font-bold text-dark">${orderName}</h4>
+                                            <h4 class="text-[13px] font-bold text-dark">${o.productName}</h4>
                                             <p class="text-[10px] text-slate-500">Ordered ${new Date(o.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</p>
                                         </div>
                                         <span class="text-sm font-bold text-primary">\u20b9${o.price}</span>
@@ -1531,7 +996,6 @@
                             ${stepperHtml}
                             <div class="flex gap-2 pt-2">
                                 ${o.status === 'Delivered' && isPaid ? `<button onclick="viewInvoice('${o._id}')" class="flex-1 bg-slate-900 text-white font-bold text-[10px] py-2.5 rounded-xl flex items-center justify-center gap-1.5"><i class="fa-solid fa-file-invoice"></i> View Invoice</button>` : ''}
-                                ${o.status === 'Delivered' ? `<button onclick="buyProduct('${o.productId}', '${escapeJsString(o.productName || 'Product')}', ${o.price}, '${escapeJsString(getMarketImage(o.productImage))}')" class="flex-1 bg-pink-50 text-pink-600 font-bold text-[10px] py-2.5 rounded-xl border border-pink-100 flex items-center justify-center gap-1.5"><i class="fa-solid fa-rotate-right"></i> Buy Again</button>` : ''}
                                 ${o.status === 'Delivered' && !isPaid ? `<span class="flex-1 text-center text-[10px] font-bold text-amber-600 bg-amber-50 py-2.5 rounded-xl border border-amber-100"><i class="fa-solid fa-clock mr-1"></i>Awaiting Payment</span>` : ''}
                                 ${o.status !== 'Delivered' ? `<span class="flex-1 text-center text-[10px] font-bold text-primary bg-indigo-50 py-2.5 rounded-xl border border-indigo-100"><i class="fa-solid fa-truck-fast mr-1"></i>In Transit</span>` : ''}
                             </div>
@@ -1603,129 +1067,20 @@
 
         // --- PROFILE / OWNERSHIP LOGIC ---
         function openProfile() {
-            document.getElementById('profileNameInput').value = localStorage.getItem('userName') || '';
-            document.getElementById('profileRoleInput').value = (localStorage.getItem('userRole') || 'resident').toLowerCase();
-            openModal('profileModal');
+            showConfirm("Update Status", "Would you like to transfer ownership or list as Tenant?", async () => {
+                const newRole = prompt("Enter new role: 'resident' or 'tenant'");
+                if(newRole) {
+                    await fetch(`${API_URL}/users/profile`, {method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({role: newRole})});
+                    showToast("Status Updated. Role is now: " + newRole, "Success");
+                    location.reload();
+                }
+            });
         }
 
-        function openModal(id) {
-            const modal = document.getElementById(id);
-            modal.classList.remove('hidden');
-            modal.classList.add('active');
-        }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
         function closeModal(event, id) { 
             if(event && event.target !== event.currentTarget) return;
-            const modal = document.getElementById(id);
-            modal.classList.remove('active');
-            setTimeout(() => {
-                if(!modal.classList.contains('active')) modal.classList.add('hidden');
-            }, 300);
-        }
-
-        async function loadActiveSOSFeed() {
-            try {
-                const res = await fetch(`${API_URL}/sos`, { headers: getAuthHeaders() });
-                if (!res.ok) return;
-                const alerts = await res.json();
-                let html = '';
-                if (!alerts.length) {
-                    html = '<div class="bg-white border border-emerald-100 rounded-2xl p-4 text-center"><p class="text-[11px] font-bold text-emerald-600">No active emergency alerts in your society.</p></div>';
-                } else {
-                    alerts.slice(0, 3).forEach((a) => {
-                        html += `
-                            <div class="bg-white border border-red-100 rounded-2xl p-3 flex items-start justify-between gap-3">
-                                <div>
-                                    <h4 class="text-xs font-bold text-dark">${escapeHtml(a.userName || 'Resident')} needs help</h4>
-                                    <p class="text-[10px] text-red-600 font-semibold mt-1"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(a.location || 'Unknown location')}</p>
-                                    <p class="text-[9px] text-slate-400 mt-1">${new Date(a.createdAt).toLocaleString()}</p>
-                                </div>
-                                <span class="text-[8px] font-black uppercase tracking-wider text-red-600 bg-red-50 border border-red-100 px-2 py-1 rounded-full">Active</span>
-                            </div>
-                        `;
-                    });
-                }
-                document.getElementById('residentSosList').innerHTML = html;
-            } catch (e) {}
-        }
-
-        async function loadRecentActivity() {
-            try {
-                const [ordersRes, bookingsRes, visitorsRes, complaintsRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/orders`, { headers: getAuthHeaders() }),
-                    fetch(`${API_URL}/bookings`, { headers: getAuthHeaders() }),
-                    fetch(`${API_URL}/visitors`, { headers: getAuthHeaders() }),
-                    fetch(`${API_URL}/complaints`, { headers: getAuthHeaders() })
-                ]);
-
-                const activities = [];
-                if (ordersRes.ok) {
-                    const orders = await ordersRes.json();
-                    orders.slice(0, 2).forEach((o) => activities.push({
-                        time: o.createdAt,
-                        icon: 'fa-bag-shopping',
-                        color: 'text-pink-500',
-                        bg: 'bg-pink-50',
-                        title: o.productName || 'Marketplace order',
-                        subtitle: `Order ${o.status || 'Placed'}`
-                    }));
-                }
-                if (bookingsRes.ok) {
-                    const bookings = await bookingsRes.json();
-                    bookings.slice(0, 1).forEach((b) => activities.push({
-                        time: b.date,
-                        icon: 'fa-calendar-check',
-                        color: 'text-emerald-500',
-                        bg: 'bg-emerald-50',
-                        title: b.facility || 'Amenity booking',
-                        subtitle: `${b.slot || 'Reserved'}`
-                    }));
-                }
-                if (visitorsRes.ok) {
-                    const visitors = await visitorsRes.json();
-                    visitors.slice(0, 1).forEach((v) => activities.push({
-                        time: v.date || v.expectedDate,
-                        icon: 'fa-id-badge',
-                        color: 'text-indigo-500',
-                        bg: 'bg-indigo-50',
-                        title: v.visitorName || 'Visitor approved',
-                        subtitle: `${v.status || 'Expected'} visitor pass`
-                    }));
-                }
-                if (complaintsRes.ok) {
-                    const complaints = await complaintsRes.json();
-                    complaints.slice(0, 1).forEach((c) => activities.push({
-                        time: c.date,
-                        icon: 'fa-clipboard-list',
-                        color: 'text-amber-500',
-                        bg: 'bg-amber-50',
-                        title: c.category || 'Complaint',
-                        subtitle: `${c.status || 'Pending'} issue reported`
-                    }));
-                }
-
-                activities.sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')));
-                const top = activities.slice(0, 5);
-                let html = '';
-                if (!top.length) {
-                    html = '<p class="text-[11px] text-slate-300 text-center py-4">Your activity timeline will appear here as you use the app.</p>';
-                } else {
-                    top.forEach((item) => {
-                        html += `
-                            <div class="bg-white/8 border border-white/10 rounded-2xl p-3 flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-2xl ${item.bg} ${item.color} flex items-center justify-center shrink-0">
-                                    <i class="fa-solid ${item.icon}"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-sm font-bold text-white">${escapeHtml(item.title)}</h4>
-                                    <p class="text-[11px] text-slate-300 mt-0.5">${escapeHtml(item.subtitle)}</p>
-                                </div>
-                                <span class="text-[9px] text-slate-400 whitespace-nowrap">${new Date(item.time).toLocaleDateString('en-IN', { day:'numeric', month:'short' })}</span>
-                            </div>
-                        `;
-                    });
-                }
-                document.getElementById('recentActivityList').innerHTML = html;
-            } catch (e) {}
+            document.getElementById(id).classList.remove('active'); 
         }
 
         async function fetchDashboardData() {
@@ -1811,9 +1166,6 @@
                     count.innerText = "0";
                     list.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-4">You are all caught up!</p>`;
                 }
-
-                loadActiveSOSFeed();
-                loadRecentActivity();
             } catch (err) {}
         }
 
@@ -2191,36 +1543,6 @@ This is a computer generated document.
             btn.innerText = ogTxt;
         });
 
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const ogTxt = btn.innerText;
-            btn.innerText = 'Saving...';
-            try {
-                const payload = {
-                    name: document.getElementById('profileNameInput').value.trim(),
-                    role: document.getElementById('profileRoleInput').value
-                };
-                const res = await fetch(`${API_URL}/users/profile`, {
-                    method: 'PUT',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                if (res.ok) {
-                    localStorage.setItem('userName', payload.name || localStorage.getItem('userName') || 'Resident');
-                    localStorage.setItem('userRole', payload.role);
-                    document.getElementById('userNameDisplay').innerText = `Welcome, ${(payload.name || 'Resident').split(' ')[0]}`;
-                    closeModal(null, 'profileModal');
-                    showToast('Profile updated successfully.', 'Success');
-                } else {
-                    showToast('Unable to update profile right now.', 'Error');
-                }
-            } catch (e2) {
-                showToast('Unable to update profile right now.', 'Error');
-            }
-            btn.innerText = ogTxt;
-        });
-
         async function triggerSOS() {
             showConfirm("TRIGGER SOS ALERT?", "This will immediately notify all security guards and neighbors that you need assistance. Proceed only in an EMERGENCY.", async () => {
                 try {
@@ -2306,54 +1628,6 @@ This is a computer generated document.
             await ogFetchDashboardData();
             loadPolls();
         }
-
-        document.getElementById('marketSearchInput').addEventListener('input', () => renderMarketplaceProducts(marketplaceProductsCache));
-        document.getElementById('marketSortSelect').addEventListener('change', () => renderMarketplaceProducts(marketplaceProductsCache));
-        document.getElementById('marketFavoritesOnly').addEventListener('change', () => renderMarketplaceProducts(marketplaceProductsCache));
-        document.getElementById('sellerProductSearch').addEventListener('input', () => loadSellerDashboard());
-        document.getElementById('sellerStatusFilter').addEventListener('change', () => loadSellerDashboard());
-        document.getElementById('installAppBtn').addEventListener('click', promptInstallApp);
-        document.getElementById('quickActionSearch').addEventListener('input', renderQuickActions);
-        document.getElementById('copyPasscodeBtn').addEventListener('click', async () => {
-            const passcode = document.getElementById('generatedPasscode').innerText.trim();
-            try {
-                await navigator.clipboard.writeText(passcode);
-                showToast('Gate pass copied to clipboard.', 'Copied');
-            } catch (e) {
-                showToast(`Passcode: ${passcode}`, 'Copy Failed');
-            }
-        });
-        document.getElementById('sharePasscodeBtn').addEventListener('click', async () => {
-            const passcode = document.getElementById('generatedPasscode').innerText.trim();
-            const text = `Society Hub gate pass: ${passcode}`;
-            try {
-                if (navigator.share) {
-                    await navigator.share({ title: 'Gate Pass', text });
-                } else {
-                    await navigator.clipboard.writeText(text);
-                    showToast('Pass details copied for sharing.', 'Shared');
-                    return;
-                }
-                showToast('Passcode shared successfully.', 'Shared');
-            } catch (e) {}
-        });
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredInstallPrompt = e;
-            updateInstallCardVisibility();
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredInstallPrompt = null;
-            updateInstallCardVisibility();
-            showToast('Society Hub was installed successfully.', 'Installed');
-        });
-
-        window.addEventListener('load', () => {
-            registerPwa();
-            updateInstallCardVisibility();
-        });
 
         checkAuth();
     </script>
