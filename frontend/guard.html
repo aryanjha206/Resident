@@ -344,7 +344,7 @@
                 const active = alerts[0];
                 if(active) {
                     activeSosId = active._id;
-                    document.getElementById('sosResident').innerText = `${active.userName} (${active.societyName || 'Society'}) is in danger!`;
+                    document.getElementById('sosResident').innerText = active.userName + " needs help!";
                     document.getElementById('sosAlertToast').classList.remove('hidden');
                 } else {
                     document.getElementById('sosAlertToast').classList.add('hidden');

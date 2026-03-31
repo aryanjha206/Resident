@@ -110,20 +110,11 @@ def send_otp():
     if not email: return jsonify({"error": "Email required"}), 400
         
     otp = str(random.randint(100000, 999999))
-    
-    # Debug Bypass for testing
-    if email == "test@test.com":
-        otp = "123456"
-        otps_col.update_one({"email": email}, {"$set": {"otp": otp, "createdAt": datetime.utcnow()}}, upsert=True)
-        return jsonify({"message": "OTP is 123456 (Debug Mode)"})
-
     otps_col.update_one({"email": email}, {"$set": {"otp": otp, "createdAt": datetime.utcnow()}}, upsert=True)
     
     success = send_otp_email(email, otp)
     if success: return jsonify({"message": "OTP sent"})
-    
-    # Fallback for local dev without SMTP
-    return jsonify({"message": f"OTP is {otp} (email disabled for safety)"}), 200
+    return jsonify({"error": "Failed to send OTP email"}), 500
 
 @app.route('/api/auth/verify-otp', methods=['POST'])
 def verify_otp():
@@ -697,13 +688,8 @@ def trigger_sos():
     user_id = request.user_data.get('user_id')
     user_name = request.user_data.get('name')
     
-    # Fetch society name for guard app
-    soc = societies_col.find_one({"_id": ObjectId(society_id)})
-    soc_name = soc.get('name', 'Unknown Society') if soc else 'Unknown Society'
-
     sos_alert = {
         "societyId": society_id,
-        "societyName": soc_name,
         "userId": user_id,
         "userName": user_name,
         "location": request.json.get('location', 'Unknown'),

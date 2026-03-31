@@ -39,10 +39,7 @@
             <a href="index.html" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-primary transition">
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
-            <div>
-                <h1 class="text-2xl font-black tracking-tighter text-slate-900">SOCIETY<span class="text-primary italic">MARKET</span></h1>
-                <p id="marketSocietyDisplay" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest px-0.5 mt-[-2px]">Society Hub</p>
-            </div>
+            <h1 class="text-2xl font-black tracking-tighter text-slate-900">SOCIETY<span class="text-primary italic">MARKET</span></h1>
         </div>
         <div class="flex items-center gap-4">
             <div class="relative group hidden sm:block">
@@ -71,7 +68,7 @@
         <!-- Hero Section -->
         <section class="relative rounded-[2.5rem] bg-slate-900 overflow-hidden mb-12 shadow-2xl group">
             <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/40 to-transparent z-10"></div>
-            <img src="society_marketplace_hero_1774978909846.png" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000">
+            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000">
             <div class="relative z-20 px-8 py-16 sm:px-16 sm:py-24 max-w-2xl">
                 <span class="bg-primary/20 text-primary border border-primary/20 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">Flash Sale Live</span>
                 <h2 class="text-4xl sm:text-6xl font-black text-white leading-tight mb-6">Organic Essentials <br><span class="text-primary italic">at your doorstep.</span></h2>
@@ -177,7 +174,7 @@
             if (!localStorage.getItem('userToken')) { window.location.href = 'index.html'; return; }
             
             const socName = localStorage.getItem('userSocietyName') || 'Society Hub';
-            document.getElementById('marketSocietyDisplay').innerText = socName;
+            // Optionally update UI with society name
             
             await fetchProducts();
             renderCart();
