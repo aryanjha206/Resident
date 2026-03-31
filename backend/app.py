@@ -614,6 +614,17 @@ def get_analytics():
     total_visitors = visitors_col.count_documents(query)
     total_bookings = bookings_col.count_documents(query)
 
+    # Marketplace Sales Detail
+    orders = list(orders_col.find(query))
+    total_sales = sum([o.get('price', 0) for o in orders if o.get('paymentStatus') == 'Paid'])
+    
+    # Simple Aggregate performance (Top Categories)
+    cat_performance = {}
+    for o in orders:
+        if o.get('paymentStatus') == 'Paid':
+            cat = o.get('category', 'General')
+            cat_performance[cat] = cat_performance.get(cat, 0) + o.get('price', 0)
+    
     return jsonify({
         "total_users": total_users,
         "total_complaints": total_complaints,
@@ -624,7 +635,9 @@ def get_analytics():
         "dues_pending": society_pending,
         "my_dues_pending": my_pending,
         "total_visitors": total_visitors,
-        "total_bookings": total_bookings
+        "total_bookings": total_bookings,
+        "market_revenue": total_sales,
+        "category_stats": cat_performance
     })
 
 # -------------- POLLS / SURVEYS MODULE --------------
@@ -766,6 +779,7 @@ def add_product():
         "name": data.get("name"),
         "price": float(data.get("price", 0)),
         "description": data.get("description"),
+        "category": data.get("category", "General"),
         "image": data.get("image", "https://img.icons8.com/color/96/box--v1.png"),
         "status": "Active",
         "createdAt": datetime.utcnow().isoformat()
@@ -788,6 +802,7 @@ def place_order():
         "productId": data.get("productId"),
         "productName": data.get("productName"),
         "productImage": data.get("productImage", ""),
+        "category": data.get("category", "General"),
         "price": data.get("price"),
         "status": "Placed",
         "paymentStatus": "Pending",

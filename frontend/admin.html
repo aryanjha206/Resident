@@ -147,6 +147,10 @@
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Bookings</p>
                     <h3 class="text-2xl font-bold text-dark" id="statBookings">0</h3>
                 </div>
+                <div class="glass-card p-4 relative overflow-hidden group border-l-4 border-l-pink-500">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Market Revenue</p>
+                    <h3 class="text-2xl font-bold text-pink-600" id="statMarketRevenue">₹0</h3>
+                </div>
             </div>
 
 
@@ -417,6 +421,7 @@
                     document.getElementById('statComplaints').innerText = data.pending_complaints || 0;
                     document.getElementById('statVisitors').innerText = data.total_visitors || 0;
                     document.getElementById('statBookings').innerText = data.total_bookings || 0;
+                    document.getElementById('statMarketRevenue').innerText = '₹' + (data.market_revenue || 0).toLocaleString();
                 }
             } catch(e) {}
         }
@@ -1006,7 +1011,7 @@
             }
         }
         async function loadMarketplaceAdmin() {
-            openModule("Marketplace Activity");
+            openModule("Marketplace Performance");
             const content = document.getElementById('moduleContent');
 
             try {
@@ -1017,44 +1022,75 @@
                 const products = await pRes.json();
                 const orders = await oRes.json();
                 
-                let html = '<h4 class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Listed Products</h4>';
-                if(products.length === 0) {
-                    html += '<p class="text-xs text-slate-400 text-center py-4">No products listed yet.</p>';
+                const totalRevenue = orders.filter(o => o.paymentStatus === 'Paid').reduce((acc, o) => acc + (o.price || 0), 0);
+                const catStats = {};
+                orders.forEach(o => {
+                    if(o.paymentStatus === 'Paid') {
+                        catStats[o.category || 'General'] = (catStats[o.category || 'General'] || 0) + (o.price || 0);
+                    }
+                });
+
+                let html = `
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div class="bg-indigo-600 p-4 rounded-2xl text-white shadow-lg">
+                            <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Total Gross</p>
+                            <h4 class="text-xl font-black">\u20b9${totalRevenue.toLocaleString()}</h4>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Paid Orders</p>
+                            <h4 class="text-xl font-black text-slate-800">${orders.filter(o => o.paymentStatus === 'Paid').length}</h4>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-5 rounded-3xl border border-slate-200 mb-8">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-500"></i> Revenue by Category</h4>
+                        <div class="space-y-4">
+                            ${Object.entries(catStats).sort((a,b) => b[1] - a[1]).map(([cat, rev]) => {
+                                const percent = totalRevenue > 0 ? Math.round((rev / totalRevenue) * 100) : 0;
+                                return `
+                                    <div class="group">
+                                        <div class="flex justify-between items-center mb-1.5 px-1 text-slate-700">
+                                            <span class="text-[10px] font-bold uppercase tracking-tighter">${cat}</span>
+                                            <span class="text-[10px] font-black">\u20b9${rev.toLocaleString()} (${percent}%)</span>
+                                        </div>
+                                        <div class="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
+                                            <div class="h-full bg-indigo-500 transition-all duration-1000 group-hover:bg-primary" style="width: ${percent}%"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') || '<p class="text-[10px] text-slate-400 text-center py-2 italic font-bold uppercase tracking-widest">Awaiting sales data...</p>'}
+                        </div>
+                    </div>
+                `;
+
+                html += '<h4 class="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest flex items-center gap-2 px-1"><i class="fa-solid fa-clock-rotate-left"></i> Transaction Feed Scan</h4>';
+                if(orders.length === 0) {
+                    html += '<p class="text-xs text-slate-400 text-center py-10 opacity-50">No marketplace traffic detected.</p>';
                 } else {
-                    products.forEach(p => {
+                    html += `<div class="space-y-2">`;
+                    orders.slice(0, 20).forEach(o => {
+                        let color = o.status === 'Delivered' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-indigo-500 bg-indigo-50 border-indigo-100';
                         html += `
-                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between mb-2">
+                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-primary/20 transition">
                                 <div class="flex items-center gap-3">
-                                    <img src="${p.image}" class="w-10 h-10 rounded-lg">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-[10px] text-slate-400 border border-slate-100 overflow-hidden shadow-sm">
+                                        <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover">
+                                    </div>
                                     <div>
-                                        <h4 class="text-sm font-bold text-dark">${p.name}</h4>
-                                        <p class="text-[10px] text-slate-500">${p.description || ''}</p>
+                                        <h4 class="text-xs font-bold text-slate-800 leading-tight">${o.productName}</h4>
+                                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">${o.userName} \u2022 ${new Date(o.createdAt).toLocaleDateString()}</p>
                                     </div>
                                 </div>
-                                <span class="text-sm font-bold text-primary">\u20b9${p.price}</span>
-                            </div>
-                        `;
-                    });
-                }
-
-                html += '<h4 class="text-xs font-bold text-slate-500 mb-3 mt-6 uppercase tracking-wide">All Orders</h4>';
-                if(orders.length === 0) {
-                    html += '<p class="text-xs text-slate-400 text-center py-4">No orders placed yet.</p>';
-                } else {
-                    orders.forEach(o => {
-                        let color = o.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
-                        html += `
-                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between mb-2">
-                                <div>
-                                    <h4 class="text-sm font-bold text-dark">${o.productName}</h4>
-                                    <p class="text-[10px] text-slate-500"><i class="fa-solid fa-user"></i> ${o.userName} \u2022 ${new Date(o.createdAt).toLocaleDateString()}</p>
+                                <div class="text-right flex flex-col items-end gap-1.5">
+                                    <span class="text-[9px] font-black text-slate-900 group-hover:text-primary transition-colors">\u20b9${o.price}</span>
+                                    <span class="text-[8px] font-black px-2 py-0.5 rounded border ${color} uppercase tracking-widest">${o.status}</span>
                                 </div>
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded ${color}">${o.status}</span>
                             </div>
                         `;
                     });
+                    html += `</div>`;
                 }
-                content.innerHTML = `<div class="space-y-1">${html}</div>`;
+                content.innerHTML = html;
             } catch(e) {}
         }
     </script>

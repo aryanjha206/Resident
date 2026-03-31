@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Society Market - Premium eCommerce</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Society Market - Premium Home Shopping</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,375 +12,293 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { primary: '#6366F1', secondary: '#EC4899', accent: '#10B981', dark: '#0F172A', light: '#F8FAFC' }
+                    colors: { primary: '#4F46E5', secondary: '#F43F5E', dark: '#0F172A', card: 'rgba(255, 255, 255, 0.8)' }
                 }
             }
         }
     </script>
     <style>
-        body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.4); box-shadow: 0 8px 32px -4px rgba(0, 0, 0, 0.05); border-radius: 24px; }
-        .glass-header { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,0.3); position: sticky; top: 0; z-index: 100; }
-        .cart-drawer { position: fixed; top: 0; right: 0; width: 100%; max-width: 400px; height: 100%; background: white; z-index: 150; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: -10px 0 30px rgba(0,0,0,0.1); }
-        .cart-drawer.open { transform: translateX(0); }
-        .product-card:hover img { transform: scale(1.05); }
-        .category-pill.active { background: #6366F1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
-        .shimmer { animation: shimmer 2s infinite linear; background: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%); background-size: 800px 104px; }
-        @keyframes shimmer { 0% { background-position: -468px 0; } 100% { background-position: 468px 0; } }
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); opacity: 0; transition: all 0.4s; z-index: 200; }
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; overflow-x: hidden; }
+        .glass-header { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.3); position: sticky; top: 0; z-index: 100; }
+        .product-card { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid rgba(255,255,255,0.5); }
+        .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        .category-chip { transition: all 0.3s; white-space: nowrap; }
+        .category-chip.active { background: #4F46E5; color: white; box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4); }
+        .cart-sidebar { transition: transform 0.4s ease-out; transform: translateX(100%); }
+        .cart-sidebar.open { transform: translateX(0); }
+        .shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        /* Premium Scrollbar */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
     </style>
 </head>
-<body class="text-slate-900 antialiased overflow-x-hidden">
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Header -->
+    <!-- Premium Header -->
     <header class="glass-header px-6 py-4 flex justify-between items-center">
         <div class="flex items-center gap-3">
-            <a href="index.html" class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-primary transition">
+            <a href="index.html" class="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 hover:text-primary transition">
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
-            <h1 class="text-2xl font-black tracking-tighter text-slate-900">SOCIETY<span class="text-primary italic">MARKET</span></h1>
+            <div>
+                <h1 class="text-xl font-black tracking-tighter text-slate-900">Home Market</h1>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                    <i class="fa-solid fa-location-dot text-rose-500"></i> Society Exclusive
+                </p>
+            </div>
         </div>
         <div class="flex items-center gap-4">
-            <div class="relative group hidden sm:block">
-                <input type="text" id="searchInput" oninput="debounceSearch()" placeholder="Search anything..." class="bg-slate-100 border-none rounded-full px-6 py-2.5 text-sm w-48 focus:w-64 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20">
-                <i class="fa-solid fa-magnifying-glass absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            </div>
-            <a href="index.html" onclick="localStorage.setItem('activeTab', 'marketplace')" class="text-xs font-bold text-slate-500 hover:text-primary transition flex items-center gap-1">
-                <i class="fa-solid fa-truck-fast"></i> Tracking
-            </a>
-            <button onclick="toggleCart()" class="relative w-12 h-12 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition">
-                <i class="fa-solid fa-bag-shopping"></i>
-                <span id="cartCountBadge" class="absolute -top-1 -right-1 bg-secondary text-white text-[10px] font-black w-5 h-5 rounded-full border-2 border-white flex items-center justify-center hidden">0</span>
+            <button onclick="toggleCart()" class="relative w-12 h-12 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center shadow-sm hover:shadow-md transition group">
+                <i class="fa-solid fa-bag-shopping text-xl"></i>
+                <span id="cartCount" class="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-lg scale-0 transition-transform duration-300">0</span>
             </button>
         </div>
     </header>
 
-    <!-- Mobile Search Bar -->
-    <div class="px-6 py-3 sm:hidden sticky top-[72px] z-[90] bg-white/50 backdrop-blur-md">
-        <div class="relative group">
-            <input type="text" id="mobileSearchInput" oninput="debounceSearch()" placeholder="Find groceries, decor, services..." class="w-full bg-white border border-slate-200 rounded-2xl px-6 py-3.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/10">
-            <i class="fa-solid fa-magnifying-glass absolute right-5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+    <main class="flex-1 max-w-5xl mx-auto w-full px-6 py-8">
+        
+        <!-- Search & Hero -->
+        <div class="mb-10 group">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                <input type="text" id="marketSearch" oninput="filterProducts()" placeholder="What are you looking for today?" class="w-full bg-white border border-slate-100 rounded-3xl py-5 pl-14 pr-6 text-sm font-medium shadow-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all">
+            </div>
         </div>
-    </div>
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
-        <!-- Hero Section -->
-        <section class="relative rounded-[2.5rem] bg-slate-900 overflow-hidden mb-12 shadow-2xl group">
-            <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/40 to-transparent z-10"></div>
-            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=1974&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-1000">
-            <div class="relative z-20 px-8 py-16 sm:px-16 sm:py-24 max-w-2xl">
-                <span class="bg-primary/20 text-primary border border-primary/20 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 inline-block">Flash Sale Live</span>
-                <h2 class="text-4xl sm:text-6xl font-black text-white leading-tight mb-6">Organic Essentials <br><span class="text-primary italic">at your doorstep.</span></h2>
-                <div class="flex gap-4">
-                    <button class="bg-white text-slate-900 font-black px-8 py-4 rounded-2xl hover:bg-primary hover:text-white transition shadow-xl shadow-white/10 active:scale-95">Discover Collection</button>
-                    <button class="bg-white/10 backdrop-blur-md border border-white/20 text-white font-bold px-8 py-4 rounded-2xl hover:bg-white/20 transition active:scale-95">Learn More</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Categories -->
-        <section class="mb-10">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-black tracking-tight">Browse Categories</h3>
-                <button class="text-sm font-bold text-primary hover:underline">View All</button>
-            </div>
-            <div class="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-6 px-6">
-                <button onclick="filterCategory('All')" class="category-pill active whitespace-nowrap bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold transition">All Items</button>
-                <button onclick="filterCategory('Groceries')" class="category-pill whitespace-nowrap bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold transition">Groceries</button>
-                <button onclick="filterCategory('Home Decor')" class="category-pill whitespace-nowrap bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold transition">Home Decor</button>
-                <button onclick="filterCategory('Electronics')" class="category-pill whitespace-nowrap bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold transition">Electronics</button>
-                <button onclick="filterCategory('Boutique')" class="category-pill whitespace-nowrap bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold transition">Boutique</button>
-                <button onclick="filterCategory('Organic')" class="category-pill whitespace-nowrap bg-white border border-slate-200 px-6 py-3 rounded-2xl text-sm font-bold transition">Organic</button>
-            </div>
-        </section>
+        <!-- Categories Slider -->
+        <div class="flex gap-3 overflow-x-auto pb-6 scroll-hide -mx-6 px-6" id="categoryList">
+            <button onclick="changeCategory('All')" class="category-chip active px-6 py-3 rounded-2xl text-xs font-bold bg-white text-slate-500 border border-slate-100 shadow-sm active">All Items</button>
+            <button onclick="changeCategory('Fresh & Grocery')" class="category-chip px-6 py-3 rounded-2xl text-xs font-bold bg-white text-slate-500 border border-slate-100 shadow-sm">Fresh & Grocery</button>
+            <button onclick="changeCategory('Electronics')" class="category-chip px-6 py-3 rounded-2xl text-xs font-bold bg-white text-slate-500 border border-slate-100 shadow-sm">Electronics</button>
+            <button onclick="changeCategory('Home & Kitchen')" class="category-chip px-6 py-3 rounded-2xl text-xs font-bold bg-white text-slate-500 border border-slate-100 shadow-sm">Home & Kitchen</button>
+            <button onclick="changeCategory('Services')" class="category-chip px-6 py-3 rounded-2xl text-xs font-bold bg-white text-slate-500 border border-slate-100 shadow-sm">Services</button>
+        </div>
 
         <!-- Products Grid -->
-        <section>
-            <div class="flex items-center justify-between mb-8">
-                <h3 id="collectionTitle" class="text-2xl font-black tracking-tight">Main Collection</h3>
-                <div class="flex items-center gap-2">
-                    <span id="productResultCount" class="text-xs font-bold text-slate-400">Loading items...</span>
-                </div>
-            </div>
-            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                <!-- Skeleton Loading -->
-                <div class="glass-card overflow-hidden p-0 h-[420px] shimmer"></div>
-                <div class="glass-card overflow-hidden p-0 h-[420px] shimmer"></div>
-                <div class="glass-card overflow-hidden p-0 h-[420px] shimmer"></div>
-                <div class="glass-card overflow-hidden p-0 h-[420px] shimmer"></div>
-            </div>
-        </section>
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Skeleton View -->
+            <div class="bg-white rounded-[2rem] p-4 shimmer h-64"></div>
+            <div class="bg-white rounded-[2rem] p-4 shimmer h-64"></div>
+            <div class="bg-white rounded-[2rem] p-4 shimmer h-64"></div>
+            <div class="bg-white rounded-[2rem] p-4 shimmer h-64"></div>
+        </div>
     </main>
 
-    <!-- Cart Drawer -->
-    <div id="cartDrawerOverlay" onclick="toggleCart()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] hidden opacity-0 transition-opacity duration-300"></div>
-    <div id="cartDrawer" class="cart-drawer flex flex-col">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-            <h3 class="text-xl font-black">Your Basket</h3>
-            <button onclick="toggleCart()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 transition"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div id="cartItems" class="flex-1 overflow-y-auto p-6 space-y-6">
-            <!-- Empty State -->
-            <div class="flex flex-col items-center justify-center h-full text-center py-20">
-                <div class="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center text-4xl text-slate-300 mb-6"><i class="fa-solid fa-basket-shopping"></i></div>
-                <h4 class="text-lg font-bold text-slate-400">Your basket is empty</h4>
-                <p class="text-[11px] text-slate-400 mt-2 max-w-[200px]">Add some products from the market to see them here.</p>
-                <button onclick="toggleCart()" class="mt-8 bg-slate-900 text-white font-black px-8 py-3 rounded-xl text-xs uppercase tracking-widest">Start Shopping</button>
+    <!-- Cart Sidebar -->
+    <div id="cartOverlay" onclick="toggleCart()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity duration-300"></div>
+    <aside id="cartSidebar" class="cart-sidebar fixed top-0 right-0 h-screen w-full max-w-sm bg-white shadow-2xl z-[200] flex flex-col">
+        <header class="p-6 flex justify-between items-center border-b border-slate-50">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-basket-shopping text-primary text-xl"></i>
+                <h2 class="text-xl font-bold">Your Basket</h2>
             </div>
-        </div>
-        <div class="p-6 bg-slate-50/50 border-t border-slate-100">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <h4 class="text-sm font-bold text-slate-500">Subtotal</h4>
-                    <p class="text-[10px] text-slate-400">Shipping calculated at checkout</p>
-                </div>
-                <h3 id="cartSubtotal" class="text-2xl font-black text-slate-900">₹0</h3>
-            </div>
-            <button onclick="proceedToCheckout()" id="checkoutBtn" class="w-full bg-primary text-white font-black py-4 rounded-2xl hover:bg-indigo-600 shadow-2xl shadow-primary/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none" disabled>
-                Complete Purchase <i class="fa-solid fa-chevron-right text-[10px] ml-2"></i>
+            <button onclick="toggleCart()" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 transition">
+                <i class="fa-solid fa-xmark"></i>
             </button>
-        </div>
-    </div>
+        </header>
 
-    <!-- Toast Component -->
-    <div id="toast" class="bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4">
-        <div id="toastIcon" class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white"><i class="fa-solid fa-check"></i></div>
-        <div>
-            <h4 id="toastTitle" class="text-sm font-black italic">Success</h4>
-            <p id="toastMessage" class="text-[10px] text-slate-400 font-bold uppercase tracking-wider"></p>
+        <div id="cartItems" class="flex-1 overflow-y-auto p-6 space-y-4">
+            <div id="emptyCart" class="h-full flex flex-col items-center justify-center text-center opacity-50">
+                <img src="https://img.icons8.com/bubbles/200/shopping-cart.png" class="w-32 h-32 mb-4">
+                <p class="text-sm font-bold text-slate-500">Your basket is empty.<br>Go fill it with goodness!</p>
+            </div>
         </div>
-    </div>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="fixed inset-0 z-[300] bg-slate-900/80 backdrop-blur-md flex items-center justify-center hidden">
-        <div class="w-full max-w-sm bg-white rounded-[3rem] p-10 flex flex-col items-center text-center">
-            <div class="w-24 h-24 rounded-full bg-emerald-100 flex items-center justify-center text-5xl text-emerald-500 mb-8 animate-pulse shadow-2xl shadow-emerald-500/20"><i class="fa-solid fa-check-double"></i></div>
-            <h2 class="text-3xl font-black tracking-tighter mb-4">Order Confirmed!</h2>
-            <p class="text-sm text-slate-500 mb-8 leading-relaxed">Your request has been broadcasted to the society vendor. They will reach out for payment and delivery.</p>
-            <button onclick="closeSuccess()" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl active:scale-95 transition">Awesome!</button>
+        <footer class="p-8 bg-slate-50/50 border-t border-slate-100">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Subtotal</p>
+                    <h3 id="totalPrice" class="text-3xl font-black text-slate-900">\u20b90</h3>
+                </div>
+                <p class="text-[10px] text-slate-400 font-medium">Society Delivery: <span class="text-emerald-500 font-bold">FREE</span></p>
+            </div>
+            <button onclick="checkout()" class="w-full bg-slate-900 text-white font-bold py-5 rounded-[1.5rem] shadow-xl hover:bg-primary active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-sm">
+                Place Society Order <i class="fa-solid fa-arrow-right text-[10px] opacity-50"></i>
+            </button>
+        </footer>
+    </aside>
+
+    <!-- Confirmation Overlay -->
+    <div id="orderSuccess" class="fixed inset-0 z-[300] bg-emerald-500 flex flex-col items-center justify-center text-white hidden transform translate-y-full transition-transform duration-500">
+        <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-5xl mb-6 animate-bounce">
+            <i class="fa-solid fa-check"></i>
         </div>
+        <h2 class="text-4xl font-black mb-2">Success!</h2>
+        <p class="text-lg font-medium opacity-80 mb-8">Order placed for your flat.</p>
+        <button onclick="closeSuccess()" class="bg-white text-emerald-600 px-8 py-3 rounded-2xl font-bold hover:bg-slate-100 transition">Back to Market</button>
     </div>
 
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
-        function getAuthHeaders() { return {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}`} }
-
-        let products = [];
-        let cart = JSON.parse(localStorage.getItem('marketCart') || '[]');
+        let allProducts = [];
+        let cart = [];
         let currentCategory = 'All';
 
-        async function init() {
-            if (!localStorage.getItem('userToken')) { window.location.href = 'index.html'; return; }
-            
-            const socName = localStorage.getItem('userSocietyName') || 'Society Hub';
-            // Optionally update UI with society name
-            
-            await fetchProducts();
-            renderCart();
-        }
+        const getAuthHeaders = () => ({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        });
 
         async function fetchProducts() {
             try {
                 const res = await fetch(`${API_URL}/marketplace/products`, { headers: getAuthHeaders() });
-                products = await res.json();
+                allProducts = await res.json();
                 renderProducts();
-            } catch (e) {
-                showToast("Connection Error", "Could not fetch products", "error");
+            } catch (err) {
+                console.error("Market fetch failed", err);
             }
         }
 
-        function renderProducts(filtered = null) {
+        function renderProducts() {
             const grid = document.getElementById('productGrid');
-            const data = filtered || products;
+            const searchVal = document.getElementById('marketSearch').value.toLowerCase();
             
-            document.getElementById('productResultCount').innerText = `${data.length} Items Found`;
+            const filtered = allProducts.filter(p => {
+                const matchCat = currentCategory === 'All' || (p.category && p.category === currentCategory);
+                const matchSearch = p.name.toLowerCase().includes(searchVal) || (p.description && p.description.toLowerCase().includes(searchVal));
+                return matchCat && matchSearch;
+            });
             
-            if (data.length === 0) {
-                grid.innerHTML = `<div class="col-span-full py-20 text-center flex flex-col items-center">
-                    <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 text-3xl mb-4"><i class="fa-solid fa-magnifying-glass"></i></div>
-                    <h4 class="text-lg font-bold text-slate-400">No matches found</h4>
-                    <p class="text-xs text-slate-400 mt-2">Try adjusting your search or category filters.</p>
-                </div>`;
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center opacity-40"><i class="fa-solid fa-magnifying-glass text-4xl mb-4"></i><p class="font-bold">No items match your search.</p></div>`;
                 return;
             }
 
-            grid.innerHTML = data.map(p => {
-                const inCart = cart.find(c => c._id === p._id);
-                const imgSrc = p.image || 'https://images.unsplash.com/photo-1553531384-cc64ac80f931?q=80&w=400&auto=format&fit=crop';
-                return `
-                    <div class="glass-card product-card p-0 group flex flex-col h-full bg-white transition-all hover:shadow-2xl hover:shadow-primary/10 border-slate-100 hover:border-primary/20">
-                        <div class="relative h-64 overflow-hidden rounded-t-[24px]">
-                            <img src="${imgSrc}" class="w-full h-full object-cover transition-transform duration-700">
-                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-slate-700 shadow-sm">
-                                ${p.category || 'General'}
-                            </div>
-                            <button onclick="toggleFavorite(this)" class="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-slate-400 hover:text-secondary transition shadow-sm">
-                                <i class="fa-solid fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="p-6 flex flex-col flex-1">
-                            <div class="flex-1">
-                                <h4 class="text-lg font-black text-slate-900 leading-none mb-2">${p.name}</h4>
-                                <p class="text-xs font-medium text-slate-400 line-clamp-2 leading-relaxed h-8 mb-4">${p.description || 'Premium quality curated specifically for your society community.'}</p>
-                            </div>
-                            <div class="flex items-center justify-between pt-4 border-t border-slate-50">
-                                <div>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">Society Price</p>
-                                    <h3 class="text-2xl font-black text-slate-900 italic tracking-tighter">₹${p.price}</h3>
-                                </div>
-                                <button onclick="addToCart('${p._id}')" class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center hover:bg-primary transition shadow-xl active:scale-95">
-                                    <i class="fa-solid ${inCart ? 'fa-check' : 'fa-plus'} text-lg"></i>
-                                </button>
-                            </div>
-                        </div>
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card bg-white p-4 rounded-[2.5rem] flex flex-col group/card relative overflow-hidden">
+                    <div class="relative h-44 rounded-[2rem] overflow-hidden mb-4 bg-slate-50">
+                        <img src="${p.image || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700">
+                        <span class="absolute top-4 right-4 bg-white/80 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-slate-800 shadow-sm border border-white/50">\u20b9${p.price}</span>
                     </div>
-                `;
-            }).join('');
+                    <div class="px-1 flex-1">
+                        <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">${p.category || 'General'}</p>
+                        <h3 class="text-[13px] font-bold text-slate-900 group-hover/card:text-primary transition-colors leading-tight line-clamp-1">${p.name}</h3>
+                        <p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed min-h-[2.5rem]">${p.description || 'Verified society member product.'}</p>
+                    </div>
+                    <button onclick="addToCart('${p._id}')" class="mt-4 w-full bg-slate-50 text-slate-700 py-3 rounded-2xl font-bold text-[11px] group-hover/card:bg-primary group-hover/card:text-white transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
+                        Add to Basket <i class="fa-solid fa-plus opacity-50"></i>
+                    </button>
+                    ${p.isNew ? '<div class="absolute top-0 left-0 bg-rose-500 text-white text-[8px] font-black px-4 py-1 rounded-br-2xl uppercase tracking-tighter">New</div>' : ''}
+                </div>
+            `).join('');
         }
 
-        function filterCategory(cat) {
+        function filterProducts() {
+            renderProducts();
+        }
+
+        function changeCategory(cat) {
             currentCategory = cat;
-            document.querySelectorAll('.category-pill').forEach(btn => {
-                btn.classList.toggle('active', btn.innerText.includes(cat));
+            document.querySelectorAll('.category-chip').forEach(c => {
+                c.classList.remove('active');
+                if (c.innerText === cat || (cat === 'All' && c.innerText === 'All Items')) c.classList.add('active');
             });
-            document.getElementById('collectionTitle').innerText = `${cat} Collection`;
-            
-            let filtered = products;
-            if (cat !== 'All') {
-                filtered = products.filter(p => (p.category || '').toLowerCase() === cat.toLowerCase());
-            }
-            renderProducts(filtered);
+            renderProducts();
         }
 
-        function debounceSearch() {
-            clearTimeout(window.searchTimeout);
-            window.searchTimeout = setTimeout(() => {
-                const query = (document.getElementById('searchInput').value || document.getElementById('mobileSearchInput').value).toLowerCase();
-                const filtered = products.filter(p => 
-                    p.name.toLowerCase().includes(query) || 
-                    (p.description || '').toLowerCase().includes(query) || 
-                    (p.category || '').toLowerCase().includes(query)
-                );
-                renderProducts(filtered);
-            }, 300);
+        function toggleCart() {
+            const side = document.getElementById('cartSidebar');
+            const overlay = document.getElementById('cartOverlay');
+            side.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+            setTimeout(() => overlay.classList.toggle('opacity-0'), 10);
+            if(side.classList.contains('open')) renderCart();
         }
 
-        function addToCart(id) {
-            const product = products.find(p => p._id === id);
-            const existing = cart.find(c => c._id === id);
-            
-            if (existing) {
-                existing.quantity += 1;
+        function addToCart(pid) {
+            const prod = allProducts.find(p => p._id === pid);
+            const exists = cart.find(c => c._id === pid);
+            if (exists) {
+                exists.qty++;
             } else {
-                cart.push({ ...product, quantity: 1 });
+                cart.push({ ...prod, qty: 1 });
             }
+            updateCartCount();
             
-            localStorage.setItem('marketCart', JSON.stringify(cart));
-            renderProducts(); // Refresh buttons
-            renderCart();
-            updateStats();
-            showToast("Item Added", `${product.name} is in your basket.`, "success");
+            // Animation
+            const count = document.getElementById('cartCount');
+            count.classList.remove('scale-0');
+            count.classList.add('scale-100');
             
-            // Subtle pulse on cart icon
-            const btn = document.querySelector('button i.fa-bag-shopping').parentElement;
-            btn.classList.add('animate-bounce');
-            setTimeout(() => btn.classList.remove('animate-bounce'), 1000);
+            // Shake effect
+            const btn = event.currentTarget;
+            btn.innerHTML = 'Added! <i class="fa-solid fa-check"></i>';
+            btn.classList.replace('bg-slate-50', 'bg-emerald-500');
+            btn.classList.replace('text-slate-700', 'text-white');
+            setTimeout(() => {
+                btn.innerHTML = 'Add to Basket <i class="fa-solid fa-plus opacity-50"></i>';
+                btn.classList.replace('bg-emerald-500', 'bg-slate-50');
+                btn.classList.replace('text-white', 'text-slate-700');
+            }, 1000);
         }
 
         function renderCart() {
-            const container = document.getElementById('cartItems');
-            const subtotalEl = document.getElementById('cartSubtotal');
-            const countEl = document.getElementById('cartCountBadge');
-            const checkoutBtn = document.getElementById('checkoutBtn');
-
+            const itemBox = document.getElementById('cartItems');
             if (cart.length === 0) {
-                container.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full text-center py-20">
-                        <div class="w-24 h-24 rounded-full bg-slate-50 flex items-center justify-center text-4xl text-slate-300 mb-6"><i class="fa-solid fa-basket-shopping"></i></div>
-                        <h4 class="text-lg font-bold text-slate-400">Your basket is empty</h4>
-                        <button onclick="toggleCart()" class="mt-8 bg-slate-900 text-white font-black px-8 py-3 rounded-xl text-xs uppercase tracking-widest">Start Shopping</button>
-                    </div>`;
-                subtotalEl.innerText = '₹0';
-                countEl.classList.add('hidden');
-                checkoutBtn.disabled = true;
+                itemBox.innerHTML = `<div id="emptyCart" class="h-full flex flex-col items-center justify-center text-center opacity-50 mt-20"><img src="https://img.icons8.com/bubbles/200/shopping-cart.png" class="w-32 h-32 mb-4"><p class="text-sm font-bold text-slate-500">Your basket is empty.<br>Go fill it with goodness!</p></div>`;
+                document.getElementById('totalPrice').innerText = `\u20b90`;
                 return;
             }
 
             let total = 0;
-            container.innerHTML = cart.map((item, idx) => {
-                total += item.price * item.quantity;
+            itemBox.innerHTML = cart.map(c => {
+                total += c.price * c.qty;
                 return `
-                    <div class="flex gap-4 group">
-                        <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-sm">
-                            <img src="${item.image || 'https://images.unsplash.com/photo-1553531384-cc64ac80f931'}" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-1 flex flex-col justify-center">
-                            <div class="flex justify-between items-start mb-1">
-                                <h4 class="text-sm font-black text-slate-900 leading-tight">${item.name}</h4>
-                                <button onclick="removeFromCart(${idx})" class="text-slate-300 hover:text-secondary p-1"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
-                            </div>
-                            <p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">Qty: ${item.quantity}</p>
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-base font-black text-slate-900 tracking-tighter">₹${item.price * item.quantity}</h3>
-                                <div class="flex items-center bg-slate-100 rounded-lg">
-                                    <button onclick="changeQty(${idx}, -1)" class="w-6 h-6 flex items-center justify-center text-xs text-slate-500 hover:text-primary">-</button>
-                                    <span class="text-[10px] font-black w-6 text-center">${item.quantity}</span>
-                                    <button onclick="changeQty(${idx}, 1)" class="w-6 h-6 flex items-center justify-center text-xs text-slate-500 hover:text-primary">+</button>
+                    <div class="bg-slate-50/50 p-4 rounded-3xl flex gap-4 border border-slate-100 group/item">
+                        <img src="${c.image || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-16 h-16 rounded-2xl object-cover bg-white shadow-sm transition group-hover/item:scale-110">
+                        <div class="flex-1">
+                            <h4 class="text-sm font-bold text-slate-800 line-clamp-1">${c.name}</h4>
+                            <p class="text-[10px] text-slate-400 font-bold mb-2">\u20b9${c.price} / item</p>
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center bg-white border border-slate-100 rounded-xl px-2 py-1 gap-4">
+                                    <button onclick="adjustQty('${c._id}', -1)" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-primary transition"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                    <span class="text-[11px] font-black text-slate-700">${c.qty}</span>
+                                    <button onclick="adjustQty('${c._id}', 1)" class="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-primary transition"><i class="fa-solid fa-plus text-[10px]"></i></button>
                                 </div>
+                                <button onclick="removeFromCart('${c._id}')" class="text-rose-400 hover:text-rose-600 transition ml-auto"><i class="fa-solid fa-trash-can text-sm"></i></button>
                             </div>
                         </div>
                     </div>
                 `;
             }).join('');
-
-            subtotalEl.innerText = `₹${total}`;
-            countEl.innerText = cart.reduce((acc, c) => acc + c.quantity, 0);
-            countEl.classList.remove('hidden');
-            checkoutBtn.disabled = false;
+            document.getElementById('totalPrice').innerText = `\u20b9${total.toLocaleString()}`;
         }
 
-        function changeQty(idx, delta) {
-            cart[idx].quantity += delta;
-            if (cart[idx].quantity < 1) cart.splice(idx, 1);
-            localStorage.setItem('marketCart', JSON.stringify(cart));
+        function adjustQty(pid, delta) {
+            const item = cart.find(c => c._id === pid);
+            item.qty += delta;
+            if (item.qty < 1) removeFromCart(pid);
+            else renderCart();
+            updateCartCount();
+        }
+
+        function removeFromCart(pid) {
+            cart = cart.filter(c => c._id !== pid);
             renderCart();
-            renderProducts();
-            updateStats();
+            updateCartCount();
         }
 
-        function removeFromCart(idx) {
-            cart.splice(idx, 1);
-            localStorage.setItem('marketCart', JSON.stringify(cart));
-            renderCart();
-            renderProducts();
-            updateStats();
+        function updateCartCount() {
+            const count = cart.reduce((acc, c) => acc + c.qty, 0);
+            const badge = document.getElementById('cartCount');
+            badge.innerText = count;
+            if (count > 0) badge.classList.remove('scale-0');
+            else badge.classList.add('scale-0');
         }
 
-        function toggleCart() {
-            const drawer = document.getElementById('cartDrawer');
-            const overlay = document.getElementById('cartDrawerOverlay');
-            const isOpen = drawer.classList.contains('open');
+        async function checkout() {
+            if (cart.length === 0) return;
             
-            if (isOpen) {
-                drawer.classList.remove('open');
-                overlay.classList.add('opacity-0');
-                setTimeout(() => overlay.classList.add('hidden'), 300);
-            } else {
-                overlay.classList.remove('hidden');
-                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
-                drawer.classList.add('open');
-            }
-        }
-
-        async function proceedToCheckout() {
-            const btn = document.getElementById('checkoutBtn');
+            const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Placing Orders...';
             btn.disabled = true;
 
             try {
-                // Bulk order placement
+                // Since society hub place_order is one-by-one in the mock, we loop.
+                // In production, you'd add a bulk endpoint.
                 for (let item of cart) {
                     await fetch(`${API_URL}/marketplace/orders`, {
                         method: 'POST',
@@ -388,50 +306,42 @@
                         body: JSON.stringify({
                             productId: item._id,
                             productName: item.name,
-                            price: item.price,
-                            productImage: item.image
+                            productImage: item.image,
+                            category: item.category,
+                            price: item.price * item.qty
                         })
                     });
                 }
                 
+                // Show Success
+                const successLayer = document.getElementById('orderSuccess');
+                successLayer.classList.remove('hidden');
+                setTimeout(() => {
+                    successLayer.classList.remove('translate-y-full');
+                }, 10);
+                
                 cart = [];
-                localStorage.setItem('marketCart', '[]');
-                renderCart();
-                renderProducts();
-                toggleCart();
-                document.getElementById('successModal').classList.remove('hidden');
-            } catch (e) {
-                showToast("Order Failed", "Try again later", "error");
+                updateCartCount();
+            } catch (err) {
+                alert("Order failed. Please check your connection.");
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
 
-        function closeSuccess() { document.getElementById('successModal').classList.add('hidden'); }
-
-        function showToast(title, message, type = 'success') {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
-            document.getElementById('toastTitle').innerText = title;
-            document.getElementById('toastMessage').innerText = message;
-            
-            if (type === 'error') icon.className = 'w-10 h-10 rounded-xl bg-secondary flex items-center justify-center text-white';
-            else icon.className = 'w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white';
-            
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        function closeSuccess() {
+            const successLayer = document.getElementById('orderSuccess');
+            successLayer.classList.add('translate-y-full');
+            setTimeout(() => {
+                successLayer.classList.add('hidden');
+                toggleCart();
+                window.location.href = 'index.html#marketplace'; // Redirect back to index but specifically to market tab area
+            }, 500);
         }
 
-        function toggleFavorite(btn) {
-            btn.classList.toggle('text-slate-400');
-            btn.classList.toggle('text-secondary');
-            btn.innerHTML = btn.classList.contains('text-secondary') ? '<i class="fa-solid fa-heart"></i>' : '<i class="fa-regular fa-heart"></i>';
-        }
-
-        function updateStats() {}
-
-        init();
+        // Init
+        document.addEventListener('DOMContentLoaded', fetchProducts);
     </script>
 </body>
 </html>

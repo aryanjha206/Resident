@@ -154,17 +154,31 @@
                 <i class="fa-solid fa-box-open absolute top-4 right-4 text-5xl opacity-20"></i>
             </div>
 
-            <div class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">My Active Products</h4>
-                    <button onclick="openModal('addProductModal')" class="text-[10px] font-bold text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100">+ New Product</button>
-                </div>
-                <div id="sellerProductList" class="grid grid-cols-1 gap-3"></div>
+            <div class="flex border-b border-slate-100 mb-6 w-full px-1">
+                <button onclick="switchSellerTab('orders')" id="btnSellerOrders" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 border-primary text-primary">Orders</button>
+                <button onclick="switchSellerTab('analytics')" id="btnSellerStats" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition">Sale Details</button>
+                <button onclick="switchSellerTab('inventory')" id="btnSellerInv" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition">Products</button>
             </div>
 
-            <div class="space-y-4 pt-4">
-                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Customer Orders</h4>
+            <div id="sellerViewOrders" class="space-y-4">
+                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Active Deliveries</h4>
                 <div id="sellerOrderList" class="space-y-3"></div>
+            </div>
+
+            <div id="sellerViewAnalytics" class="hidden space-y-6">
+                <!-- Detailed Sales Log -->
+                <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
+                    <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-500"></i> Performance Analytics</h4>
+                    <div id="sellerDetailedSales" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="sellerViewInventory" class="hidden space-y-4">
+                <div class="flex justify-between items-center px-1">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Listings</h4>
+                    <button onclick="openModal('addProductModal')" class="text-[9px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase">+ New Item</button>
+                </div>
+                <div id="sellerProductList" class="grid grid-cols-1 gap-3"></div>
             </div>
         </main>
     </div>
@@ -186,6 +200,13 @@
                     </label>
                 </div>
                 <textarea id="pDesc" placeholder="Brief description..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm resize-none" rows="3"></textarea>
+                <select id="pCategory" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700">
+                    <option value="General">Category: General</option>
+                    <option value="Fresh & Grocery">Fresh & Grocery</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Home & Kitchen">Home & Kitchen</option>
+                    <option value="Services">Services</option>
+                </select>
                 <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Publish Listing</button>
             </form>
         </div>
@@ -409,14 +430,23 @@
 
             <!-- MARKETPLACE TAB -->
             <div id="tab-marketplace" class="tab-view space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-dark">Community Market</h2>
-                    <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100"><i class="fa-solid fa-circle text-[5px] animate-pulse mr-1"></i>LIVE</span>
+                <div class="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all transform hover:-rotate-1" onclick="window.location.href='market.html'">
+                    <div class="relative z-10 flex flex-col items-center text-center">
+                        <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl mb-6 border border-white/30 animate-pulse">
+                            <i class="fa-solid fa-shop"></i>
+                        </div>
+                        <h3 class="text-3xl font-black mb-2 tracking-tighter leading-tight">Explore the Full Market</h3>
+                        <p class="text-sm text-indigo-100 opacity-80 max-w-[280px] mb-8">Categories, basket shopping, and exclusive society discounts waiting for you.</p>
+                        <div class="flex items-center gap-3 bg-white text-indigo-600 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl group-hover:scale-105 transition-transform">
+                            Enter Storefront <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                    <!-- Decorative patterns -->
+                    <div class="absolute top-0 right-0 w-48 h-48 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400 opacity-5 rounded-full blur-3xl -ml-20 -mb-20"></div>
+                    <i class="fa-solid fa-basket-shopping absolute -bottom-10 -right-10 text-[12rem] opacity-10 group-hover:rotate-12 transition-transform duration-1000"></i>
                 </div>
-                <div class="glass-card p-3">
-                    <input type="text" id="marketSearchInput" placeholder="Search products..." oninput="filterMarketplace()" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
-                </div>
-                <div class="grid grid-cols-2 gap-4" id="marketplaceList"></div>
+                
                 <div class="pt-2">
                     <h3 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
                     <div id="myOrdersList" class="space-y-4"></div>
@@ -864,38 +894,58 @@
                     p_html += `
                         <div class="glass-card p-3 flex justify-between items-center">
                             <div class="flex items-center gap-3">
-                                <img src="${p.image}" class="w-10 h-10 rounded-lg">
-                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[10px] text-slate-500">₹${p.price}</p></div>
+                                <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover">
+                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[9px] text-slate-400 font-bold">₹${p.price} • ${p.category || 'General'}</p></div>
                             </div>
-                            <span class="text-[8px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded uppercase">${p.status}</span>
+                            <span class="text-[8px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded uppercase border border-emerald-100">${p.status}</span>
                         </div>`;
                 });
                 document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings yet.</p>';
 
                 let o_html = '';
+                const p_stats = {};
                 orders.forEach(o => {
                     const isPaid = o.paymentStatus === 'Paid';
+                    if(isPaid) p_stats[o.productName] = (p_stats[o.productName] || 0) + o.price;
+
                     o_html += `
-                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+                        <div class="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm space-y-3">
                             <div class="flex justify-between items-start">
-                                <div><h4 class="text-xs font-bold">${o.productName}</h4><p class="text-[9px] text-slate-500">Buyer: ${o.userName}</p><p class="text-[9px] text-primary font-bold">\u20b9${o.price}</p></div>
+                                <div class="flex gap-3">
+                                    <img src="${o.productImage}" class="w-12 h-12 rounded-xl object-cover bg-slate-50 border border-slate-100">
+                                    <div><h4 class="text-xs font-black text-slate-800">${o.productName}</h4><p class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Buyer: ${o.userName}</p><p class="text-[9px] text-primary font-black mt-1 uppercase tracking-widest">\u20b9${o.price}</p></div>
+                                </div>
                                 <div class="flex flex-col items-end gap-1">
-                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded ${o.status === 'Delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${o.status}</span>
-                                    <span class="text-[8px] font-bold ${isPaid ? 'text-emerald-500' : 'text-red-400'}">${isPaid ? '\u2713 PAID' : '\u2022 UNPAID'}</span>
+                                    <span class="text-[9px] font-black px-3 py-1 rounded-full border ${o.status === 'Delivered' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-indigo-50 border-indigo-100 text-primary'} uppercase tracking-widest">${o.status}</span>
+                                    <span class="text-[8px] font-black px-2 ${isPaid ? 'text-emerald-500' : 'text-rose-500'} tracking-tighter underline underline-offset-4 decoration-current">${isPaid ? 'FULLY PAID' : 'PENDING CASH'}</span>
                                 </div>
                             </div>
-                            <div class="flex gap-2 flex-wrap">
-                                ${o.status === 'Placed' ? `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-blue-50 text-blue-600 font-bold text-[9px] py-1.5 rounded-lg border border-blue-100">Accept</button>` : ''}
-                                ${o.status === 'Processing' ? `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-orange-50 text-orange-600 font-bold text-[9px] py-1.5 rounded-lg border border-orange-100">Ship Now</button>` : ''}
-                                ${o.status === 'Shipped' ? `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-emerald-50 text-emerald-600 font-bold text-[9px] py-1.5 rounded-lg border border-emerald-100">Confirm Delivery</button>` : ''}
-                                ${o.status === 'Delivered' && !isPaid ? `<button onclick="collectPayment('${o._id}')" class="flex-1 bg-primary text-white font-bold text-[9px] py-1.5 rounded-lg shadow-sm">Collect \u20b9${o.price}</button>` : ''}
-                                ${isPaid ? `<span class="flex-1 text-center bg-slate-50 text-slate-400 font-bold text-[9px] py-1.5 rounded-lg">\u2713 Completed</span>` : ''}
+                            <div class="flex gap-2">
+                                ${o.status !== 'Delivered' ? `
+                                    <select onchange="updateOrderStatus('${o._id}', this.value)" class="flex-1 bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest rounded-xl py-2 px-3">
+                                        <option value="Placed" ${o.status === 'Placed' ? 'selected' : ''}>Placed</option>
+                                        <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                                        <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                        <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                    </select>` : ''}
+                                ${isPaid ? `<span class="flex-1 text-center bg-slate-900 text-white rounded-xl py-2 text-[10px] font-black uppercase tracking-widest">Complete</span>` : `<button onclick="collectPayment('${o._id}')" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest">Mark Paid</button>`}
                             </div>
                         </div>`;
                 });
-                document.getElementById('sellerOrderList').innerHTML = o_html || '<p class="text-xs text-slate-400">Ready for first order.</p>';
+                document.getElementById('sellerOrderList').innerHTML = o_html || '<p class="text-xs text-slate-400 text-center py-8 opacity-40 italic">Ready for your first sale!</p>';
                 
-                // Analytics
+                // ANALYTICS PEFORMANCE
+                let statsHtml = '';
+                Object.entries(p_stats).sort((a,b) => b[1] - a[1]).forEach(([name, rev]) => {
+                    statsHtml += `
+                        <div class="flex items-center justify-between py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition rounded-xl px-2">
+                            <span class="text-[11px] font-bold text-slate-700">${name}</span>
+                            <span class="text-xs font-black text-slate-900 font-mono">₹${rev.toLocaleString()}</span>
+                        </div>`;
+                });
+                document.getElementById('sellerDetailedSales').innerHTML = statsHtml || '<p class="text-[10px] text-slate-400 text-center py-4 font-bold uppercase tracking-widest">No completed sales to show.</p>';
+
+                // Global Stats Update
                 const totalRevenue = orders.filter(o => o.paymentStatus === 'Paid').reduce((acc, o) => acc + o.price, 0);
                 document.getElementById('sellerRevenue').innerText = '\u20b9' + totalRevenue.toLocaleString();
                 document.getElementById('sellerSalesCount').innerText = orders.length;
@@ -1669,12 +1719,64 @@ This is a computer generated document.
             } catch(e) {}
         }
 
-        // Updated fetchDashboardData to include polls
-        const ogFetchDashboardData = fetchDashboardData;
-        fetchDashboardData = async function() {
-            await ogFetchDashboardData();
-            loadPolls();
+        function switchSellerTab(tab) {
+            document.getElementById('sellerViewOrders').classList.add('hidden');
+            document.getElementById('sellerViewAnalytics').classList.add('hidden');
+            document.getElementById('sellerViewInventory').classList.add('hidden');
+            
+            const btnIds = ['btnSellerOrders', 'btnSellerStats', 'btnSellerInv'];
+            btnIds.forEach(id => {
+                const b = document.getElementById(id);
+                b.classList.remove('border-primary', 'text-primary');
+                b.classList.add('border-transparent', 'text-slate-400');
+            });
+
+            if(tab === 'orders') {
+                document.getElementById('sellerViewOrders').classList.remove('hidden');
+                document.getElementById('btnSellerOrders').classList.replace('border-transparent', 'border-primary');
+                document.getElementById('btnSellerOrders').classList.replace('text-slate-400', 'text-primary');
+            } else if(tab === 'analytics') {
+                document.getElementById('sellerViewAnalytics').classList.remove('hidden');
+                document.getElementById('btnSellerStats').classList.replace('border-transparent', 'border-primary');
+                document.getElementById('btnSellerStats').classList.replace('text-slate-400', 'text-primary');
+            } else if(tab === 'inventory') {
+                document.getElementById('sellerViewInventory').classList.remove('hidden');
+                document.getElementById('btnSellerInv').classList.replace('border-transparent', 'border-primary');
+                document.getElementById('btnSellerInv').classList.replace('text-slate-400', 'text-primary');
+            }
         }
+
+        // --- PRODUCT PUBLISH WITH CATEGORY ---
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = "Publishing Listing...";
+            btn.disabled = true;
+
+            const payload = {
+                name: document.getElementById('pName').value,
+                price: document.getElementById('pPrice').value,
+                description: document.getElementById('pDesc').value,
+                category: document.getElementById('pCategory').value,
+                image: document.getElementById('imagePreview').src // Assuming base64 from preview
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/marketplace/products`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`},
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    showToast("Your product is now LIVE!", "Market Update");
+                    e.target.reset();
+                    document.getElementById('imagePreviewContainer').classList.add('hidden');
+                    closeModal(null, 'addProductModal');
+                    loadSellerDashboard();
+                }
+            } catch(err) { showToast("Failed to list product", "Error"); }
+            btn.innerText = "Publish Listing"; btn.disabled = false;
+        });
 
         checkAuth();
     </script>
