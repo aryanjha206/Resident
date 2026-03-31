@@ -141,6 +141,16 @@
             <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
                 <h3 class="text-xl font-bold">Welcome, Vendor</h3>
                 <p class="text-xs text-indigo-100 opacity-80 mt-1">Manage your storefront and track incoming orders.</p>
+                <div class="flex gap-4 mt-4">
+                    <div class="bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm border border-white/10">
+                        <p class="text-[9px] uppercase font-bold text-indigo-200">Revenue</p>
+                        <h4 id="sellerRevenue" class="text-lg font-black">\u20b90</h4>
+                    </div>
+                    <div class="bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm border border-white/10">
+                        <p class="text-[9px] uppercase font-bold text-indigo-200">Sales</p>
+                        <h4 id="sellerSalesCount" class="text-lg font-black">0</h4>
+                    </div>
+                </div>
                 <i class="fa-solid fa-box-open absolute top-4 right-4 text-5xl opacity-20"></i>
             </div>
 
@@ -390,23 +400,34 @@
                     <button onclick="toggleChat()" class="text-[10px] font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-1.5"><i class="fa-solid fa-comments"></i> Society Chat</button>
                 </div>
                 <div class="glass-card p-4">
-                    <input type="text" placeholder="Search residents..." class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
+                    <input type="text" id="residentSearchInput" placeholder="Search residents..." oninput="filterResidents()" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
                     <div id="mySocietyUsersList" class="space-y-3">
                         <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
                     </div>
                 </div>
             </div>
 
-            <!-- MARKETPLACE TAB -->
+            <!-- MARKETPLACE TAB (Now Orders & Tracking) -->
             <div id="tab-marketplace" class="tab-view space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-lg font-bold text-dark">Community Market</h2>
-                    <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100"><i class="fa-solid fa-circle text-[5px] animate-pulse mr-1"></i>LIVE</span>
+                <div class="relative rounded-3xl bg-gradient-to-br from-pink-500 to-rose-600 p-6 text-white shadow-xl overflow-hidden group">
+                    <div class="relative z-10">
+                        <h3 class="text-xl font-bold">Community Market</h3>
+                        <p class="text-[11px] text-pink-100 opacity-90 mt-1 max-w-[200px]">Unlock exclusive society deals and local organic produce.</p>
+                        <a href="market.html" class="inline-flex items-center gap-2 bg-white text-rose-600 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest mt-4 shadow-lg hover:bg-slate-50 active:scale-95 transition">
+                            Open Store <i class="fa-solid fa-bag-shopping"></i>
+                        </a>
+                    </div>
+                    <i class="fa-solid fa-basket-shopping absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-700"></i>
                 </div>
-                <div class="grid grid-cols-2 gap-4" id="marketplaceList"></div>
+
                 <div class="pt-2">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
-                    <div id="myOrdersList" class="space-y-4"></div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> My Active Orders</h3>
+                        <span id="orderCountBadge" class="text-[9px] font-black bg-slate-100 px-2 py-1 rounded-full text-slate-500">0</span>
+                    </div>
+                    <div id="myOrdersList" class="space-y-4">
+                        <!-- Orders load here -->
+                    </div>
                 </div>
             </div>
 
@@ -455,11 +476,11 @@
         <!-- Bottom Navigation -->
         <nav class="bottom-nav pb-safe flex justify-between px-6 pt-3 h-[70px]">
             <a href="#" class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="#" class="nav-item relative" onclick="switchTab('money')"><i class="fa-solid fa-wallet"></i><span>Money</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('money')"><i class="fa-solid fa-wallet"></i><span>Money</span></a>
             <div class="relative flex justify-center w-16 px-2">
-                <button class="absolute -top-7 floating-add active:scale-95 transition" onclick="openModal('complaintModal')"><i class="fa-solid fa-plus text-xl"></i></button>
+                <a href="market.html" class="absolute -top-7 floating-add active:scale-95 transition flex items-center justify-center bg-gradient-to-tr from-pink-500 to-rose-600 shadow-xl shadow-pink-200"><i class="fa-solid fa-bag-shopping text-xl"></i></a>
             </div>
-            <a href="#" class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i><span>People</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('marketplace')"><i class="fa-solid fa-truck-ramp-box"></i><span>Orders</span></a>
             <a href="#" class="nav-item" onclick="switchTab('property')"><i class="fa-solid fa-building"></i><span>Property</span></a>
         </nav>
     </div>
@@ -729,6 +750,9 @@
                 if(socName) document.getElementById('societyNameDisplay').innerText = socName;
                 
                 fetchDashboardData();
+                
+                const activeTab = localStorage.getItem('activeTab') || 'home';
+                switchTab(activeTab);
             }
         }
 
@@ -806,8 +830,16 @@
             document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            event.currentTarget.classList.add('active');
+            const tabNode = document.getElementById(`tab-${tabId}`);
+            if(tabNode) tabNode.classList.add('active');
+            
+            // Find and activate the nav button
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if(item.getAttribute('onclick').includes(`'${tabId}'`)) item.classList.add('active');
+            });
+
+            localStorage.setItem('activeTab', tabId);
             
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
@@ -881,6 +913,11 @@
                         </div>`;
                 });
                 document.getElementById('sellerOrderList').innerHTML = o_html || '<p class="text-xs text-slate-400">Ready for first order.</p>';
+                
+                // Analytics
+                const totalRevenue = orders.filter(o => o.paymentStatus === 'Paid').reduce((acc, o) => acc + o.price, 0);
+                document.getElementById('sellerRevenue').innerText = '\u20b9' + totalRevenue.toLocaleString();
+                document.getElementById('sellerSalesCount').innerText = orders.length;
             } catch(e) {}
         }
         async function updateOrderStatus(id, status) {
@@ -938,15 +975,28 @@
         });
 
         // --- MARKETPLACE LOGIC ---
+        window._allProducts = [];
+        window._allOrders = [];
+        
         async function loadMarketplace() {
             try {
                 const [pRes, oRes] = await Promise.all([
                     fetch(`${API_URL}/marketplace/products`, {headers: getAuthHeaders()}),
                     fetch(`${API_URL}/marketplace/orders`, {headers: getAuthHeaders()})
                 ]);
-                const products = await pRes.json();
-                const orders = await oRes.json();
-                
+                window._allProducts = await pRes.json();
+                window._allOrders = await oRes.json();
+                renderMarketplace(window._allProducts, window._allOrders);
+            } catch(e) {}
+        }
+        
+        function filterMarketplace() {
+            const query = document.getElementById('marketSearchInput').value.toLowerCase();
+            const filtered = window._allProducts.filter(p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query)));
+            renderMarketplace(filtered, window._allOrders);
+        }
+
+        function renderMarketplace(products, orders) {
                 let p_html = '';
                 products.forEach(p => {
                     const imgSrc = p.image || 'https://img.icons8.com/color/96/box--v1.png';
@@ -1002,7 +1052,7 @@
                         </div>`;
                 });
                 document.getElementById('myOrdersList').innerHTML = o_html || '<p class="text-xs text-slate-400 text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Your orders will appear here.</p>';
-            } catch(e) {}
+                document.getElementById('orderCountBadge').innerText = orders.length;
         }
         async function buyProduct(productId, productName, price, productImage) {
             showConfirm("Confirm Order", `Place order for ${productName} (\u20b9${price})?`, async () => {
@@ -1249,6 +1299,9 @@ This is a computer generated document.
             window.URL.revokeObjectURL(url);
         }
         
+        window._allUsers = [];
+        window._allServices = [];
+        
         async function loadSocietyUsers() {
             document.getElementById('mySocietyUsersList').innerHTML = '<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>';
             try {
@@ -1256,11 +1309,22 @@ This is a computer generated document.
                     fetch(`${API_URL}/users`, { headers: getAuthHeaders() }),
                     fetch(`${API_URL}/services`, { headers: getAuthHeaders() })
                 ]);
-                const users = await usersRes.json();
-                const services = servRes.ok ? await servRes.json() : [];
-                
+                window._allUsers = await usersRes.json();
+                window._allServices = servRes.ok ? await servRes.json() : [];
+                renderSocietyDirectory(window._allUsers, window._allServices);
+            } catch(e) {}
+        }
+        
+        function filterResidents() {
+            const query = document.getElementById('residentSearchInput').value.toLowerCase();
+            const filteredUsers = window._allUsers.filter(u => u.name.toLowerCase().includes(query) || (u.role && u.role.toLowerCase().includes(query)));
+            const filteredServices = window._allServices.filter(s => s.name.toLowerCase().includes(query) || (s.role && s.role.toLowerCase().includes(query)));
+            renderSocietyDirectory(filteredUsers, filteredServices);
+        }
+
+        function renderSocietyDirectory(users, services) {
                 let html = '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Essential Staff & Services</h3>';
-                if(services.length === 0) html += `<p class="text-[10px] text-slate-400 mb-4">No staff registered.</p>`;
+                if(services.length === 0) html += `<p class="text-[10px] text-slate-400 mb-4">No staff matching results.</p>`;
                 services.forEach(s => {
                     html += `
                         <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl flex items-center justify-between mb-2 shadow-sm">
@@ -1271,12 +1335,16 @@ This is a computer generated document.
                                     <p class="text-[10px] text-slate-500">${s.role.toUpperCase()}</p>
                                 </div>
                             </div>
-                            <a href="tel:${s.phone}" class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg active:scale-95 transition"><i class="fa-solid fa-phone"></i></a>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[8px] font-bold ${s.status === 'Present' ? 'text-emerald-500 bg-emerald-50' : 'text-slate-400 bg-slate-100'} px-1.5 py-0.5 rounded border border-current/20">${s.status || 'ABSENT'}</span>
+                                <a href="tel:${s.phone}" class="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg active:scale-95 transition"><i class="fa-solid fa-phone"></i></a>
+                            </div>
                         </div>
                     `;
                 });
                 
                 html += '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-4">Society Residents</h3>';
+                if(users.length === 0) html += `<p class="text-[10px] text-slate-400 py-4 text-center">No residents match your search.</p>`;
                 users.forEach(u => {
                     html += `
                         <div class="bg-white border border-slate-100 p-3 rounded-xl flex items-center gap-3 mb-2">
@@ -1289,7 +1357,6 @@ This is a computer generated document.
                     `;
                 });
                 document.getElementById('mySocietyUsersList').innerHTML = html;
-            } catch(e) {}
         }
 
         async function loadUserComplaints() {

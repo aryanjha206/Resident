@@ -27,6 +27,13 @@
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
     </div>
 
+    <div id="sosAlertToast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-8 py-5 rounded-3xl shadow-[0_0_50px_rgba(220,38,38,0.5)] z-[200] hidden flex flex-col items-center gap-2 animate-bounce border-4 border-white/20">
+        <i class="fa-solid fa-truck-medical text-4xl"></i>
+        <h2 class="text-xl font-black tracking-tighter">EMERGENCY SOS</h2>
+        <p id="sosResident" class="text-sm font-bold bg-white/20 px-3 py-1 rounded-full"></p>
+        <button onclick="resolveSOSAlert()" class="mt-2 bg-white text-red-600 px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition">Mark as Resolved</button>
+    </div>
+
     <!-- In-App Notification (Toast) -->
     <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-[150] flex items-center gap-3 transition-all duration-300 translate-y-[-150%] opacity-0 w-[90%] max-w-sm pointer-events-none">
         <i id="toastIcon" class="fa-solid fa-bell text-2xl text-primary drop-shadow-lg"></i>
@@ -55,20 +62,37 @@
             
             <p class="text-[11px] text-slate-500 mb-8 leading-relaxed max-w-[240px] font-medium mx-auto">Validate global visitor passcodes instantly. Ensure authorized entry for all guests and service providers.</p>
 
-            <form onsubmit="verifyCode(event)" class="w-full space-y-4">
-                <div class="relative group/input">
-                    <i class="fa-solid fa-ticket absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
-                    <input type="text" id="passInput" placeholder="Pass Code" required class="w-full text-center tracking-[0.2em] font-black text-2xl text-dark bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition" maxlength="6">
-                </div>
-                <button type="submit" id="verifyBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98] text-lg">Validate Access</button>
-            </form>
+            <div class="flex border-b border-slate-100 mb-6 w-full">
+                <button onclick="switchGuardTab('visitor')" id="btnTabVis" class="flex-1 py-3 text-xs font-bold border-b-2 border-primary text-primary">VISITORS</button>
+                <button onclick="switchGuardTab('staff')" id="btnTabStaff" class="flex-1 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent">STAFF / DAILY HELP</button>
+            </div>
+
+            <div id="visitorSection">
+                <form onsubmit="verifyCode(event)" class="w-full space-y-4">
+                    <div class="relative group/input">
+                        <i class="fa-solid fa-ticket absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
+                        <input type="text" id="passInput" placeholder="Pass Code" class="w-full text-center tracking-[0.2em] font-black text-2xl text-dark bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition" maxlength="6">
+                    </div>
+                    <button type="submit" id="verifyBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98] text-lg">Validate Access</button>
+                </form>
+            </div>
+
+            <div id="staffSection" class="hidden">
+                <form onsubmit="verifyStaff(event)" class="w-full space-y-4">
+                    <div class="relative group/input">
+                        <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
+                        <input type="tel" id="staffPhoneInput" placeholder="Staff Phone Number" class="w-full text-center font-bold text-xl text-dark bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
+                    </div>
+                    <button type="submit" id="verifyStaffBtn" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-indigo-700 transition-all active:scale-[0.98] text-lg">Verify Staff</button>
+                </form>
+            </div>
 
             <!-- Dynamic Output Box -->
-            <div id="resultBox" class="w-full mt-6 hidden border-2 border-dashed p-4 rounded-2xl text-left bg-slate-50/50">
+            <div id="resultBox" class="w-full mt-6 hidden border-2 border-dashed p-4 rounded-xl text-left bg-slate-50/50">
                 <div id="foundVisitor" class="hidden">
                     <span id="scanStatusBadge" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md font-bold uppercase tracking-wider mb-2 inline-block shadow-sm">Valid Pass</span>
-                    <p class="text-sm text-slate-500 mb-1">Guest: <span id="vName" class="font-bold text-dark"></span></p>
-                    <p class="text-sm text-slate-500 mb-1">Unit: <span id="rName" class="font-bold text-dark"></span></p>
+                    <p class="text-sm text-slate-500 mb-1"><span id="visType" class="bg-slate-200 px-1 rounded text-[9px] mr-1">GUEST</span> <span id="vName" class="font-bold text-dark"></span></p>
+                    <p class="text-sm text-slate-500 mb-1" id="unitRow">Unit: <span id="rName" class="font-bold text-dark"></span></p>
                     <p class="text-[11px] font-bold text-primary mb-4 bg-indigo-50/80 p-2 rounded-xl mt-2 text-center border border-indigo-100/50" id="sName"></p>
                     
                     <div id="actionBtnContainer">
@@ -82,7 +106,21 @@
                     <p id="errorMsg" class="text-xs text-slate-500 px-4"></p>
                 </div>
             </div>
-            
+
+            <button onclick="logoutGuard()" class="mt-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-red-500 transition">Logout Session</button>
+        </div>
+    </div>
+
+    <!-- Guard Login View -->
+    <div id="loginView" class="fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-center p-6 bg-slate-900">
+        <div class="absolute inset-0 bg-gradient-to-tr from-slate-900 via-indigo-900 to-slate-900 opacity-50"></div>
+        <div class="w-full max-w-sm glass-card bg-white p-8 rounded-[2.5rem] flex flex-col items-center relative z-10">
+            <div class="w-16 h-16 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-3xl mb-6 shadow-xl"><i class="fa-solid fa-shield-halved"></i></div>
+            <h3 class="text-2xl font-bold mb-2 text-dark">Guard Access</h3>
+            <p class="text-xs text-slate-500 text-center mb-6 px-4">Enter your station PIN to begin security monitoring.</p>
+            <input type="password" id="guardPinInput" placeholder="ENTER STATION PIN" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-center tracking-[1em] text-lg font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 transition mb-4">
+            <button onclick="loginGuard()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-slate-800 transition">Begin Duty</button>
+            <a href="index.html" class="mt-4 text-xs font-bold text-slate-400">Back to Main</a>
         </div>
     </div>
 
@@ -199,6 +237,130 @@
                 }
             } catch(e) {}
         }
+
+        function switchGuardTab(tab) {
+            const vS = document.getElementById('visitorSection');
+            const sS = document.getElementById('staffSection');
+            const vT = document.getElementById('btnTabVis');
+            const sT = document.getElementById('btnTabStaff');
+            const rB = document.getElementById('resultBox');
+
+            rB.classList.add('hidden');
+            if(tab === 'visitor') {
+                vS.classList.remove('hidden'); sS.classList.add('hidden');
+                vT.classList.add('border-primary', 'text-primary'); vT.classList.remove('text-slate-400', 'border-transparent');
+                sT.classList.add('text-slate-400', 'border-transparent'); sT.classList.remove('border-primary', 'text-primary');
+            } else {
+                sS.classList.remove('hidden'); vS.classList.add('hidden');
+                sT.classList.add('border-primary', 'text-primary'); sT.classList.remove('text-slate-400', 'border-transparent');
+                vT.classList.add('text-slate-400', 'border-transparent'); vT.classList.remove('border-primary', 'text-primary');
+            }
+        }
+
+        async function verifyStaff(e) {
+            e.preventDefault();
+            const phone = document.getElementById('staffPhoneInput').value;
+            const btn = document.getElementById('verifyStaffBtn');
+            const resBox = document.getElementById('resultBox');
+            const foundNode = document.getElementById('foundVisitor');
+            const errorNode = document.getElementById('errorVisitor');
+
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking Staff...';
+            resBox.classList.add('hidden');
+            foundNode.classList.add('hidden');
+            errorNode.classList.add('hidden');
+
+            try {
+                const res = await fetch(`${API_URL}/staff/verify`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+                resBox.classList.remove('hidden');
+                if(res.ok) {
+                    document.getElementById('visType').innerText = 'STAFF';
+                    document.getElementById('vName').innerText = data.name + ` (${data.role})`;
+                    document.getElementById('unitRow').classList.add('hidden');
+                    document.getElementById('sName').innerText = "Verified Society Staff";
+                    currentVisId = data.staffId;
+
+                    const badge = document.getElementById('scanStatusBadge');
+                    const btnBox = document.getElementById('actionBtnContainer');
+
+                    if(data.status === 'Present') {
+                        badge.className = 'text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
+                        badge.innerText = 'Inside Society';
+                        btnBox.innerHTML = `<button onclick="logStaffAttendance('Out', this)" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Mark Exit</button>`;
+                    } else {
+                        badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
+                        badge.innerText = 'Ready for Check-in';
+                        btnBox.innerHTML = `<button onclick="logStaffAttendance('In', this)" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Clock In</button>`;
+                    }
+                    foundNode.classList.remove('hidden');
+                } else {
+                    document.getElementById('errorMsg').innerText = data.error;
+                    errorNode.classList.remove('hidden');
+                }
+            } catch(e) {}
+            btn.innerText = "Verify Staff";
+        }
+
+        async function logStaffAttendance(action, btn) {
+            btn.innerText = "Syncing...";
+            try {
+                const res = await fetch(`${API_URL}/staff/attendance`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ staffId: currentVisId, action })
+                });
+                if(res.ok) {
+                    btn.outerHTML = `<div class="bg-emerald-50 text-emerald-600 font-bold p-3 rounded-xl border border-emerald-200 text-center"><i class="fa-solid fa-check-double"></i> Success!</div>`;
+                    setTimeout(() => { location.reload(); }, 1500);
+                }
+            } catch(e) {}
+        }
+
+        async function loginGuard() {
+            const pin = document.getElementById('guardPinInput').value;
+            try {
+                const res = await fetch(`${API_URL}/auth/guard-login`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ pin })
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('guardToken', data.token);
+                    document.getElementById('loginView').classList.add('hidden');
+                } else { showToast("Invalid Guard PIN", "error"); }
+            } catch(e) {}
+        }
+        function logoutGuard() { localStorage.removeItem('guardToken'); location.reload(); }
+        if(localStorage.getItem('guardToken')) { document.getElementById('loginView').classList.add('hidden'); }
+
+        let activeSosId = null;
+        async function checkSOS() {
+            try {
+                const res = await fetch(`${API_URL}/sos`);
+                const alerts = await res.json();
+                const active = alerts[0];
+                if(active) {
+                    activeSosId = active._id;
+                    document.getElementById('sosResident').innerText = `${active.userName} (${active.societyName || 'Society'}) is in danger!`;
+                    document.getElementById('sosAlertToast').classList.remove('hidden');
+                } else {
+                    document.getElementById('sosAlertToast').classList.add('hidden');
+                }
+            } catch(e) {}
+        }
+        async function resolveSOSAlert() {
+             try {
+                await fetch(`${API_URL}/sos/${activeSosId}/resolve`, {
+                    method: 'PUT', headers: {'Authorization': `Bearer ${localStorage.getItem('guardToken')}`}
+                });
+                document.getElementById('sosAlertToast').classList.add('hidden');
+            } catch(e) {}
+        }
+        setInterval(checkSOS, 3000);
+
     </script>
 </body>
 </html>
