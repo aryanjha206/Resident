@@ -949,8 +949,8 @@
                                     <h4 class="text-xs font-black text-slate-800 leading-tight">${p.name}</h4>
                                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">₹${p.price} • ${p.category || 'General'}</p>
                                     <div class="flex gap-3 mt-2">
-                                        <button onclick="openEditProduct('${p._id}', '${p.name}', ${p.price}, '${p.description || ''}', '${p.category || 'General'}')" class="text-[9px] font-black text-primary uppercase underline underline-offset-4 decoration-current hover:text-indigo-700 transition-colors">Edit</button>
-                                        <button onclick="deleteProduct('${p._id}')" class="text-[9px] font-black text-rose-500 uppercase underline underline-offset-4 decoration-current hover:text-rose-700 transition-colors">Archive</button>
+                                        <button onclick="openEditProductByData('${p_data}')" class="text-[9px] font-black text-primary uppercase underline underline-offset-4 decoration-current hover:text-indigo-700 transition-colors">Edit</button>
+                                        <button onclick="deleteProduct('${p._id}', this)" class="text-[9px] font-black text-rose-500 uppercase underline underline-offset-4 decoration-current hover:text-rose-700 transition-colors">Archive</button>
                                     </div>
                                 </div>
                             </div>
@@ -985,7 +985,7 @@
                                         <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
                                         <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                                     </select>` : ''}
-                                ${isPaid ? `<span class="flex-1 text-center bg-slate-900 text-white rounded-xl py-2 text-[10px] font-black uppercase tracking-widest">Complete</span>` : `<button onclick="collectPayment('${o._id}')" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest">Mark Paid</button>`}
+                                ${isPaid ? `<span class="flex-1 text-center bg-slate-900 text-white rounded-xl py-2 text-[10px] font-black uppercase tracking-widest">Complete</span>` : `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest">Mark Paid</button>`}
                             </div>
                         </div>`;
                 });
@@ -1024,14 +1024,58 @@
             });
             loadSellerDashboard();
         }
-        async function collectPayment(id) {
+        function openEditProductByData(p_data) {
+            const p = JSON.parse(p_data.replace(/&quot;/g, '"'));
+            document.getElementById('editPId').value = p._id;
+            document.getElementById('editPName').value = p.name;
+            document.getElementById('editPPrice').value = p.price;
+            document.getElementById('editPDesc').value = p.description || '';
+            document.getElementById('editPCategory').value = p.category || 'General';
+            openModal('editProductModal');
+        }
+
+        async function collectPayment(id, btn) {
             showConfirm("Collect Payment", "Confirm you have received payment from the buyer?", async () => {
-                await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
-                    method: 'PUT', 
-                    headers: getAuthHeaders()
-                });
-                showToast("Payment recorded!", "Success");
-                loadSellerDashboard();
+                const og = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
+                        method: 'PUT', 
+                        headers: getAuthHeaders()
+                    });
+                    if(res.ok) {
+                        showToast("Payment recorded!", "Success");
+                        loadSellerDashboard();
+                    } else {
+                        btn.innerHTML = og;
+                        btn.disabled = false;
+                    }
+                } catch(e) {
+                    btn.innerHTML = og;
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        async function deleteProduct(id, btn) {
+            showConfirm("Archive Listing", "Remove this item from the society market?", async () => {
+                const og = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/products/${id}`, { 
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+                    if(res.ok) {
+                        showToast("Product archived successfully", "Marketplace");
+                        loadSellerDashboard();
+                    } else {
+                        btn.innerHTML = og;
+                    }
+                } catch(e) {
+                    btn.innerHTML = og;
+                }
             });
         }
 
