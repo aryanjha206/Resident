@@ -407,27 +407,19 @@
                 </div>
             </div>
 
-            <!-- MARKETPLACE TAB (Now Orders & Tracking) -->
+            <!-- MARKETPLACE TAB -->
             <div id="tab-marketplace" class="tab-view space-y-6">
-                <div class="relative rounded-3xl bg-gradient-to-br from-pink-500 to-rose-600 p-6 text-white shadow-xl overflow-hidden group">
-                    <div class="relative z-10">
-                        <h3 class="text-xl font-bold">Community Market</h3>
-                        <p class="text-[11px] text-pink-100 opacity-90 mt-1 max-w-[200px]">Unlock exclusive society deals and local organic produce.</p>
-                        <a href="market.html" class="inline-flex items-center gap-2 bg-white text-rose-600 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest mt-4 shadow-lg hover:bg-slate-50 active:scale-95 transition">
-                            Open Store <i class="fa-solid fa-bag-shopping"></i>
-                        </a>
-                    </div>
-                    <i class="fa-solid fa-basket-shopping absolute -bottom-4 -right-4 text-8xl opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-700"></i>
+                <div class="flex justify-between items-center">
+                    <h2 class="text-lg font-bold text-dark">Community Market</h2>
+                    <span class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full border border-emerald-100"><i class="fa-solid fa-circle text-[5px] animate-pulse mr-1"></i>LIVE</span>
                 </div>
-
+                <div class="glass-card p-3">
+                    <input type="text" id="marketSearchInput" placeholder="Search products..." oninput="filterMarketplace()" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-pink-500">
+                </div>
+                <div class="grid grid-cols-2 gap-4" id="marketplaceList"></div>
                 <div class="pt-2">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-truck-fast"></i> My Active Orders</h3>
-                        <span id="orderCountBadge" class="text-[9px] font-black bg-slate-100 px-2 py-1 rounded-full text-slate-500">0</span>
-                    </div>
-                    <div id="myOrdersList" class="space-y-4">
-                        <!-- Orders load here -->
-                    </div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
+                    <div id="myOrdersList" class="space-y-4"></div>
                 </div>
             </div>
 
@@ -476,11 +468,11 @@
         <!-- Bottom Navigation -->
         <nav class="bottom-nav pb-safe flex justify-between px-6 pt-3 h-[70px]">
             <a href="#" class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="#" class="nav-item" onclick="switchTab('money')"><i class="fa-solid fa-wallet"></i><span>Money</span></a>
+            <a href="#" class="nav-item relative" onclick="switchTab('money')"><i class="fa-solid fa-wallet"></i><span>Money</span></a>
             <div class="relative flex justify-center w-16 px-2">
-                <a href="market.html" class="absolute -top-7 floating-add active:scale-95 transition flex items-center justify-center bg-gradient-to-tr from-pink-500 to-rose-600 shadow-xl shadow-pink-200"><i class="fa-solid fa-bag-shopping text-xl"></i></a>
+                <button class="absolute -top-7 floating-add active:scale-95 transition" onclick="openModal('complaintModal')"><i class="fa-solid fa-plus text-xl"></i></button>
             </div>
-            <a href="#" class="nav-item" onclick="switchTab('marketplace')"><i class="fa-solid fa-truck-ramp-box"></i><span>Orders</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i><span>People</span></a>
             <a href="#" class="nav-item" onclick="switchTab('property')"><i class="fa-solid fa-building"></i><span>Property</span></a>
         </nav>
     </div>
@@ -750,9 +742,6 @@
                 if(socName) document.getElementById('societyNameDisplay').innerText = socName;
                 
                 fetchDashboardData();
-                
-                const activeTab = localStorage.getItem('activeTab') || 'home';
-                switchTab(activeTab);
             }
         }
 
@@ -830,16 +819,8 @@
             document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
-            const tabNode = document.getElementById(`tab-${tabId}`);
-            if(tabNode) tabNode.classList.add('active');
-            
-            // Find and activate the nav button
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach(item => {
-                if(item.getAttribute('onclick').includes(`'${tabId}'`)) item.classList.add('active');
-            });
-
-            localStorage.setItem('activeTab', tabId);
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
             
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
@@ -1052,7 +1033,6 @@
                         </div>`;
                 });
                 document.getElementById('myOrdersList').innerHTML = o_html || '<p class="text-xs text-slate-400 text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Your orders will appear here.</p>';
-                document.getElementById('orderCountBadge').innerText = orders.length;
         }
         async function buyProduct(productId, productName, price, productImage) {
             showConfirm("Confirm Order", `Place order for ${productName} (\u20b9${price})?`, async () => {
