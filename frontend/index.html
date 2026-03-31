@@ -211,6 +211,46 @@
             </form>
         </div>
     </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center hidden" onclick="closeModal(event, 'editProductModal')">
+        <div class="modal-content bg-white w-full sm:w-[500px] sm:rounded-[2.5rem] rounded-t-[2.5rem] p-8 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-black tracking-tight text-slate-900 leading-none">Update Listing</h3>
+                <button onclick="closeModal(null, 'editProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition shadow-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="editProductForm" class="space-y-5">
+                <input id="editPId" type="hidden">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title & Identity</label>
+                    <input id="editPName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/5 transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
+                        <input id="editPPrice" type="number" placeholder="Price" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/5 transition">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select id="editPCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-700 appearance-none">
+                            <option value="General">General</option>
+                            <option value="Fresh & Grocery">Fresh & Grocery</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Home & Kitchen">Home & Kitchen</option>
+                            <option value="Services">Services</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Context</label>
+                    <textarea id="editPDesc" placeholder="Describe your product..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600" rows="3"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-primary active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4">
+                    Save Product Changes <i class="fa-solid fa-cloud-arrow-up opacity-40"></i>
+                </button>
+            </form>
+        </div>
+    </div>
     </div>
 
     <!-- In-App Notification (Toast) -->
@@ -891,13 +931,22 @@
                 
                 let p_html = '';
                 products.forEach(p => {
+                    if(p.status === 'Deleted') return;
+                    const p_data = JSON.stringify(p).replace(/"/g, '&quot;');
                     p_html += `
-                        <div class="glass-card p-3 flex justify-between items-center">
-                            <div class="flex items-center gap-3">
-                                <img src="${p.image}" class="w-10 h-10 rounded-lg object-cover">
-                                <div><h4 class="text-xs font-bold">${p.name}</h4><p class="text-[9px] text-slate-400 font-bold">₹${p.price} • ${p.category || 'General'}</p></div>
+                        <div class="glass-card p-4 flex justify-between items-center group/card transition-all hover:bg-white/80">
+                            <div class="flex items-center gap-4">
+                                <img src="${p.image}" class="w-14 h-14 rounded-2xl object-cover bg-slate-50 border border-slate-100 shadow-sm shadow-black/5">
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-800 leading-tight">${p.name}</h4>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">₹${p.price} • ${p.category || 'General'}</p>
+                                    <div class="flex gap-3 mt-2">
+                                        <button onclick="openEditProduct('${p._id}', '${p.name}', ${p.price}, '${p.description || ''}', '${p.category || 'General'}')" class="text-[9px] font-black text-primary uppercase underline underline-offset-4 decoration-current hover:text-indigo-700 transition-colors">Edit</button>
+                                        <button onclick="deleteProduct('${p._id}')" class="text-[9px] font-black text-rose-500 uppercase underline underline-offset-4 decoration-current hover:text-rose-700 transition-colors">Archive</button>
+                                    </div>
+                                </div>
                             </div>
-                            <span class="text-[8px] font-bold text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded uppercase border border-emerald-100">${p.status}</span>
+                            <span class="text-[8px] font-black text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 uppercase tracking-widest">${p.status}</span>
                         </div>`;
                 });
                 document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings yet.</p>';
@@ -1756,6 +1805,67 @@ This is a computer generated document.
                 document.getElementById('btnSellerInv').classList.replace('border-transparent', 'border-primary');
                 document.getElementById('btnSellerInv').classList.replace('text-slate-400', 'text-primary');
             }
+        }
+
+        function openEditProduct(id, name, price, desc, cat) {
+            document.getElementById('editPId').value = id;
+            document.getElementById('editPName').value = name;
+            document.getElementById('editPPrice').value = price;
+            document.getElementById('editPDesc').value = desc;
+            document.getElementById('editPCategory').value = cat;
+            openModal('editProductModal');
+        }
+
+        document.getElementById('editProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editPId').value;
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-sm"></i> Updating...';
+            btn.disabled = true;
+
+            const payload = {
+                name: document.getElementById('editPName').value,
+                price: Number(document.getElementById('editPPrice').value),
+                description: document.getElementById('editPDesc').value,
+                category: document.getElementById('editPCategory').value
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/marketplace/products/${id}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    showToast("Product listing updated", "Marketplace");
+                    closeModal(null, 'editProductModal');
+                    loadSellerDashboard();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || "Update failed", "Error");
+                }
+            } catch(e) {
+                showToast("Connection error during update", "Error");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        async function deleteProduct(id) {
+            showConfirm("Archive Listing", "Remove this item from the society market?", async () => {
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/products/${id}`, { 
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+                    if(res.ok) {
+                        showToast("Product archived successfully", "Marketplace");
+                        loadSellerDashboard();
+                    }
+                } catch(e) {}
+            });
         }
 
         checkAuth();

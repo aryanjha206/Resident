@@ -787,6 +787,25 @@ def add_product():
     products_col.insert_one(product)
     return jsonify({"message": "Product listed successfully"}), 201
 
+@app.route('/api/marketplace/products/<p_id>', methods=['PUT'])
+def update_product(p_id):
+    data = request.json
+    update_fields = {
+        "name": data.get("name"),
+        "price": float(data.get("price", 0)) if data.get("price") else None,
+        "description": data.get("description"),
+        "category": data.get("category"),
+        "image": data.get("image")
+    }
+    update_fields = {k: v for k, v in update_fields.items() if v is not None}
+    products_col.update_one({"_id": ObjectId(p_id)}, {"$set": update_fields})
+    return jsonify({"message": "Product updated successfully"})
+
+@app.route('/api/marketplace/products/<p_id>', methods=['DELETE'])
+def delete_product(p_id):
+    products_col.update_one({"_id": ObjectId(p_id)}, {"$set": {"status": "Deleted"}})
+    return jsonify({"message": "Product deleted successfully"})
+
 @app.route('/api/marketplace/orders', methods=['POST'])
 @token_required
 def place_order():
