@@ -141,14 +141,22 @@
             <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
                 <h3 class="text-xl font-bold">Welcome, Vendor</h3>
                 <p class="text-xs text-indigo-100 opacity-80 mt-1">Manage your storefront and track incoming orders.</p>
-                <div class="flex gap-4 mt-4">
-                    <div class="bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm border border-white/10">
-                        <p class="text-[9px] uppercase font-bold text-indigo-200">Revenue</p>
-                        <h4 id="sellerRevenue" class="text-lg font-black">\u20b90</h4>
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <div class="bg-emerald-500/20 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
+                        <p class="text-[8px] uppercase font-black text-emerald-200 tracking-widest">Collected</p>
+                        <h4 id="sellerRevenue" class="text-base font-black text-white">₹0</h4>
                     </div>
-                    <div class="bg-white/10 px-3 py-2 rounded-xl backdrop-blur-sm border border-white/10">
-                        <p class="text-[9px] uppercase font-bold text-indigo-200">Sales</p>
-                        <h4 id="sellerSalesCount" class="text-lg font-black">0</h4>
+                    <div class="bg-amber-500/20 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
+                        <p class="text-[8px] uppercase font-black text-amber-200 tracking-widest">Pending</p>
+                        <h4 id="sellerPendingRevenue" class="text-base font-black text-white">₹0</h4>
+                    </div>
+                    <div class="bg-white/10 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
+                        <p class="text-[8px] uppercase font-black text-indigo-100/60 tracking-widest">Gross Sales</p>
+                        <h4 id="sellerTotalSales" class="text-base font-black text-white">₹0</h4>
+                    </div>
+                    <div class="bg-white/10 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
+                        <p class="text-[8px] uppercase font-black text-indigo-100/60 tracking-widest">Products</p>
+                        <h4 id="sellerProductCount" class="text-base font-black text-white">0</h4>
                     </div>
                 </div>
                 <i class="fa-solid fa-box-open absolute top-4 right-4 text-5xl opacity-20"></i>
@@ -995,18 +1003,33 @@
                 document.getElementById('sellerDetailedSales').innerHTML = statsHtml || '<p class="text-[10px] text-slate-400 text-center py-4 font-bold uppercase tracking-widest">No completed sales to show.</p>';
 
                 // Global Stats Update
-                const totalRevenue = orders.filter(o => o.paymentStatus === 'Paid').reduce((acc, o) => acc + o.price, 0);
-                document.getElementById('sellerRevenue').innerText = '\u20b9' + totalRevenue.toLocaleString();
-                document.getElementById('sellerSalesCount').innerText = orders.length;
+                const paidOrders = orders.filter(o => o.paymentStatus === 'Paid');
+                const pendingOrders = orders.filter(o => o.paymentStatus !== 'Paid');
+                
+                const collectedRevenue = paidOrders.reduce((acc, o) => acc + o.price, 0);
+                const pendingRevenue = pendingOrders.reduce((acc, o) => acc + o.price, 0);
+                const grossSales = orders.reduce((acc, o) => acc + o.price, 0);
+                
+                document.getElementById('sellerRevenue').innerText = '₹' + collectedRevenue.toLocaleString();
+                document.getElementById('sellerPendingRevenue').innerText = '₹' + pendingRevenue.toLocaleString();
+                document.getElementById('sellerTotalSales').innerText = '₹' + grossSales.toLocaleString();
+                document.getElementById('sellerProductCount').innerText = products.filter(p => p.status !== 'Deleted').length;
             } catch(e) {}
         }
         async function updateOrderStatus(id, status) {
-            await fetch(`${API_URL}/marketplace/orders/${id}/status`, {method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({status})});
+            await fetch(`${API_URL}/marketplace/orders/${id}/status`, {
+                method: 'PUT', 
+                headers: getAuthHeaders(), 
+                body: JSON.stringify({status})
+            });
             loadSellerDashboard();
         }
         async function collectPayment(id) {
             showConfirm("Collect Payment", "Confirm you have received payment from the buyer?", async () => {
-                await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {method: 'PUT', headers: {'Content-Type': 'application/json'}});
+                await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
+                    method: 'PUT', 
+                    headers: getAuthHeaders()
+                });
                 showToast("Payment recorded!", "Success");
                 loadSellerDashboard();
             });

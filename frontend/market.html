@@ -162,8 +162,12 @@
         if(!localStorage.getItem('userToken')) window.location.href = 'index.html';
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
         let allProducts = [];
-        let cart = [];
+        let cart = JSON.parse(localStorage.getItem('societyMarketCart') || '[]');
         let currentCategory = 'All';
+
+        function saveCart() {
+            localStorage.setItem('societyMarketCart', JSON.stringify(cart));
+        }
 
         const getAuthHeaders = () => ({
             'Content-Type': 'application/json',
@@ -206,9 +210,19 @@
                         <h3 class="text-[13px] font-bold text-slate-900 group-hover/card:text-primary transition-colors leading-tight line-clamp-1">${p.name}</h3>
                         <p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed min-h-[2.5rem]">${p.description || 'Verified society member product.'}</p>
                     </div>
-                    <button onclick="addToCart('${p._id}')" class="mt-4 w-full bg-slate-50 text-slate-700 py-3 rounded-2xl font-bold text-[11px] group-hover/card:bg-primary group-hover/card:text-white transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
-                        Add to Basket <i class="fa-solid fa-plus opacity-50"></i>
-                    </button>
+                    ${(() => {
+                        const inCart = cart.find(c => c._id === p._id);
+                        if(inCart) return `
+                            <button onclick="addToCart('${p._id}')" class="mt-4 w-full bg-emerald-500 text-white py-3 rounded-2xl font-bold text-[11px] transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
+                                In Basket (${inCart.qty}) <i class="fa-solid fa-check"></i>
+                            </button>
+                        `;
+                        return `
+                            <button onclick="addToCart('${p._id}')" class="mt-4 w-full bg-slate-50 text-slate-700 py-3 rounded-2xl font-bold text-[11px] group-hover/card:bg-primary group-hover/card:text-white transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
+                                Add to Basket <i class="fa-solid fa-plus opacity-50"></i>
+                            </button>
+                        `;
+                    })()}
                     ${p.isNew ? '<div class="absolute top-0 left-0 bg-rose-500 text-white text-[8px] font-black px-4 py-1 rounded-br-2xl uppercase tracking-tighter">New</div>' : ''}
                 </div>
             `).join('');
@@ -244,23 +258,14 @@
             } else {
                 cart.push({ ...prod, qty: 1 });
             }
+            saveCart();
             updateCartCount();
+            renderProducts();
             
-            // Animation
+            // Animation for cart count
             const count = document.getElementById('cartCount');
             count.classList.remove('scale-0');
             count.classList.add('scale-100');
-            
-            // Shake effect
-            const btn = event.currentTarget;
-            btn.innerHTML = 'Added! <i class="fa-solid fa-check"></i>';
-            btn.classList.replace('bg-slate-50', 'bg-emerald-500');
-            btn.classList.replace('text-slate-700', 'text-white');
-            setTimeout(() => {
-                btn.innerHTML = 'Add to Basket <i class="fa-solid fa-plus opacity-50"></i>';
-                btn.classList.replace('bg-emerald-500', 'bg-slate-50');
-                btn.classList.replace('text-white', 'text-slate-700');
-            }, 1000);
         }
 
         function renderCart() {
@@ -299,14 +304,20 @@
             const item = cart.find(c => c._id === pid);
             item.qty += delta;
             if (item.qty < 1) removeFromCart(pid);
-            else renderCart();
-            updateCartCount();
+            else {
+                renderCart();
+                saveCart();
+                updateCartCount();
+                renderProducts();
+            }
         }
 
         function removeFromCart(pid) {
             cart = cart.filter(c => c._id !== pid);
-            renderCart();
+            if(document.getElementById('cartSidebar').classList.contains('open')) renderCart();
+            saveCart();
             updateCartCount();
+            renderProducts();
         }
 
         function updateCartCount() {
@@ -347,7 +358,9 @@
                 }, 10);
                 
                 cart = [];
+                saveCart();
                 updateCartCount();
+                renderProducts();
                 fetchOrders(); // Pre-fetch for the tracker
             } catch (err) {
                 alert("Order failed. Please check your connection.");
@@ -423,6 +436,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchProducts();
             fetchOrders();
+            updateCartCount(); // Reflect initial loaded cart
         });
     </script>
 </body>
