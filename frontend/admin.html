@@ -252,6 +252,17 @@
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
                     </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer border-2 border-indigo-100 hover:bg-indigo-50/50 transition active:scale-[0.98] shadow-lg shadow-indigo-100/20" onclick="loadVaultAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md animate-pulse"><i class="fa-solid fa-vault text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-indigo-700">Digital Document Vault</h3>
+                                <p class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">Secure Resident Repository</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-shield-halved text-indigo-300"></i>
+                    </div>
                 </div>
             </main>
         </div>
@@ -720,26 +731,129 @@
                 const users = await usersRes.json();
                 const services = servRes.ok ? await servRes.json() : [];
 
-                let html = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Society Members</h4>';
-                
+                let html = '<h4 class="text-[10px] font-black text-amber-600 mb-3 uppercase tracking-widest">Active Staff & Services</h4>';
                 services.forEach(s => {
                     html += `
-                        <div class="bg-amber-50/30 p-2 rounded-lg border border-amber-100 mb-1.5 flex justify-between items-center">
-                            <div class="flex items-center gap-2 text-xs text-dark font-medium"><i class="fa-solid fa-hard-hat text-amber-500 w-4"></i> ${s.name}</div>
-                            <span class="text-[9px] text-amber-600 font-bold uppercase">${s.role}</span>
+                        <div class="bg-amber-50/30 p-3 rounded-xl border border-amber-100 mb-2 flex justify-between items-center group hover:bg-amber-50/50 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-sm shadow-sm"><i class="fa-solid fa-user-gear"></i></div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-dark">${s.name}</h4>
+                                    <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">${s.role} \u2022 ${s.phone}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editStaff('${s._id}', '${s.name}', '${s.role}', '${s.phone}')" class="w-8 h-8 rounded-full bg-white text-slate-400 flex items-center justify-center hover:text-indigo-500 transition shadow-sm"><i class="fa-solid fa-pen-to-square text-[10px]"></i></button>
+                                <button onclick="deleteStaff('${s._id}')" class="w-8 h-8 rounded-full bg-white text-slate-400 flex items-center justify-center hover:text-red-500 transition shadow-sm"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+                            </div>
                         </div>`;
                 });
+
+                html += '<h4 class="text-[10px] font-black text-slate-400 mt-6 mb-3 uppercase tracking-widest">Resident Directory</h4>';
                 users.forEach(u => {
                     html += `
-                        <div class="bg-white p-2 text-xs rounded-lg border border-slate-100 mb-1.5 flex justify-between items-center">
-                            <div class="flex items-center gap-2 text-slate-700 font-medium"><i class="fa-solid fa-user text-slate-400 w-4"></i> ${u.name}</div>
-                            <span class="text-[9px] text-slate-500 uppercase">${u.role}</span>
+                        <div class="bg-white p-3 rounded-xl border border-slate-100 mb-2 flex justify-between items-center group hover:bg-slate-50 transition shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center text-sm"><i class="fa-solid fa-house-user"></i></div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-dark">${u.name}</h4>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">${u.email}</p>
+                                </div>
+                            </div>
+                            <button onclick="viewResidentDetails('${u.name}', '${u.email}', '${u.role}')" class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:text-primary transition"><i class="fa-solid fa-circle-info text-[10px]"></i></button>
                         </div>`;
                 });
-                if(users.length === 0 && services.length === 0) html += `<p class="text-xs text-slate-400">No records found.</p>`;
+                if(users.length === 0 && services.length === 0) html += `<p class="text-xs text-slate-400 text-center py-6 opacity-40 italic">Society is empty. Awaiting registrations.</p>`;
                 
                 document.getElementById('peopleList').innerHTML = html;
             } catch(e) {}
+        }
+
+        async function editStaff(id, name, role, phone) {
+            document.getElementById('sName').value = name;
+            document.getElementById('sRole').value = role;
+            document.getElementById('sPhone').value = phone;
+            const form = document.querySelector('form[onsubmit="postService(event)"]');
+            form.setAttribute('onsubmit', `updateService(event, '${id}')`);
+            form.querySelector('button').innerText = "Update Staff Member";
+            form.querySelector('button').classList.replace('bg-amber-500', 'bg-indigo-600');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function updateService(e, id) {
+            e.preventDefault();
+            const sid = document.getElementById('adminSocietySelect').value;
+            const payload = {
+                societyId: sid,
+                name: document.getElementById('sName').value,
+                role: document.getElementById('sRole').value,
+                phone: document.getElementById('sPhone').value
+            };
+            try {
+                const res = await fetch(`${API_URL}/services/${id}`, { 
+                    method: 'PUT', 
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    showToast("Staff updated successfully", "success", "Updated");
+                    loadPeopleAdmin();
+                }
+            } catch(e) {}
+        }
+
+        async function deleteStaff(id) {
+            showConfirm("Remove Staff", "Are you sure you want to remove this staff member?", async () => {
+                await fetch(`${API_URL}/services/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                showToast("Staff member removed", "success", "Deleted");
+                loadPeopleAdmin();
+            });
+        }
+
+        function viewResidentDetails(name, email, role) {
+            showToast(`Registered Resident`, `${name} (${email}) - ${role}`, "success", "Info");
+        }
+
+        async function loadVaultAdmin() {
+            openModule("Digital Document Vault");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            content.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl"></i><p class="text-xs text-slate-400 mt-2 font-bold uppercase tracking-widest">Accessing Secure Vault...</p></div>';
+
+            try {
+                const res = await fetch(`${API_URL}/admin/vault/all${query}`, { headers: getAuthHeaders() });
+                const docs = await res.json();
+                
+                let html = '<div class="space-y-3">';
+                if(docs.length === 0) html += '<p class="text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">No resident documents submitted yet.</p>';
+                
+                docs.forEach(d => {
+                    html += `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center group hover:bg-slate-50 transition border-l-4 border-l-indigo-500">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl"><i class="fa-solid fa-file-shield"></i></div>
+                                <div>
+                                    <h4 class="text-[12px] font-black text-dark tracking-tight leading-none mb-1">${d.documentType}</h4>
+                                    <p class="text-[10px] text-slate-500 font-medium">Resident: <span class="font-bold text-primary">${d.userName}</span></p>
+                                    <p class="text-[8px] text-slate-400 mt-1 font-bold uppercase tracking-widest px-2 py-0.5 bg-slate-50 rounded-md inline-block border border-slate-100">${new Date(d.createdAt).toLocaleDateString()} \u2022 ${d.fileName}</p>
+                                </div>
+                            </div>
+                            <button onclick="viewVaultDoc('${d.fileData}')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-primary hover:text-white transition shadow-sm"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                content.innerHTML = html;
+            } catch(err) {
+                content.innerHTML = '<p class="text-center text-xs text-red-500 font-bold">Failed to load vault.</p>';
+            }
+        }
+
+        function viewVaultDoc(data) {
+            const win = window.open();
+            win.document.write('<iframe src="' + data + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
         }
 
         async function postSociety(e) {

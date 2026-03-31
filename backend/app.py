@@ -40,6 +40,7 @@ try:
     orders_col = db['orders']
     messages_col = db['messages']
     attendance_col = db['attendance']
+    documents_col = db['documents']
     print("Connected to MongoDB database successfully!")
 except Exception as e:
     print(f"Error connecting to MongoDB: {e}")
@@ -872,6 +873,62 @@ def confirm_payment(o_id):
         }
     )
     return jsonify({"message": "Payment confirmed"})
+
+# -------------- DIGITAL DOCUMENT VAULT --------------
+@app.route('/api/vault/upload', methods=['POST'])
+@token_required
+def upload_document():
+    user_id = request.user_data.get('user_id')
+    user_name = request.user_data.get('name')
+    society_id = request.user_data.get('societyId')
+    data = request.json
+    
+    doc = {
+        "userId": user_id,
+        "userName": user_name,
+        "societyId": society_id,
+        "documentType": data.get("documentType"),
+        "fileName": data.get("fileName"),
+        "fileData": data.get("fileData"), # Base64
+        "status": "Submitted",
+        "createdAt": datetime.utcnow().isoformat()
+    }
+    documents_col.insert_one(doc)
+    return jsonify({"message": "Document uploaded successfully"}), 201
+
+@app.route('/api/vault/my-documents', methods=['GET'])
+@token_required
+def get_my_documents():
+    user_id = request.user_data.get('user_id')
+    docs = list(documents_col.find({"userId": user_id}).sort("createdAt", -1))
+    return jsonify([format_doc(d) for d in docs])
+
+@app.route('/api/admin/vault/all', methods=['GET'])
+@admin_required
+def get_all_documents():
+    society_id = request.args.get('societyId')
+    query = {}
+    if society_id:
+        query["societyId"] = society_id
+    docs = list(documents_col.find(query).sort("createdAt", -1))
+    return jsonify([format_doc(d) for d in docs])
+
+# -------------- STAFF MANAGEMENT UPDATES --------------
+@app.route('/api/services/<s_id>', methods=['PUT', 'DELETE'])
+@admin_required
+def update_service(s_id):
+    if request.method == 'DELETE':
+        services_col.delete_one({"_id": ObjectId(s_id)})
+        return jsonify({"message": "Staff removed"})
+        
+    data = request.json
+    update_fields = {
+        "name": data.get("name"),
+        "role": data.get("role"),
+        "phone": data.get("phone")
+    }
+    services_col.update_one({"_id": ObjectId(s_id)}, {"$set": update_fields})
+    return jsonify({"message": "Staff details updated"})
 
 @app.route('/api/marketplace/orders/<o_id>/invoice', methods=['GET'])
 @token_required
