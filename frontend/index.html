@@ -327,7 +327,7 @@
                             <div class="w-[42px] h-[42px] rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-calendar-check"></i></div>
                             <span class="text-[10px] font-bold text-emerald-600">Amenities</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="switchTab('marketplace')">
+                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="window.location.href='market.html'">
                             <div class="w-[42px] h-[42px] rounded-full bg-pink-50 text-pink-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-cart-shopping"></i></div>
                             <span class="text-[10px] font-bold text-pink-600">Market</span>
                         </button>
@@ -978,33 +978,45 @@
         document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.innerText = "Publishing...";
-            let imageData = "https://img.icons8.com/color/96/box--v1.png";
-            const fileInput = document.getElementById('pImage');
-            if(fileInput.files && fileInput.files[0]) {
-                imageData = await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (ev) => resolve(ev.target.result);
-                    reader.readAsDataURL(fileInput.files[0]);
-                });
-            }
-            await fetch(`${API_URL}/marketplace/products`, {
-                method: 'POST', headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
+            const originalBtnText = btn.innerText;
+            btn.innerText = "Publishing Listing...";
+            btn.disabled = true;
+
+            try {
+                let imageData = document.getElementById('imagePreview').src;
+                if(!imageData || imageData.startsWith('window.')) imageData = "https://img.icons8.com/color/96/box--v1.png";
+
+                const payload = {
                     name: document.getElementById('pName').value,
                     price: document.getElementById('pPrice').value,
                     description: document.getElementById('pDesc').value,
+                    category: document.getElementById('pCategory').value,
                     image: imageData
-                })
-            });
-            closeModal(null, 'addProductModal');
-            e.target.reset();
-            document.getElementById('imagePreviewContainer').classList.add('hidden');
-            document.getElementById('uploadLabel').textContent = 'Upload image';
-            btn.innerText = "Publish Listing";
-            loadSellerDashboard();
-        });
+                };
 
+                const res = await fetch(`${API_URL}/marketplace/products`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+
+                if(res.ok) {
+                    showToast("Your product is now LIVE!", "Market Update");
+                    e.target.reset();
+                    document.getElementById('imagePreviewContainer').classList.add('hidden');
+                    closeModal(null, 'addProductModal');
+                    loadSellerDashboard();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || "Failed to list item", "Error");
+                }
+            } catch(err) {
+                showToast("Network error publishing listing.", "Error");
+            } finally {
+                btn.innerText = originalBtnText;
+                btn.disabled = false;
+            }
+        });
         // --- MARKETPLACE LOGIC ---
         window._allProducts = [];
         window._allOrders = [];
@@ -1745,38 +1757,6 @@ This is a computer generated document.
                 document.getElementById('btnSellerInv').classList.replace('text-slate-400', 'text-primary');
             }
         }
-
-        // --- PRODUCT PUBLISH WITH CATEGORY ---
-        document.getElementById('productForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            btn.innerText = "Publishing Listing...";
-            btn.disabled = true;
-
-            const payload = {
-                name: document.getElementById('pName').value,
-                price: document.getElementById('pPrice').value,
-                description: document.getElementById('pDesc').value,
-                category: document.getElementById('pCategory').value,
-                image: document.getElementById('imagePreview').src // Assuming base64 from preview
-            };
-
-            try {
-                const res = await fetch(`${API_URL}/marketplace/products`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}`},
-                    body: JSON.stringify(payload)
-                });
-                if(res.ok) {
-                    showToast("Your product is now LIVE!", "Market Update");
-                    e.target.reset();
-                    document.getElementById('imagePreviewContainer').classList.add('hidden');
-                    closeModal(null, 'addProductModal');
-                    loadSellerDashboard();
-                }
-            } catch(err) { showToast("Failed to list product", "Error"); }
-            btn.innerText = "Publish Listing"; btn.disabled = false;
-        });
 
         checkAuth();
     </script>

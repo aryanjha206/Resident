@@ -37,20 +37,24 @@
 <body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
     <!-- Premium Header -->
-    <header class="glass-header px-6 py-4 flex justify-between items-center">
+    <header class="glass-header px-6 py-4 flex justify-between items-center group">
         <div class="flex items-center gap-3">
-            <a href="index.html" class="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 hover:text-primary transition">
+            <a href="index.html" class="w-10 h-10 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 hover:text-primary transition active:scale-90">
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
             <div>
                 <h1 class="text-xl font-black tracking-tighter text-slate-900">Home Market</h1>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1 group-hover:text-primary transition-colors">
                     <i class="fa-solid fa-location-dot text-rose-500"></i> Society Exclusive
                 </p>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <button onclick="toggleCart()" class="relative w-12 h-12 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center shadow-sm hover:shadow-md transition group">
+        <div class="flex items-center gap-3">
+            <button onclick="toggleOrders()" class="relative w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center shadow-sm hover:text-indigo-600 transition group/btn">
+                <i class="fa-solid fa-receipt text-xl"></i>
+                <p class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[8px] font-bold px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition duration-300 pointer-events-none">My Orders</p>
+            </button>
+            <button onclick="toggleCart()" class="relative w-12 h-12 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center shadow-sm hover:shadow-md transition">
                 <i class="fa-solid fa-bag-shopping text-xl"></i>
                 <span id="cartCount" class="absolute -top-2 -right-2 w-6 h-6 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-lg scale-0 transition-transform duration-300">0</span>
             </button>
@@ -120,17 +124,42 @@
         </footer>
     </aside>
 
-    <!-- Confirmation Overlay -->
-    <div id="orderSuccess" class="fixed inset-0 z-[300] bg-emerald-500 flex flex-col items-center justify-center text-white hidden transform translate-y-full transition-transform duration-500">
-        <div class="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-5xl mb-6 animate-bounce">
-            <i class="fa-solid fa-check"></i>
+    <!-- Order Tracking Sidebar -->
+    <div id="orderOverlay" onclick="toggleOrders()" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden opacity-0 transition-opacity duration-300"></div>
+    <aside id="orderSidebar" class="cart-sidebar fixed top-0 right-0 h-screen w-full max-w-sm bg-white shadow-2xl z-[200] flex flex-col">
+        <header class="p-6 flex justify-between items-center bg-indigo-600 text-white">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-truck-fast text-xl"></i>
+                <h2 class="text-xl font-bold">Track Orders</h2>
+            </div>
+            <button onclick="toggleOrders()" class="w-10 h-10 rounded-full bg-white/20 text-white flex items-center justify-center hover:bg-white/30 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </header>
+        <div id="orderHistoryList" class="flex-1 overflow-y-auto p-6 space-y-4">
+             <div class="flex flex-col items-center justify-center h-40 opacity-30 italic text-sm">
+                <i class="fa-solid fa-receipt text-3xl mb-2"></i>
+                <p>Retrieving your order log...</p>
+             </div>
         </div>
-        <h2 class="text-4xl font-black mb-2">Success!</h2>
-        <p class="text-lg font-medium opacity-80 mb-8">Order placed for your flat.</p>
-        <button onclick="closeSuccess()" class="bg-white text-emerald-600 px-8 py-3 rounded-2xl font-bold hover:bg-slate-100 transition">Back to Market</button>
+    </aside>
+
+    <!-- Confirmation Overlay -->
+    <div id="orderSuccess" class="fixed inset-0 z-[300] bg-indigo-600 flex flex-col items-center justify-center text-white hidden transform translate-y-full transition-transform duration-700">
+        <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center text-6xl mb-8 animate-bounce relative">
+             <i class="fa-solid fa-check"></i>
+             <div class="absolute inset-0 rounded-full border-4 border-white/30 animate-ping"></div>
+        </div>
+        <h2 class="text-5xl font-black mb-3 tracking-tighter">Ordered!</h2>
+        <p class="text-lg font-medium opacity-80 mb-10 max-w-[240px] text-center">Your items have been dispatched to the society hub.</p>
+        <div class="flex flex-col w-full px-12 gap-3">
+            <button onclick="viewTracking()" class="w-full bg-white text-indigo-600 py-5 rounded-[1.5rem] font-bold shadow-xl hover:scale-105 transition-transform active:scale-95">Track Status Now</button>
+            <button onclick="closeSuccess()" class="w-full bg-indigo-500/50 text-white border border-white/20 py-5 rounded-[1.5rem] font-bold hover:bg-indigo-400/50 transition">Keep Shopping</button>
+        </div>
     </div>
 
     <script>
+        if(!localStorage.getItem('userToken')) window.location.href = 'index.html';
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
         let allProducts = [];
         let cart = [];
@@ -138,7 +167,7 @@
 
         const getAuthHeaders = () => ({
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            'Authorization': `Bearer ${localStorage.getItem('userToken')}`
         });
 
         async function fetchProducts() {
@@ -293,12 +322,10 @@
             
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Placing Orders...';
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
             btn.disabled = true;
 
             try {
-                // Since society hub place_order is one-by-one in the mock, we loop.
-                // In production, you'd add a bulk endpoint.
                 for (let item of cart) {
                     await fetch(`${API_URL}/marketplace/orders`, {
                         method: 'POST',
@@ -313,7 +340,6 @@
                     });
                 }
                 
-                // Show Success
                 const successLayer = document.getElementById('orderSuccess');
                 successLayer.classList.remove('hidden');
                 setTimeout(() => {
@@ -322,6 +348,7 @@
                 
                 cart = [];
                 updateCartCount();
+                fetchOrders(); // Pre-fetch for the tracker
             } catch (err) {
                 alert("Order failed. Please check your connection.");
             } finally {
@@ -330,18 +357,73 @@
             }
         }
 
+        async function fetchOrders() {
+            try {
+                const res = await fetch(`${API_URL}/marketplace/orders`, { headers: getAuthHeaders() });
+                const orders = await res.json();
+                renderOrders(orders);
+            } catch(e) {}
+        }
+
+        function renderOrders(orders) {
+            const box = document.getElementById('orderHistoryList');
+            if(orders.length === 0) {
+                box.innerHTML = '<div class="text-center py-20 opacity-30 italic"><p>You haven\'t ordered anything yet.</p></div>';
+                return;
+            }
+
+            box.innerHTML = orders.map(o => {
+                let statusColor = 'text-primary bg-indigo-50 border-indigo-100';
+                if(o.status === 'Delivered') statusColor = 'text-emerald-600 bg-emerald-50 border-emerald-100';
+                if(o.status === 'Shipped') statusColor = 'text-amber-600 bg-amber-50 border-amber-100';
+
+                return `
+                    <div class="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm space-y-3 group hover:border-primary/20 transition">
+                        <div class="flex gap-3">
+                            <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-12 h-12 rounded-xl object-cover bg-slate-50">
+                            <div class="flex-1">
+                                <h4 class="text-xs font-black text-slate-800">${o.productName}</h4>
+                                <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">${new Date(o.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            <span class="text-xs font-black text-slate-900">\u20b9${o.price}</span>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-50">
+                            <span class="text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${statusColor}">${o.status}</span>
+                            <span class="text-[8px] font-bold text-slate-400">${o.paymentStatus === 'Paid' ? '\u2713 PAID' : '\u2022 UNPAID'}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleOrders() {
+            const side = document.getElementById('orderSidebar');
+            const overlay = document.getElementById('orderOverlay');
+            side.classList.toggle('open');
+            overlay.classList.toggle('hidden');
+            setTimeout(() => overlay.classList.toggle('opacity-0'), 10);
+            if(side.classList.contains('open')) fetchOrders();
+        }
+
+        function viewTracking() {
+            closeSuccess();
+            setTimeout(toggleOrders, 600);
+        }
+
         function closeSuccess() {
             const successLayer = document.getElementById('orderSuccess');
             successLayer.classList.add('translate-y-full');
             setTimeout(() => {
                 successLayer.classList.add('hidden');
-                toggleCart();
-                window.location.href = 'index.html#marketplace'; // Redirect back to index but specifically to market tab area
+                if(document.getElementById('cartSidebar').classList.contains('open')) toggleCart();
             }, 500);
         }
 
         // Init
-        document.addEventListener('DOMContentLoaded', fetchProducts);
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchProducts();
+            fetchOrders();
+        });
     </script>
 </body>
 </html>
