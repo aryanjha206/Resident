@@ -192,8 +192,9 @@
     </div>
 
     <!-- Order Status & Buy Modals etc -->
-    <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'addProductModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl" onclick="event.stopPropagation()">
+    <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center hidden" onclick="closeModal(event, 'addProductModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden shrink-0"></div>
             <h3 class="text-lg font-bold mb-4">List New Product</h3>
             <form id="productForm" class="space-y-4">
                 <input id="pName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
@@ -222,7 +223,8 @@
 
     <!-- Edit Product Modal -->
     <div id="editProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center hidden" onclick="closeModal(event, 'editProductModal')">
-        <div class="modal-content bg-white w-full sm:w-[500px] sm:rounded-[2.5rem] rounded-t-[2.5rem] p-8 shadow-2xl relative" onclick="event.stopPropagation()">
+        <div class="modal-content bg-white w-full sm:w-[500px] sm:rounded-[2.5rem] rounded-t-[2.5rem] p-8 shadow-2xl relative max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden shrink-0"></div>
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-black tracking-tight text-slate-900 leading-none">Update Listing</h3>
                 <button onclick="closeModal(null, 'editProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition shadow-sm"><i class="fa-solid fa-xmark"></i></button>
@@ -989,7 +991,7 @@
                                         <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
                                         <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                                     </select>` : ''}
-                                ${isPaid ? `<span class="flex-1 text-center bg-slate-900 text-white rounded-xl py-2 text-[10px] font-black uppercase tracking-widest">Complete</span>` : `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest">Mark Paid</button>`}
+                                ${isPaid ? `<span class="flex-1 text-center bg-slate-900 text-white rounded-xl py-3 text-[10px] font-black uppercase tracking-widest">Complete</span>` : `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-3 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest">Mark Paid</button>`}
                             </div>
                         </div>`;
                 });
