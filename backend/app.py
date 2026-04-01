@@ -972,5 +972,45 @@ def send_message():
     messages_col.insert_one(message)
     return jsonify({"message": "Message sent"}), 201
 
+# -------------- SOCIETY POLLS MODULE --------------
+@app.route('/api/polls', methods=['GET', 'POST'])
+@token_required
+def manage_polls():
+    society_id = request.user_data.get('societyId')
+    if request.method == 'POST':
+        data = request.json
+        poll = {
+            "societyId": society_id,
+            "question": data.get("question"),
+            "options": [{"text": opt, "votes": 0} for opt in data.get("options", [])],
+            "voters": [],
+            "status": "Active",
+            "createdAt": datetime.utcnow().isoformat()
+        }
+        polls_col.insert_one(poll)
+        return jsonify({"message": "Poll initiated"})
+
+    polls = list(polls_col.find({"societyId": society_id}).sort("createdAt", -1))
+    return jsonify([format_doc(p) for p in polls])
+
+@app.route('/api/polls/<p_id>/vote', methods=['POST'])
+@token_required
+def vote_poll(p_id):
+    user_id = request.user_data.get('user_id')
+    option_index = request.json.get("optionIndex")
+    
+    poll = polls_col.find_one({"_id": ObjectId(p_id)})
+    if not poll: return jsonify({"error": "Poll offline"}), 404
+    if user_id in poll.get("voters", []): return jsonify({"error": "Identity already logged"}), 403
+    
+    polls_col.update_one(
+        {"_id": ObjectId(p_id)},
+        {
+            "$inc": {f"options.{option_index}.votes": 1},
+            "$push": {"voters": user_id}
+        }
+    )
+    return jsonify({"message": "Vote synchronized"})
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
