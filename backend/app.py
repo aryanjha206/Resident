@@ -673,6 +673,21 @@ def create_poll():
     polls_col.insert_one(poll)
     return jsonify({"message": "Poll created"}), 201
 
+@app.route('/api/polls/<p_id>', methods=['PUT', 'DELETE'])
+@admin_required
+def manage_poll(p_id):
+    if request.method == 'DELETE':
+        polls_col.delete_one({"_id": ObjectId(p_id)})
+        return jsonify({"message": "Poll deleted"})
+    
+    data = request.json
+    update_data = {"question": data.get("question")}
+    if "options" in data:
+        update_data["options"] = [{"text": opt, "votes": 0} for opt in data.get("options", [])]
+    
+    polls_col.update_one({"_id": ObjectId(p_id)}, {"$set": update_data})
+    return jsonify({"message": "Poll updated"})
+
 @app.route('/api/polls/<p_id>/vote', methods=['POST'])
 @token_required
 def vote_poll(p_id):
@@ -760,6 +775,32 @@ def add_vehicle():
     }
     vehicles_col.insert_one(vehicle)
     return jsonify({"message": "Vehicle registered"}), 201
+
+@app.route('/api/vehicles/<v_id>', methods=['PUT', 'DELETE'])
+@token_required
+def manage_vehicle(v_id):
+    user_id = request.user_data.get('user_id')
+    role = request.user_data.get('role')
+    
+    vehicle = vehicles_col.find_one({"_id": ObjectId(v_id)})
+    if not vehicle: return jsonify({"error": "Vehicle not found"}), 404
+    
+    if role != 'admin' and str(vehicle.get('userId')) != user_id:
+        return jsonify({"error": "Unauthorized to manage this vehicle"}), 403
+
+    if request.method == 'DELETE':
+        vehicles_col.delete_one({"_id": ObjectId(v_id)})
+        return jsonify({"message": "Vehicle removed successfully"})
+    
+    data = request.json
+    update_data = {
+        "vehicleNumber": data.get("vehicleNumber"),
+        "vehicleType": data.get("vehicleType"),
+        "model": data.get("model"),
+        "parkingSlot": data.get("parkingSlot")
+    }
+    vehicles_col.update_one({"_id": ObjectId(v_id)}, {"$set": update_data})
+    return jsonify({"message": "Vehicle updated successfully"})
 
 # -------------- MARKETPLACE MODULE --------------
 @app.route('/api/marketplace/products', methods=['GET'])

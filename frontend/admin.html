@@ -940,9 +940,16 @@
                 
                 polls.forEach(p => {
                     const totalVotes = p.options.reduce((acc, opt) => acc + opt.votes, 0);
+                    const pollData = JSON.stringify(p).replace(/"/g, '&quot;');
                     listHtml += `
                         <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
-                            <h4 class="text-sm font-bold text-dark mb-3">${p.question}</h4>
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="text-sm font-bold text-dark">${p.question}</h4>
+                                <div class="flex gap-2">
+                                    <button onclick="editPoll('${pollData}')" class="text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
+                                    <button onclick="deletePoll('${p._id}')" class="text-[10px] text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                                </div>
+                            </div>
                             <div class="space-y-2">
                                 ${p.options.map(opt => {
                                     const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
@@ -986,8 +993,10 @@
             const options = Array.from(document.querySelectorAll('.poll-opt')).map(i => i.value).filter(v => v.trim() !== '');
             
             try {
-                const res = await fetch(`${API_URL}/polls`, {
-                    method: 'POST', headers: getAuthHeaders(),
+                const url = e.target.dataset.id ? `${API_URL}/polls/${e.target.dataset.id}` : `${API_URL}/polls`;
+                const method = e.target.dataset.id ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method: method, headers: getAuthHeaders(),
                     body: JSON.stringify({ 
                         societyId: sid, 
                         question: document.getElementById('pollQuestion').value,
@@ -995,10 +1004,38 @@
                     })
                 });
                 if(res.ok) {
-                    showToast("Community poll is now live!", "success", "Poll Deployed");
+                    showToast(e.target.dataset.id ? "Poll updated!" : "Community poll is now live!", "success", "Poll Deployed");
                     loadPollsAdmin();
                 }
             } catch(e) { btn.innerText = og; }
+        }
+
+        function editPoll(pollData) {
+            const p = JSON.parse(pollData.replace(/&quot;/g, '"'));
+            const form = document.querySelector('form[onsubmit="postPoll(event)"]');
+            form.dataset.id = p._id;
+            document.getElementById('pollQuestion').value = p.question;
+            const container = document.getElementById('pollOptionsContainer');
+            container.innerHTML = '';
+            p.options.forEach((opt, idx) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Option ${idx + 1}`;
+                input.value = opt.text;
+                input.required = true;
+                input.className = 'poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2';
+                container.appendChild(input);
+            });
+            form.querySelector('button[type="submit"]').innerText = "Update Poll & Reset Votes";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deletePoll(id) {
+            showConfirm("Delete Poll", "Are you sure? This will remove all results.", async () => {
+                await fetch(`${API_URL}/polls/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                showToast("Poll removed", "success");
+                loadPollsAdmin();
+            });
         }
 
         async function loadSOSAdmin() {
@@ -1050,13 +1087,16 @@
             try {
                 const res = await fetch(`${API_URL}/vehicles${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
                 const vehicles = await res.json();
-                let html = '<h4 class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Registered Resident Vehicles</h4>';
+                let html = `
+                    <div id="vehicleFormContainer" class="hidden mb-4 p-4 border border-slate-200 rounded-xl bg-slate-50"></div>
+                    <h4 class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Registered Resident Vehicles</h4>`;
                 
                 if(vehicles.length === 0) {
                     html += '<p class="text-xs text-slate-400 text-center py-10">No vehicles registered in the selected scope.</p>';
                 } else {
                     vehicles.forEach(v => {
                         const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
+                        const vData = JSON.stringify(v).replace(/"/g, '&quot;');
                         html += `
                             <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-3">
@@ -1066,9 +1106,15 @@
                                         <p class="text-[10px] text-primary font-bold"><i class="fa-solid fa-user"></i> ${v.userName}</p>
                                     </div>
                                 </div>
-                                <div class="text-right flex flex-col items-end gap-1">
-                                    <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">${v.model}</span>
-                                    <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-bold">${v.parkingSlot || 'NO SLOT'}</span>
+                                <div class="text-right flex items-center gap-4">
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">${v.model}</span>
+                                        <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-bold">${v.parkingSlot || 'NO SLOT'}</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editVehicle('${vData}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
+                                        <button onclick="deleteVehicle('${v._id}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         `;
@@ -1076,6 +1122,50 @@
                 }
                 content.innerHTML = `<div class="space-y-1">${html}</div>`;
             } catch(e) {}
+        }
+
+        function editVehicle(vData) {
+            const v = JSON.parse(vData.replace(/&quot;/g, '"'));
+            const ctn = document.getElementById('vehicleFormContainer');
+            ctn.classList.remove('hidden');
+            ctn.innerHTML = `
+                <h4 class="text-xs font-bold text-dark mb-3">Update Vehicle: ${v.vehicleNumber}</h4>
+                <form onsubmit="submitVehicleUpdate(event, '${v._id}')" class="space-y-3">
+                    <input id="vNum" type="text" value="${v.vehicleNumber}" placeholder="Number Plate" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <select id="vType" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                        <option value="Car" ${v.vehicleType==='Car'?'selected':''}>Car</option>
+                        <option value="Bike" ${v.vehicleType==='Bike'?'selected':''}>Bike</option>
+                    </select>
+                    <input id="vModel" type="text" value="${v.model}" placeholder="Model (e.g. BMW X5)" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <input id="vSlot" type="text" value="${v.parkingSlot}" placeholder="Parking Slot" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-primary text-white font-bold py-2 rounded-lg text-sm">Update Registry</button>
+                        <button type="button" onclick="document.getElementById('vehicleFormContainer').classList.add('hidden')" class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm">Cancel</button>
+                    </div>
+                </form>
+            `;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function submitVehicleUpdate(e, id) {
+            e.preventDefault();
+            const payload = {
+                vehicleNumber: document.getElementById('vNum').value,
+                vehicleType: document.getElementById('vType').value,
+                model: document.getElementById('vModel').value,
+                parkingSlot: document.getElementById('vSlot').value
+            };
+            await fetch(`${API_URL}/vehicles/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+            showToast("Vehicle updated", "success");
+            loadVehiclesAdmin();
+        }
+
+        async function deleteVehicle(id) {
+            showConfirm("Remove Vehicle", "Permanently remove this vehicle from registry?", async () => {
+                await fetch(`${API_URL}/vehicles/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                showToast("Vehicle removed", "success");
+                loadVehiclesAdmin();
+            });
         }
 
         async function resolveSOS(id) {

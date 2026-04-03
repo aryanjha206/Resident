@@ -1728,13 +1728,18 @@ This is a computer generated document.
                 } else {
                     vehicles.forEach(v => {
                         const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
+                        const vData = JSON.stringify(v).replace(/"/g, '&quot;');
                         html += `
                             <div class="glass-card p-4 border-l-4 border-l-primary flex items-center justify-between">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg"><i class="fa-solid ${icon}"></i></div>
-                                    <div>
+                                    <div class="flex flex-col">
                                         <h4 class="text-sm font-bold text-dark">${v.vehicleNumber}</h4>
                                         <p class="text-[10px] text-slate-500 font-medium">${v.model}</p>
+                                        <div class="flex gap-2 mt-1">
+                                            <button onclick="editResidentVehicle('${vData}')" class="text-[9px] font-bold text-primary underline">Edit Details</button>
+                                            <button onclick="removeResidentVehicle('${v._id}')" class="text-[9px] font-bold text-red-500 underline">Remove</button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -1760,19 +1765,40 @@ This is a computer generated document.
                     model: document.getElementById('vModel').value,
                     parkingSlot: document.getElementById('vParking').value
                 };
-                const res = await fetch(`${API_URL}/vehicles`, {
-                    method: 'POST', headers: getAuthHeaders(),
+                const vId = e.target.dataset.id;
+                const url = vId ? `${API_URL}/vehicles/${vId}` : `${API_URL}/vehicles`;
+                const method = vId ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method: method, headers: getAuthHeaders(),
                     body: JSON.stringify(payload)
                 });
                 if(res.ok) {
-                    pushNotif('Vehicle Registered', 'Your vehicle details are now synced with society records.', 'fa-car', 'text-indigo-500', 'bg-indigo-50');
+                    pushNotif('Success', vId ? 'Details updated.' : 'Vehicle Registered!', 'fa-car', 'text-indigo-500', 'bg-indigo-50');
                     closeModal(null, 'vehicleModal');
                     loadUserVehicles();
                     e.target.reset();
+                    delete e.target.dataset.id;
                 }
             } catch(e) {}
             btn.innerText = ogTxt;
         });
+
+        function editResidentVehicle(vData) {
+            const v = JSON.parse(vData.replace(/&quot;/g, '"'));
+            document.getElementById('vNumber').value = v.vehicleNumber;
+            document.getElementById('vType').value = v.vehicleType;
+            document.getElementById('vModel').value = v.model;
+            document.getElementById('vParking').value = v.parkingSlot;
+            document.getElementById('vehicleForm').dataset.id = v._id;
+            openModal('vehicleModal');
+        }
+
+        async function removeResidentVehicle(id) {
+            showConfirm("Remove Vehicle?", "Deleting this entry will remove it from society records.", async () => {
+                await fetch(`${API_URL}/vehicles/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                loadUserVehicles();
+            });
+        }
 
         async function triggerSOS() {
             showConfirm("TRIGGER SOS ALERT?", "This will immediately notify all security guards and neighbors that you need assistance. Proceed only in an EMERGENCY.", async () => {
