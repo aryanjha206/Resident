@@ -632,7 +632,8 @@ def get_analytics():
     my_pending = sum([float(d.get('amount', 0)) for d in my_dues if d.get('status') == 'Pending'])
 
     today_str = datetime.utcnow().strftime('%Y-%m-%d')
-    today_visitors = visitors_col.count_documents({**query, "date": {"$regex": "^" + today_str}})
+    # Count visitors scheduled for today (expectedDate starts with YYYY-MM-DD)
+    today_visitors = visitors_col.count_documents({**query, "expectedDate": {"$regex": "^" + today_str}})
     total_bookings = bookings_col.count_documents(query)
 
     # Marketplace Sales Detail
@@ -871,7 +872,10 @@ def get_seller_products():
         query = {"status": {"$ne": "Deleted"}}
         if society_filter: query["societyId"] = society_filter
     else:
-        query = {"userId": user_id}
+        query = {"$or": [
+            {"userId": user_id},
+            {"userId": ObjectId(user_id) if ObjectId.is_valid(user_id) else None}
+        ]}
         
     products = list(products_col.find(query).sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
@@ -909,7 +913,7 @@ def update_product(p_id):
     if not product:
         return jsonify({"error": "Product not found"}), 404
         
-    if role != 'admin' and product.get('userId') != user_id:
+    if role != 'admin' and str(product.get('userId')) != user_id:
         return jsonify({"error": "Unauthorized"}), 403
 
     update_fields = {
@@ -937,7 +941,7 @@ def delete_product(p_id):
         products_col.delete_one({"_id": ObjectId(p_id)})
         return jsonify({"message": "Product removed from marketplace by admin"})
     
-    if product.get('userId') != user_id:
+    if str(product.get('userId')) != user_id:
         return jsonify({"error": "Unauthorized"}), 403
     
     # Soft delete for sellers
@@ -955,7 +959,7 @@ def place_order():
     # Get product to find the seller
     p_id = data.get("productId")
     product = products_col.find_one({"_id": ObjectId(p_id)})
-    seller_id = product.get('userId') if product else None
+    seller_id = str(product.get('userId')) if product else None
     
     order = {
         "userId": user_id,
@@ -993,7 +997,10 @@ def get_seller_orders():
         query = {}
         if society_filter: query["societyId"] = society_filter
     else:
-        query = {"sellerId": user_id}
+        query = {"$or": [
+            {"sellerId": user_id},
+            {"sellerId": ObjectId(user_id) if ObjectId.is_valid(user_id) else None}
+        ]}
 
     orders = list(orders_col.find(query).sort("createdAt", -1))
     return jsonify([format_doc(o) for o in orders])

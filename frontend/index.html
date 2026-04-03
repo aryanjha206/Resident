@@ -270,7 +270,6 @@
             </form>
         </div>
     </div>
-    </div>
 
     <!-- In-App Notification (Toast) -->
     <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-[150] flex items-center gap-3 transition-all duration-300 translate-y-[-150%] opacity-0 w-[90%] max-w-sm pointer-events-none">
@@ -1047,7 +1046,10 @@
                 document.getElementById('sellerPendingRevenue').innerText = '₹' + pendingRevenue.toLocaleString();
                 document.getElementById('sellerTotalSales').innerText = '₹' + grossSales.toLocaleString();
                 document.getElementById('sellerProductCount').innerText = products.filter(p => p.status !== 'Deleted').length;
-            } catch(e) {}
+            } catch(e) {
+                console.error("Seller dashboard error:", e);
+                showToast("Could not load workspace data fully.", "error");
+            }
         }
         async function updateOrderStatus(id, status) {
             await fetch(`${API_URL}/marketplace/orders/${id}/status`, {
@@ -1058,7 +1060,9 @@
             loadSellerDashboard();
         }
         function openEditProductByIndex(idx) {
+            if(!window._sellerProducts || !window._sellerProducts[idx]) return;
             const p = window._sellerProducts[idx];
+            
             document.getElementById('editPId').value = p._id;
             document.getElementById('editPName').value = p.name;
             document.getElementById('editPPrice').value = p.price;
@@ -1959,29 +1963,36 @@ This is a computer generated document.
         }
 
         function switchSellerTab(tab) {
-            document.getElementById('sellerViewOrders').classList.add('hidden');
-            document.getElementById('sellerViewAnalytics').classList.add('hidden');
-            document.getElementById('sellerViewInventory').classList.add('hidden');
+            const views = ['sellerViewOrders', 'sellerViewAnalytics', 'sellerViewInventory'];
+            const buttons = ['btnSellerOrders', 'btnSellerStats', 'btnSellerInv'];
             
-            const btnIds = ['btnSellerOrders', 'btnSellerStats', 'btnSellerInv'];
-            btnIds.forEach(id => {
-                const b = document.getElementById(id);
-                b.classList.remove('border-primary', 'text-primary');
-                b.classList.add('border-transparent', 'text-slate-400');
+            views.forEach(v => {
+                const el = document.getElementById(v);
+                if(el) el.classList.add('hidden');
             });
-
-            if(tab === 'orders') {
-                document.getElementById('sellerViewOrders').classList.remove('hidden');
-                document.getElementById('btnSellerOrders').classList.replace('border-transparent', 'border-primary');
-                document.getElementById('btnSellerOrders').classList.replace('text-slate-400', 'text-primary');
-            } else if(tab === 'analytics') {
-                document.getElementById('sellerViewAnalytics').classList.remove('hidden');
-                document.getElementById('btnSellerStats').classList.replace('border-transparent', 'border-primary');
-                document.getElementById('btnSellerStats').classList.replace('text-slate-400', 'text-primary');
-            } else if(tab === 'inventory') {
-                document.getElementById('sellerViewInventory').classList.remove('hidden');
-                document.getElementById('btnSellerInv').classList.replace('border-transparent', 'border-primary');
-                document.getElementById('btnSellerInv').classList.replace('text-slate-400', 'text-primary');
+            
+            buttons.forEach(id => {
+                const b = document.getElementById(id);
+                if(b) {
+                    b.classList.remove('border-primary', 'text-primary');
+                    b.classList.add('border-transparent', 'text-slate-400');
+                }
+            });
+            
+            let activeView = '';
+            let activeBtn = '';
+            
+            if(tab === 'orders') { activeView = 'sellerViewOrders'; activeBtn = 'btnSellerOrders'; }
+            else if(tab === 'analytics') { activeView = 'sellerViewAnalytics'; activeBtn = 'btnSellerStats'; }
+            else if(tab === 'inventory') { activeView = 'sellerViewInventory'; activeBtn = 'btnSellerInv'; }
+            
+            const vEl = document.getElementById(activeView);
+            if(vEl) vEl.classList.remove('hidden');
+            
+            const bEl = document.getElementById(activeBtn);
+            if(bEl) {
+                bEl.classList.remove('border-transparent', 'text-slate-400');
+                bEl.classList.add('border-primary', 'text-primary');
             }
         }
 
