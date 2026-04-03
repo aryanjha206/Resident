@@ -177,8 +177,15 @@ def admin_login():
 def seller_login():
     data = request.json
     if data.get('pin') == "55555":
-        token = jwt.encode({'role': 'seller', 'exp': datetime.utcnow().timestamp() + 86400, 'name': 'Verified Seller'}, app.config['SECRET_KEY'], algorithm='HS256')
-        return jsonify({"token": token, "role": "seller", "name": "Verified Seller"})
+        # Global Vendor User
+        payload = {
+            'user_id': 'MODERATOR_VENDOR',
+            'role': 'seller',
+            'name': 'Verified Marketplace Vendor',
+            'exp': datetime.utcnow().timestamp() + 86400
+        }
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        return jsonify({"token": token, "role": "seller", "name": "Verified Marketplace Vendor"})
     return jsonify({"error": "Invalid PIN"}), 401
 
 @app.route('/api/auth/guard-login', methods=['POST'])
@@ -840,18 +847,28 @@ def manage_vehicle(v_id):
 @app.route('/api/marketplace/products', methods=['GET'])
 @token_required
 def get_products():
-    products = list(products_col.find({"status": "Active"}).sort("createdAt", -1))
+    society_id = request.user_data.get('societyId')
+    products = list(products_col.find({"status": "Active", "societyId": society_id}).sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/seller/products', methods=['GET'])
+@token_required
 def get_seller_products():
-    products = list(products_col.find().sort("createdAt", -1))
+    user_id = request.user_data.get('user_id')
+    products = list(products_col.find({"userId": user_id}).sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/products', methods=['POST'])
+@token_required
 def add_product():
+    user_id = request.user_data.get('user_id')
+    user_name = request.user_data.get('name')
+    society_id = request.user_data.get('societyId')
     data = request.json
     product = {
+        "userId": user_id,
+        "sellerName": user_name,
+        "societyId": society_id,
         "name": data.get("name"),
         "price": float(data.get("price", 0)),
         "description": data.get("description"),
@@ -864,8 +881,19 @@ def add_product():
     return jsonify({"message": "Product listed successfully"}), 201
 
 @app.route('/api/marketplace/products/<p_id>', methods=['PUT'])
+@token_required
 def update_product(p_id):
+    user_id = request.user_data.get('user_id')
+    role = request.user_data.get('role')
     data = request.json
+    
+    product = products_col.find_one({"_id": ObjectId(p_id)})
+    if not product:
+        return jsonify({"error": "Product not found"}), 404
+        
+    if role != 'admin' and product.get('userId') != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
     update_fields = {
         "name": data.get("name"),
         "price": float(data.get("price", 0)) if data.get("price") else None,
@@ -883,11 +911,18 @@ def delete_product(p_id):
     user_id = request.user_data.get('user_id')
     role = request.user_data.get('role')
     
+    product = products_col.find_one({"_id": ObjectId(p_id)})
+    if not product:
+        return jsonify({"error": "Product not found"}), 404
+
     if role == 'admin':
         products_col.delete_one({"_id": ObjectId(p_id)})
         return jsonify({"message": "Product removed from marketplace by admin"})
     
-    # Soft delete for sellers (could add ownership check here too if needed)
+    if product.get('userId') != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    # Soft delete for sellers
     products_col.update_one({"_id": ObjectId(p_id)}, {"$set": {"status": "Deleted"}})
     return jsonify({"message": "Product hidden by seller"})
 
@@ -899,11 +934,17 @@ def place_order():
     society_id = request.user_data.get('societyId')
     data = request.json
     
+    # Get product to find the seller
+    p_id = data.get("productId")
+    product = products_col.find_one({"_id": ObjectId(p_id)})
+    seller_id = product.get('userId') if product else None
+    
     order = {
         "userId": user_id,
         "userName": user_name,
         "societyId": society_id,
-        "productId": data.get("productId"),
+        "sellerId": seller_id,
+        "productId": p_id,
         "productName": data.get("productName"),
         "productImage": data.get("productImage", ""),
         "category": data.get("category", "General"),
@@ -924,17 +965,31 @@ def get_orders():
     return jsonify([format_doc(o) for o in orders])
 
 @app.route('/api/marketplace/seller/orders', methods=['GET'])
+@token_required
 def get_seller_orders():
-    orders = list(orders_col.find().sort("createdAt", -1))
+    user_id = request.user_data.get('user_id')
+    orders = list(orders_col.find({"sellerId": user_id}).sort("createdAt", -1))
     return jsonify([format_doc(o) for o in orders])
 
 @app.route('/api/marketplace/orders/<o_id>/status', methods=['PUT'])
+@token_required
 def update_order_status(o_id):
+    user_id = request.user_data.get('user_id')
+    role = request.user_data.get('role')
     data = request.json
     new_status = data.get("status")
+    
+    order = orders_col.find_one({"_id": ObjectId(o_id)})
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+        
+    if role != 'admin' and order.get('sellerId') != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
     update_fields = {"status": new_status}
     if new_status == "Delivered":
         update_fields["deliveredAt"] = datetime.utcnow().isoformat()
+        
     orders_col.update_one(
         {"_id": ObjectId(o_id)},
         {
@@ -945,7 +1000,18 @@ def update_order_status(o_id):
     return jsonify({"message": "Order status updated"})
 
 @app.route('/api/marketplace/orders/<o_id>/pay', methods=['PUT'])
+@token_required
 def confirm_payment(o_id):
+    user_id = request.user_data.get('user_id')
+    role = request.user_data.get('role')
+    
+    order = orders_col.find_one({"_id": ObjectId(o_id)})
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+        
+    if role != 'admin' and order.get('sellerId') != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
     orders_col.update_one(
         {"_id": ObjectId(o_id)},
         {

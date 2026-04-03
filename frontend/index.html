@@ -253,6 +253,17 @@
                     <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Context</label>
                     <textarea id="editPDesc" placeholder="Describe your product..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600" rows="3"></textarea>
                 </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Change Product Photo</label>
+                    <div id="editImagePreviewContainer" class="mb-3 hidden">
+                        <img id="editImagePreview" class="w-full h-32 object-contain rounded-2xl bg-white border border-slate-100 shadow-sm shadow-black/5">
+                    </div>
+                    <label class="flex items-center justify-center gap-3 w-full bg-slate-50 border-2 border-dashed border-slate-100 rounded-2xl py-4 px-5 text-sm cursor-pointer hover:bg-slate-100 transition shadow-inner">
+                        <i class="fa-solid fa-camera text-primary opacity-50"></i>
+                        <span id="editUploadLabel" class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Tap to change image</span>
+                        <input id="editPImage" type="file" accept="image/*" class="hidden" onchange="previewEditProductImage(this)">
+                    </label>
+                </div>
                 <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-primary active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4">
                     Save Product Changes <i class="fa-solid fa-cloud-arrow-up opacity-40"></i>
                 </button>
@@ -810,7 +821,10 @@
             showToast(msg, title);
         }
         
-        function getAuthHeaders() { return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` }; }
+        function getAuthHeaders() { 
+            const token = localStorage.getItem('userToken') || localStorage.getItem('sellerToken');
+            return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; 
+        }
 
         function checkAuth() {
             const token = localStorage.getItem('userToken');
@@ -911,7 +925,13 @@
         }
 
         // --- SELLER PORTAL LOGIC ---
-        function toggleSellerLogin() { document.getElementById('sellerLoginModal').classList.toggle('hidden'); }
+        function toggleSellerLogin() { 
+            if(localStorage.getItem('sellerToken')) {
+                showSellerPortal();
+            } else {
+                document.getElementById('sellerLoginModal').classList.toggle('hidden'); 
+            }
+        }
         async function loginSeller() {
             const pin = document.getElementById('sellerPinInput').value;
             try {
@@ -919,6 +939,7 @@
                 if(res.ok) {
                     const data = await res.json();
                     localStorage.setItem('sellerToken', data.token);
+                    document.getElementById('sellerPinInput').value = '';
                     toggleSellerLogin();
                     showSellerPortal();
                 } else { showToast("Invalid Seller PIN", "Error"); }
@@ -935,25 +956,25 @@
         async function loadSellerDashboard() {
             try {
                 const [pRes, oRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/seller/products`),
-                    fetch(`${API_URL}/marketplace/seller/orders`)
+                    fetch(`${API_URL}/marketplace/seller/products`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/marketplace/seller/orders`, { headers: getAuthHeaders() })
                 ]);
                 const products = await pRes.json();
                 const orders = await oRes.json();
                 
                 let p_html = '';
-                products.forEach(p => {
+                window._sellerProducts = products;
+                products.forEach((p, idx) => {
                     if(p.status === 'Deleted') return;
-                    const p_data = JSON.stringify(p).replace(/"/g, '&quot;');
                     p_html += `
                         <div class="glass-card p-4 flex justify-between items-center group/card transition-all hover:bg-white/80">
-                            <div class="flex items-center gap-4">
-                                <img src="${p.image}" class="w-14 h-14 rounded-2xl object-cover bg-slate-50 border border-slate-100 shadow-sm shadow-black/5">
-                                <div>
+                            <div class="flex items-center gap-4 text-left">
+                                <img src="${p.image || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-14 h-14 rounded-2xl object-cover bg-slate-50 border border-slate-100 shadow-sm shadow-black/5" onerror="this.src='https://img.icons8.com/color/96/box--v1.png'">
+                                <div class="text-left">
                                     <h4 class="text-xs font-black text-slate-800 leading-tight">${p.name}</h4>
                                     <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">₹${p.price} • ${p.category || 'General'}</p>
                                     <div class="flex gap-3 mt-2">
-                                        <button onclick="openEditProductByData('${p_data}')" class="text-[9px] font-black text-primary uppercase underline underline-offset-4 decoration-current hover:text-indigo-700 transition-colors">Edit</button>
+                                        <button onclick="openEditProductByIndex(${idx})" class="text-[9px] font-black text-primary uppercase underline underline-offset-4 decoration-current hover:text-indigo-700 transition-colors">Edit</button>
                                         <button onclick="deleteProduct('${p._id}', this)" class="text-[9px] font-black text-rose-500 uppercase underline underline-offset-4 decoration-current hover:text-rose-700 transition-colors">Archive</button>
                                     </div>
                                 </div>
@@ -961,7 +982,7 @@
                             <span class="text-[8px] font-black text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 uppercase tracking-widest">${p.status}</span>
                         </div>`;
                 });
-                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400">No listings yet.</p>';
+                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400 py-8 text-center bg-white/50 rounded-2xl border border-dashed border-slate-100 italic">No products listed yet.</p>';
 
                 let o_html = '';
                 const p_stats = {};
@@ -983,13 +1004,13 @@
                             </div>
                             <div class="flex gap-2">
                                 ${o.status !== 'Delivered' ? `
-                                    <select onchange="updateOrderStatus('${o._id}', this.value)" class="flex-1 bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest rounded-xl py-2 px-3">
+                                    <select onchange="updateOrderStatus('${o._id}', this.value)" class="flex-1 bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-primary/20">
                                         <option value="Placed" ${o.status === 'Placed' ? 'selected' : ''}>Placed</option>
                                         <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
                                         <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
                                         <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                                     </select>` : ''}
-                                ${isPaid ? `<span class="flex-1 text-center bg-slate-900 text-white rounded-xl py-2 text-[10px] font-black uppercase tracking-widest">Complete</span>` : `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest">Mark Paid</button>`}
+                                ${isPaid ? `<span class="flex-1 text-center bg-slate-100 text-slate-400 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest border border-slate-200">Complete</span>` : `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest hover:bg-emerald-600 active:scale-95 transition">Mark Paid</button>`}
                             </div>
                         </div>`;
                 });
@@ -1010,9 +1031,9 @@
                 const paidOrders = orders.filter(o => o.paymentStatus === 'Paid');
                 const pendingOrders = orders.filter(o => o.paymentStatus !== 'Paid');
                 
-                const collectedRevenue = paidOrders.reduce((acc, o) => acc + o.price, 0);
-                const pendingRevenue = pendingOrders.reduce((acc, o) => acc + o.price, 0);
-                const grossSales = orders.reduce((acc, o) => acc + o.price, 0);
+                const collectedRevenue = paidOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
+                const pendingRevenue = pendingOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
+                const grossSales = orders.reduce((acc, o) => acc + Number(o.price || 0), 0);
                 
                 document.getElementById('sellerRevenue').innerText = '₹' + collectedRevenue.toLocaleString();
                 document.getElementById('sellerPendingRevenue').innerText = '₹' + pendingRevenue.toLocaleString();
@@ -1028,14 +1049,36 @@
             });
             loadSellerDashboard();
         }
-        function openEditProductByData(p_data) {
-            const p = JSON.parse(p_data.replace(/&quot;/g, '"'));
+        function openEditProductByIndex(idx) {
+            const p = window._sellerProducts[idx];
             document.getElementById('editPId').value = p._id;
             document.getElementById('editPName').value = p.name;
             document.getElementById('editPPrice').value = p.price;
             document.getElementById('editPDesc').value = p.description || '';
             document.getElementById('editPCategory').value = p.category || 'General';
+            
+            // Image Preview
+            if(p.image) {
+                document.getElementById('editImagePreview').src = p.image;
+                document.getElementById('editImagePreviewContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('editImagePreviewContainer').classList.add('hidden');
+            }
+            document.getElementById('editUploadLabel').textContent = "Tap to change image";
+            
             openModal('editProductModal');
+        }
+
+        function previewEditProductImage(input) {
+            if(input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('editImagePreview').src = e.target.result;
+                    document.getElementById('editImagePreviewContainer').classList.remove('hidden');
+                    document.getElementById('editUploadLabel').textContent = input.files[0].name;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
         async function collectPayment(id, btn) {
@@ -1937,7 +1980,8 @@ This is a computer generated document.
                 name: document.getElementById('editPName').value,
                 price: Number(document.getElementById('editPPrice').value),
                 description: document.getElementById('editPDesc').value,
-                category: document.getElementById('editPCategory').value
+                category: document.getElementById('editPCategory').value,
+                image: document.getElementById('editImagePreview').src
             };
 
             try {
