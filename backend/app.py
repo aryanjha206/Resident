@@ -863,7 +863,16 @@ def get_products():
 @token_required
 def get_seller_products():
     user_id = request.user_data.get('user_id')
-    products = list(products_col.find({"userId": user_id}).sort("createdAt", -1))
+    role = request.user_data.get('role')
+    society_filter = request.args.get('societyId')
+    
+    if role == 'admin':
+        query = {"status": {"$ne": "Deleted"}}
+        if society_filter: query["societyId"] = society_filter
+    else:
+        query = {"userId": user_id}
+        
+    products = list(products_col.find(query).sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/products', methods=['POST'])
@@ -976,7 +985,16 @@ def get_orders():
 @token_required
 def get_seller_orders():
     user_id = request.user_data.get('user_id')
-    orders = list(orders_col.find({"sellerId": user_id}).sort("createdAt", -1))
+    role = request.user_data.get('role')
+    society_filter = request.args.get('societyId')
+
+    if role == 'admin':
+        query = {}
+        if society_filter: query["societyId"] = society_filter
+    else:
+        query = {"sellerId": user_id}
+
+    orders = list(orders_col.find(query).sort("createdAt", -1))
     return jsonify([format_doc(o) for o in orders])
 
 @app.route('/api/marketplace/orders/<o_id>/status', methods=['PUT'])

@@ -160,7 +160,9 @@
 
     <script>
         if(!localStorage.getItem('userToken')) window.location.href = 'index.html';
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' ? 'http://localhost:5000/api' : '/api';
+        const API_URL = (['localhost', '127.0.0.1', ''].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.')) 
+            ? `http://${window.location.hostname || 'localhost'}:5000/api` 
+            : '/api';
         let allProducts = [];
         let cart = [];
         try {

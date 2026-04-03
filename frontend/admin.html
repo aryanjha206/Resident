@@ -147,6 +147,10 @@
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Bookings</p>
                     <h3 class="text-2xl font-bold text-dark" id="statBookings">0</h3>
                 </div>
+                <div class="glass-card p-4 relative overflow-hidden group">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Market Revenue</p>
+                    <h3 class="text-2xl font-bold text-dark" id="statMarketRevenue">₹0</h3>
+                </div>
             </div>
 
 
@@ -234,7 +238,7 @@
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
                     </div>
 
-                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-red-50 transition border-2 border-transparent hover:border-red-100 active:scale-[0.98]" onclick="loadSOSAdmin()">
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadSOSAdmin()">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shadow-sm animate-pulse"><i class="fa-solid fa-truck-medical text-xl"></i></div>
                             <div>
@@ -243,21 +247,12 @@
                         </div>
                         <i class="fa-solid fa-chevron-right text-red-300"></i>
                     </div>
+
                     <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadVehiclesAdmin()">
                         <div class="flex items-center gap-4">
                             <div class="w-12 h-12 rounded-2xl bg-slate-200 text-slate-800 flex items-center justify-center shadow-sm"><i class="fa-solid fa-car text-xl"></i></div>
                             <div>
                                 <h3 class="text-base font-bold text-dark">Vehicle Registry</h3>
-                            </div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
-                    </div>
-
-                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadMarketplaceAdmin()">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-2xl bg-pink-50 text-pink-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-cart-shopping text-xl"></i></div>
-                            <div>
-                                <h3 class="text-base font-bold text-dark">Marketplace Orders</h3>
                             </div>
                         </div>
                         <i class="fa-solid fa-chevron-right text-slate-300"></i>
@@ -291,7 +286,9 @@
 
     <!-- Scripts -->
     <script>
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
+        const API_URL = (['localhost', '127.0.0.1', ''].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.')) 
+            ? `http://${window.location.hostname || 'localhost'}:5000/api` 
+            : '/api';
         
         function getAuthHeaders() { return {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`} }
 
@@ -1131,11 +1128,12 @@
         async function loadMarketplaceAdmin() {
             openModule("Marketplace Performance");
             const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
 
             try {
                 const [pRes, oRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/seller/products`),
-                    fetch(`${API_URL}/marketplace/seller/orders`)
+                    fetch(`${API_URL}/marketplace/seller/products${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/marketplace/seller/orders${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() })
                 ]);
                 const products = await pRes.json();
                 const orders = await oRes.json();
@@ -1401,117 +1399,6 @@
                 showToast("Network error publishing service.", "error");
                 btn.innerText = og;
             }
-        }
-        async function loadMarketplaceAdmin() {
-            openModule("Marketplace Performance");
-            const content = document.getElementById('moduleContent');
-
-            try {
-                const [pRes, oRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/seller/products`),
-                    fetch(`${API_URL}/marketplace/seller/orders`)
-                ]);
-                const products = await pRes.json();
-                const orders = await oRes.json();
-                
-                const totalRevenue = orders.reduce((acc, o) => acc + (o.price || 0), 0);
-                const collectedRevenue = orders.filter(o => o.paymentStatus === 'Paid').reduce((acc, o) => acc + (o.price || 0), 0);
-                const pendingRevenue = orders.filter(o => o.paymentStatus !== 'Paid').reduce((acc, o) => acc + (o.price || 0), 0);
-                const totalProducts = products.length;
-
-                const catStats = {};
-                orders.forEach(o => {
-                    if(o.paymentStatus === 'Paid') {
-                        catStats[o.category || 'General'] = (catStats[o.category || 'General'] || 0) + (o.price || 0);
-                    }
-                });
-
-                let html = `
-                    <div class="grid grid-cols-2 gap-4 mb-8">
-                        <div class="glass-card p-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl group">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors">Total Possible Revenue</p>
-                            <h4 class="text-2xl font-black mt-1">\u20b9${totalRevenue.toLocaleString()}</h4>
-                            <div class="mt-3 flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
-                                <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Global Aggregate</span>
-                            </div>
-                        </div>
-                        <div class="glass-card p-5 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 group">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-emerald-100/60">Revenue Collected</p>
-                            <h4 class="text-2xl font-black mt-1">\u20b9${collectedRevenue.toLocaleString()}</h4>
-                            <div class="mt-3 flex items-center gap-2">
-                                <i class="fa-solid fa-circle-check text-[10px] text-emerald-100"></i>
-                                <span class="text-[8px] font-bold text-emerald-100 uppercase tracking-widest">Finalized Cash</span>
-                            </div>
-                        </div>
-                        <div class="glass-card p-5 border-amber-100 bg-white shadow-sm flex flex-col justify-between">
-                            <div>
-                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Invoiced Pending</p>
-                                <h4 class="text-2xl font-black mt-1 text-amber-500">\u20b9${pendingRevenue.toLocaleString()}</h4>
-                            </div>
-                            <p class="text-[8px] font-bold text-slate-400 mt-3 uppercase tracking-widest italic leading-tight">Waiting for seller confirmation</p>
-                        </div>
-                        <div class="glass-card p-5 border-indigo-100 bg-white shadow-sm flex flex-col justify-between">
-                            <div>
-                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Unique Products</p>
-                                <h4 class="text-2xl font-black mt-1 text-indigo-600">${totalProducts}</h4>
-                            </div>
-                            <div class="flex items-center gap-2 mt-3">
-                                <span class="text-[8px] font-bold text-indigo-400 uppercase tracking-widest">Active Listings</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 mb-8 shadow-sm">
-                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-500"></i> Category Sales Distribution</h4>
-                        <div class="space-y-5">
-                            ${Object.entries(catStats).sort((a,b) => b[1] - a[1]).map(([cat, rev]) => {
-                                const percent = collectedRevenue > 0 ? Math.round((rev / collectedRevenue) * 100) : 0;
-                                return `
-                                    <div class="group">
-                                        <div class="flex justify-between items-center mb-2 px-1 text-slate-700">
-                                            <span class="text-[10px] font-black uppercase tracking-tighter">${cat}</span>
-                                            <span class="text-[10px] font-black text-slate-900">\u20b9${rev.toLocaleString()} <span class="text-slate-300 ml-1">(${percent}%)</span></span>
-                                        </div>
-                                        <div class="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                                            <div class="h-full bg-slate-900 transition-all duration-1000 group-hover:bg-primary" style="width: ${percent}%"></div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('') || '<p class="text-[10px] text-slate-400 text-center py-4 italic font-bold uppercase tracking-widest opacity-40">No confirmed revenue distribution available yet.</p>'}
-                        </div>
-                    </div>
-                `;
-
-                html += '<h4 class="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest flex items-center gap-2 px-1"><i class="fa-solid fa-clock-rotate-left"></i> Transaction Feed Scan</h4>';
-                if(orders.length === 0) {
-                    html += '<p class="text-xs text-slate-400 text-center py-10 opacity-50">No marketplace traffic detected.</p>';
-                } else {
-                    html += `<div class="space-y-2">`;
-                    orders.slice(0, 20).forEach(o => {
-                        let color = o.status === 'Delivered' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-indigo-500 bg-indigo-50 border-indigo-100';
-                        html += `
-                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-primary/20 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-[10px] text-slate-400 border border-slate-100 overflow-hidden shadow-sm">
-                                        <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover">
-                                    </div>
-                                    <div>
-                                        <h4 class="text-xs font-bold text-slate-800 leading-tight">${o.productName}</h4>
-                                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">${o.userName} \u2022 ${new Date(o.createdAt).toLocaleDateString()}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right flex flex-col items-end gap-1.5">
-                                    <span class="text-[9px] font-black text-slate-900 group-hover:text-primary transition-colors">\u20b9${o.price}</span>
-                                    <span class="text-[8px] font-black px-2 py-0.5 rounded border ${color} uppercase tracking-widest">${o.status}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += `</div>`;
-                }
-                content.innerHTML = html;
-            } catch(e) {}
         }
     </script>
 </body>
