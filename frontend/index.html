@@ -1011,13 +1011,11 @@
                                 </div>
                             </div>
                             <div class="flex gap-2 mt-2">
-                                <select onchange="updateOrderStatus('${o._id}', this.value)" class="flex-1 bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-primary/20 hover:bg-slate-100 transition cursor-pointer">
-                                    <option value="Placed" ${o.status === 'Placed' ? 'selected' : ''}>Placed</option>
-                                    <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
-                                    <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                                    <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                                </select>
-                                ${!isPaid ? `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest hover:bg-emerald-600 active:scale-95 transition">Mark Paid</button>` : ''}
+                                ${o.status === 'Placed' ? `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-indigo-500 text-white font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-indigo-600 active:scale-95 transition">Accept Order</button>` : ''}
+                                ${o.status === 'Processing' ? `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-amber-500 text-white font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-amber-600 active:scale-95 transition">Ship Order</button>` : ''}
+                                ${o.status === 'Shipped' ? `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-emerald-600 active:scale-95 transition">Complete delivery</button>` : ''}
+                                ${o.status === 'Delivered' && !isPaid ? `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-indigo-100 text-primary font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-indigo-200 active:scale-95 transition">Verify Payment</button>` : ''}
+                                ${o.status === 'Delivered' && isPaid ? `<div class="flex-1 bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-[9px] py-2.5 rounded-xl uppercase tracking-widest border border-emerald-100"><i class="fa-solid fa-circle-check mr-1.5"></i> Order Finished</div>` : ''}
                             </div>
                         </div>`;
                 });
@@ -1052,12 +1050,33 @@
             }
         }
         async function updateOrderStatus(id, status) {
-            await fetch(`${API_URL}/marketplace/orders/${id}/status`, {
-                method: 'PUT', 
-                headers: getAuthHeaders(), 
-                body: JSON.stringify({status})
+            const label = status === 'Delivered' ? 'Mark as Completed' : 'Update Status';
+            const msg = status === 'Delivered' ? 'Confirm order delivery? If payment is collected, we can record it now.' : `Move order to ${status}?`;
+            
+            showConfirm(label, msg, async () => {
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/orders/${id}/status`, {
+                        method: 'PUT', 
+                        headers: getAuthHeaders(), 
+                        body: JSON.stringify({status})
+                    });
+                    
+                    if(res.ok && status === 'Delivered') {
+                        // After marking delivered, optionally mark paid
+                        showConfirm("Record Payment", "Has the payment for this order been collected?", async () => {
+                            await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
+                                method: 'PUT', 
+                                headers: getAuthHeaders()
+                            });
+                            loadSellerDashboard();
+                        });
+                    }
+                    
+                    loadSellerDashboard();
+                } catch(e) {
+                    showToast("Failed to update status", "Error");
+                }
             });
-            loadSellerDashboard();
         }
         function openEditProductByIndex(idx) {
             if(!window._sellerProducts || !window._sellerProducts[idx]) return;
