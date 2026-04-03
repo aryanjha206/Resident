@@ -1017,7 +1017,7 @@ def update_order_status(o_id):
     if not order:
         return jsonify({"error": "Order not found"}), 404
         
-    if role != 'admin' and order.get('sellerId') != user_id:
+    if role != 'admin' and str(order.get('sellerId')) != user_id:
         return jsonify({"error": "Unauthorized"}), 403
 
     update_fields = {"status": new_status}
@@ -1043,7 +1043,7 @@ def confirm_payment(o_id):
     if not order:
         return jsonify({"error": "Order not found"}), 404
         
-    if role != 'admin' and order.get('sellerId') != user_id:
+    if role != 'admin' and str(order.get('sellerId')) != user_id:
         return jsonify({"error": "Unauthorized"}), 403
 
     orders_col.update_one(
