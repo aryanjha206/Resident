@@ -478,17 +478,17 @@
                     `;
                     
                     if(data.length === 0) html += `<p class="text-xs text-slate-500 text-center py-4">No active notices.</p>`;
-                    data.forEach(n => {
-                        const noticeData = JSON.stringify(n).replace(/"/g, '&quot;');
+                    window._activeNotices = data;
+                    data.forEach((n, idx) => {
                         html += `
                         <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex justify-between items-start mb-3">
                             <div>
                                 <h4 class="text-sm font-bold text-dark mb-1">${n.title}</h4>
                                 <p class="text-[11px] text-slate-500 leading-relaxed">${n.content}</p>
-                                <div class="mt-2 text-[9px] font-bold text-indigo-400 p-1 bg-white inline-block rounded border border-indigo-100">${n.category.toUpperCase()} • ${new Date(n.createdAt).toLocaleDateString()}</div>
+                                <div class="mt-2 text-[9px] font-bold text-indigo-400 p-1 bg-white inline-block rounded border border-indigo-100">${n.category.toUpperCase()} • ${new Date(n.createdAt || n.date || Date.now()).toLocaleDateString()}</div>
                             </div>
                             <div class="flex flex-col gap-2">
-                                <button onclick="editNotice('${noticeData}')" class="text-indigo-400 hover:text-indigo-600 transition text-sm"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="editNotice(${idx})" class="text-indigo-400 hover:text-indigo-600 transition text-sm"><i class="fa-solid fa-pen"></i></button>
                                 <button onclick="deleteNotice('${n._id}')" class="text-red-400 hover:text-red-600 transition text-sm"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </div>`;
@@ -528,12 +528,13 @@
             `;
         }
 
-        function editNotice(noticeData) {
-            const n = JSON.parse(noticeData.replace(/&quot;/g, '"'));
+        function editNotice(idx) {
+            const n = window._activeNotices[idx];
             showNoticeForm(n._id, n.title, n.content, n.category);
             const form = document.querySelector('form[onsubmit*="submitNotice"]');
             form.querySelector('button[type="submit"]').innerText = "Save Updated Notice";
             window.scrollTo({top: 0, behavior: 'smooth'});
+
         }
 
         async function deleteNotice(id) {

@@ -177,12 +177,16 @@
         async function fetchProducts() {
             try {
                 const res = await fetch(`${API_URL}/marketplace/products`, { headers: getAuthHeaders() });
-                allProducts = await res.json();
+                const data = await res.json();
+                allProducts = Array.isArray(data) ? data : [];
                 renderProducts();
             } catch (err) {
                 console.error("Market fetch failed", err);
+                allProducts = [];
+                renderProducts();
             }
         }
+
 
         function renderProducts() {
             const grid = document.getElementById('productGrid');
@@ -374,8 +378,10 @@
             try {
                 const res = await fetch(`${API_URL}/marketplace/orders`, { headers: getAuthHeaders() });
                 const orders = await res.json();
-                renderOrders(orders);
-            } catch(e) {}
+                renderOrders(Array.isArray(orders) ? orders : []);
+            } catch(e) {
+                renderOrders([]);
+            }
         }
 
         function renderOrders(orders) {

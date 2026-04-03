@@ -1002,15 +1002,14 @@
                                     <span class="text-[8px] font-black px-2 ${isPaid ? 'text-emerald-500' : 'text-rose-500'} tracking-tighter underline underline-offset-4 decoration-current">${isPaid ? 'FULLY PAID' : 'PENDING CASH'}</span>
                                 </div>
                             </div>
-                            <div class="flex gap-2">
-                                ${o.status !== 'Delivered' ? `
-                                    <select onchange="updateOrderStatus('${o._id}', this.value)" class="flex-1 bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-primary/20">
-                                        <option value="Placed" ${o.status === 'Placed' ? 'selected' : ''}>Placed</option>
-                                        <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
-                                        <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                                        <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                                    </select>` : ''}
-                                ${isPaid ? `<span class="flex-1 text-center bg-slate-100 text-slate-400 rounded-xl py-2.5 text-[10px] font-black uppercase tracking-widest border border-slate-200">Complete</span>` : `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest hover:bg-emerald-600 active:scale-95 transition">Mark Paid</button>`}
+                            <div class="flex gap-2 mt-2">
+                                <select onchange="updateOrderStatus('${o._id}', this.value)" class="flex-1 bg-slate-50 border border-slate-100 text-[10px] font-black uppercase tracking-widest rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-primary/20 hover:bg-slate-100 transition cursor-pointer">
+                                    <option value="Placed" ${o.status === 'Placed' ? 'selected' : ''}>Placed</option>
+                                    <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                                    <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                                    <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                                </select>
+                                ${!isPaid ? `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 uppercase tracking-widest hover:bg-emerald-600 active:scale-95 transition">Mark Paid</button>` : ''}
                             </div>
                         </div>`;
                 });
@@ -2005,21 +2004,6 @@ This is a computer generated document.
                 btn.disabled = false;
             }
         });
-
-        async function deleteProduct(id) {
-            showConfirm("Archive Listing", "Remove this item from the society market?", async () => {
-                try {
-                    const res = await fetch(`${API_URL}/marketplace/products/${id}`, { 
-                        method: 'DELETE',
-                        headers: getAuthHeaders()
-                    });
-                    if(res.ok) {
-                        showToast("Product archived successfully", "Marketplace");
-                        loadSellerDashboard();
-                    }
-                } catch(e) {}
-            });
-        }
 
         checkAuth();
     </script>

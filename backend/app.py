@@ -848,7 +848,15 @@ def manage_vehicle(v_id):
 @token_required
 def get_products():
     society_id = request.user_data.get('societyId')
-    products = list(products_col.find({"status": "Active", "societyId": society_id}).sort("createdAt", -1))
+    # Fetch products that belong to this society, OR global products (societyId is None/missing)
+    products = list(products_col.find({
+        "status": "Active",
+        "$or": [
+            {"societyId": society_id},
+            {"societyId": None},
+            {"societyId": {"$exists": False}}
+        ]
+    }).sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
 
 @app.route('/api/marketplace/seller/products', methods=['GET'])
