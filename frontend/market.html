@@ -221,7 +221,8 @@
                     <div class="px-1 flex-1">
                         <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">${p.category || 'General'}</p>
                         <h3 class="text-[13px] font-bold text-slate-900 group-hover/card:text-primary transition-colors leading-tight line-clamp-1">${p.name}</h3>
-                        <p class="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed min-h-[2.5rem]">${p.description || 'Verified society member product.'}</p>
+                        <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1 italic">Sold by: ${p.sellerName || 'Verified Vendor'}</p>
+                        <p class="text-[10px] text-slate-500 mt-1 line-clamp-2 leading-relaxed min-h-[2.5rem]">${p.description || 'Verified society member product.'}</p>
                     </div>
                     ${(() => {
                         const inCart = cart.find(c => c._id === p._id);

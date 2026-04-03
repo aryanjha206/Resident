@@ -631,7 +631,8 @@ def get_analytics():
     my_dues = list(payments_col.find(my_dues_query))
     my_pending = sum([float(d.get('amount', 0)) for d in my_dues if d.get('status') == 'Pending'])
 
-    total_visitors = visitors_col.count_documents(query)
+    today_str = datetime.utcnow().strftime('%Y-%m-%d')
+    today_visitors = visitors_col.count_documents({**query, "date": {"$regex": "^" + today_str}})
     total_bookings = bookings_col.count_documents(query)
 
     # Marketplace Sales Detail
@@ -654,7 +655,7 @@ def get_analytics():
         "dues_collected": society_collected,
         "dues_pending": society_pending,
         "my_dues_pending": my_pending,
-        "total_visitors": total_visitors,
+        "today_visitors": today_visitors,
         "total_bookings": total_bookings,
         "market_revenue": total_sales,
         "category_stats": cat_performance

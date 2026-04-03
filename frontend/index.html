@@ -511,7 +511,10 @@
                 </div>
                 
                 <div class="pt-2">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-3 flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-slate-400 uppercase flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
+                        <button onclick="toggleSellerLogin()" class="text-[9px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase flex items-center gap-1.5 hover:bg-primary hover:text-white transition-all"><i class="fa-solid fa-store"></i> Seller Mode</button>
+                    </div>
                     <div id="myOrdersList" class="space-y-4"></div>
                 </div>
             </div>
@@ -928,7 +931,8 @@
 
         // --- SELLER PORTAL LOGIC ---
         function toggleSellerLogin() { 
-            if(localStorage.getItem('sellerToken')) {
+            // If already logged in as a resident or seller, jump straight to portal
+            if(localStorage.getItem('sellerToken') || localStorage.getItem('userToken')) {
                 showSellerPortal();
             } else {
                 document.getElementById('sellerLoginModal').classList.toggle('hidden'); 
@@ -952,6 +956,7 @@
             sv.classList.remove('hidden');
             sv.style.display = 'flex';
             sv.style.flexDirection = 'column';
+            document.getElementById('sellerLoginModal').classList.add('hidden'); // Ensure modal closes
             loadSellerDashboard();
         }
         function logoutSeller() { localStorage.removeItem('sellerToken'); const sv = document.getElementById('sellerView'); sv.classList.add('hidden'); sv.style.display = 'none'; }
