@@ -112,84 +112,13 @@
         <div class="mt-12 flex gap-8">
             <a href="guard.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-camera p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Security Dashboard</a>
             <a href="admin.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shield-halved p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Management Board</a>
-            <button onclick="toggleSellerLogin()" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shop p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Seller Portal</button>
+            <a href="seller.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shop p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Seller Portal</a>
         </div>
     </div>
 
-    <!-- Seller Login Modal -->
-    <div id="sellerLoginModal" class="fixed inset-0 z-[250] bg-slate-900 flex items-center justify-center p-6 hidden">
-        <div class="w-full max-w-sm glass-card bg-white p-8 rounded-[2.5rem] flex flex-col items-center">
-            <div class="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center text-3xl mb-6 shadow-xl"><i class="fa-solid fa-shop"></i></div>
-            <h3 class="text-2xl font-bold mb-2">Seller Access</h3>
-            <p class="text-xs text-slate-500 text-center mb-6">Enter your unique vendor PIN to manage products and orders.</p>
-            <input type="password" id="sellerPinInput" placeholder="Enter PIN" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-center tracking-[1em] text-lg font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 transition mb-4">
-            <button onclick="loginSeller()" class="w-full bg-primary text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-indigo-600 transition">Get Access</button>
-            <button onclick="toggleSellerLogin()" class="mt-4 text-xs font-bold text-slate-400">Cancel</button>
-        </div>
-    </div>
 
-    <!-- Seller Portal View -->
-    <div id="sellerView" class="fixed inset-0 z-[300] bg-slate-50 hidden overflow-hidden" style="display:none;">
-        <header class="glass-header px-5 py-4 flex justify-between items-center shrink-0">
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-shop text-primary"></i>
-                <h2 class="text-base font-bold">Seller Workspace</h2>
-            </div>
-            <button onclick="logoutSeller()" class="text-red-500 font-bold text-xs">Exit Workspace</button>
-        </header>
-        <main class="flex-1 overflow-y-auto p-5 space-y-6">
-            <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-                <h3 class="text-xl font-bold">Welcome, Vendor</h3>
-                <p class="text-xs text-indigo-100 opacity-80 mt-1">Manage your storefront and track incoming orders.</p>
-                <div class="grid grid-cols-2 gap-3 mt-4">
-                    <div class="bg-emerald-500/20 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
-                        <p class="text-[8px] uppercase font-black text-emerald-200 tracking-widest">Collected</p>
-                        <h4 id="sellerRevenue" class="text-base font-black text-white">₹0</h4>
-                    </div>
-                    <div class="bg-amber-500/20 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
-                        <p class="text-[8px] uppercase font-black text-amber-200 tracking-widest">Pending</p>
-                        <h4 id="sellerPendingRevenue" class="text-base font-black text-white">₹0</h4>
-                    </div>
-                    <div class="bg-white/10 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
-                        <p class="text-[8px] uppercase font-black text-indigo-100/60 tracking-widest">Gross Sales</p>
-                        <h4 id="sellerTotalSales" class="text-base font-black text-white">₹0</h4>
-                    </div>
-                    <div class="bg-white/10 px-3 py-2.5 rounded-2xl backdrop-blur-md border border-white/10">
-                        <p class="text-[8px] uppercase font-black text-indigo-100/60 tracking-widest">Products</p>
-                        <h4 id="sellerProductCount" class="text-base font-black text-white">0</h4>
-                    </div>
-                </div>
-                <i class="fa-solid fa-box-open absolute top-4 right-4 text-5xl opacity-20"></i>
-            </div>
 
-            <div class="flex border-b border-slate-100 mb-6 w-full px-1">
-                <button onclick="switchSellerTab('orders')" id="btnSellerOrders" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest border-b-2 border-primary text-primary">Orders</button>
-                <button onclick="switchSellerTab('analytics')" id="btnSellerStats" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition">Sale Details</button>
-                <button onclick="switchSellerTab('inventory')" id="btnSellerInv" class="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-slate-400 border-b-2 border-transparent hover:text-slate-600 transition">Products</button>
-            </div>
 
-            <div id="sellerViewOrders" class="space-y-4">
-                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Active Deliveries</h4>
-                <div id="sellerOrderList" class="space-y-3"></div>
-            </div>
-
-            <div id="sellerViewAnalytics" class="hidden space-y-6">
-                <!-- Detailed Sales Log -->
-                <div class="bg-white rounded-[2rem] p-6 border border-slate-100 shadow-sm">
-                    <h4 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-500"></i> Performance Analytics</h4>
-                    <div id="sellerDetailedSales" class="space-y-3"></div>
-                </div>
-            </div>
-
-            <div id="sellerViewInventory" class="hidden space-y-4">
-                <div class="flex justify-between items-center px-1">
-                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Live Listings</h4>
-                    <button onclick="openModal('addProductModal')" class="text-[9px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase">+ New Item</button>
-                </div>
-                <div id="sellerProductList" class="grid grid-cols-1 gap-3"></div>
-            </div>
-        </main>
-    </div>
 
     <!-- Order Status & Buy Modals etc -->
     <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'addProductModal')">
@@ -512,7 +441,7 @@
                 <div class="pt-2">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="text-xs font-bold text-slate-400 uppercase flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
-                        <button onclick="toggleSellerLogin()" class="text-[9px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase flex items-center gap-1.5 hover:bg-primary hover:text-white transition-all"><i class="fa-solid fa-store"></i> Seller Mode</button>
+                        <a href="seller.html" class="text-[9px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase flex items-center gap-1.5 hover:bg-primary hover:text-white transition-all"><i class="fa-solid fa-store"></i> Seller Mode</a>
                     </div>
                     <div id="myOrdersList" class="space-y-4"></div>
                 </div>
@@ -830,7 +759,7 @@
         }
 
         function checkAuth() {
-            const token = localStorage.getItem('userToken') || localStorage.getItem('sellerToken');
+            const token = localStorage.getItem('userToken');
             const userName = localStorage.getItem('userName');
             const socName = localStorage.getItem('userSocietyName');
             
@@ -839,17 +768,6 @@
                 document.getElementById('appContent').style.display = 'block';
                 if(userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
                 if(socName) document.getElementById('societyNameDisplay').innerText = socName;
-                
-                // Restore Tab Persistence
-                const lastTab = localStorage.getItem('activeTab') || 'home';
-                const lastSubTab = localStorage.getItem('sellerActiveTab');
-                
-                if(lastTab === 'seller') {
-                    showSellerPortal();
-                    if(lastSubTab) switchSellerTab(lastSubTab);
-                } else {
-                    switchTab(lastTab);
-                }
                 
                 fetchDashboardData();
             }
@@ -929,14 +847,8 @@
             document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
-            const tabEl = document.getElementById(`tab-${tabId}`);
-            if(tabEl) tabEl.classList.add('active');
-            
-            // Find the nav button for this tabId
-            const navBtn = document.querySelector(`.nav-item[onclick*="switchTab('${tabId}')"]`);
-            if(navBtn) navBtn.classList.add('active');
-            
-            localStorage.setItem('activeTab', tabId);
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
             
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
@@ -944,294 +856,7 @@
             if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); loadUserVehicles(); }
         }
 
-        // --- SELLER PORTAL LOGIC ---
-        function toggleSellerLogin() { 
-            // If already logged in as a resident or seller, jump straight to portal
-            if(localStorage.getItem('sellerToken') || localStorage.getItem('userToken')) {
-                showSellerPortal();
-            } else {
-                document.getElementById('sellerLoginModal').classList.toggle('hidden'); 
-            }
-        }
-        async function loginSeller() {
-            const pin = document.getElementById('sellerPinInput').value;
-            try {
-                const res = await fetch(`${API_URL}/auth/seller-login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ pin }) });
-                if(res.ok) {
-                    const data = await res.json();
-                    localStorage.setItem('sellerToken', data.token);
-                    document.getElementById('sellerPinInput').value = '';
-                    toggleSellerLogin();
-                    showSellerPortal();
-                } else { showToast("Invalid Seller PIN", "Error"); }
-            } catch(e) {}
-        }
-        function showSellerPortal() {
-            const sv = document.getElementById('sellerView');
-            sv.classList.remove('hidden');
-            sv.style.display = 'flex';
-            sv.style.flexDirection = 'column';
-            document.getElementById('sellerLoginModal').classList.add('hidden'); // Ensure modal closes
-            loadSellerDashboard();
-        }
-        function logoutSeller() { localStorage.removeItem('sellerToken'); const sv = document.getElementById('sellerView'); sv.classList.add('hidden'); sv.style.display = 'none'; }
-        async function loadSellerDashboard() {
-            try {
-                const [pRes, oRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/seller/products`, { headers: getAuthHeaders() }),
-                    fetch(`${API_URL}/marketplace/seller/orders`, { headers: getAuthHeaders() })
-                ]);
-                const pData = await pRes.json();
-                const oData = await oRes.json();
-                const products = Array.isArray(pData) ? pData : [];
-                const orders = Array.isArray(oData) ? oData : [];
-                
-                let p_html = '';
-                window._sellerProducts = products;
-                products.forEach((p, idx) => {
-                    if(p.status === 'Deleted') return;
-                    p_html += `
-                        <div class="glass-card p-4 flex justify-between items-center group/card transition-all hover:bg-white/80">
-                            <div class="flex items-center gap-4 text-left">
-                                <img src="${p.image || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-14 h-14 rounded-2xl object-cover bg-slate-50 border border-slate-100 shadow-sm shadow-black/5" onerror="this.src='https://img.icons8.com/color/96/box--v1.png'">
-                                <div class="text-left">
-                                    <h4 class="text-xs font-black text-slate-800 leading-tight">${p.name}</h4>
-                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter mt-0.5">₹${p.price} • ${p.category || 'General'}</p>
-                                    <div class="flex gap-3 mt-2">
-                                        <button onclick="openEditProductByIndex(${idx})" class="text-[9px] font-black text-primary uppercase underline underline-offset-4 decoration-current hover:text-indigo-700 transition-colors">Edit</button>
-                                        <button onclick="deleteProduct('${p._id}', this)" class="text-[9px] font-black text-rose-500 uppercase underline underline-offset-4 decoration-current hover:text-rose-700 transition-colors">Archive</button>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="text-[8px] font-black text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 uppercase tracking-widest">${p.status}</span>
-                        </div>`;
-                });
-                document.getElementById('sellerProductList').innerHTML = p_html || '<p class="text-xs text-slate-400 py-8 text-center bg-white/50 rounded-2xl border border-dashed border-slate-100 italic">No products listed yet.</p>';
 
-                let o_html = '';
-                const p_stats = {};
-                orders.forEach(o => {
-                    const isPaid = o.paymentStatus === 'Paid';
-                    if(isPaid) p_stats[o.productName] = (p_stats[o.productName] || 0) + o.price;
-
-                    o_html += `
-                        <div class="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm space-y-3">
-                            <div class="flex justify-between items-start">
-                                <div class="flex gap-3">
-                                    <img src="${o.productImage}" class="w-12 h-12 rounded-xl object-cover bg-slate-50 border border-slate-100">
-                                    <div><h4 class="text-xs font-black text-slate-800">${o.productName}</h4><p class="text-[9px] text-slate-400 font-bold uppercase tracking-tighter">Buyer: ${o.userName}</p><p class="text-[9px] text-primary font-black mt-1 uppercase tracking-widest">\u20b9${o.price}</p></div>
-                                </div>
-                                <div class="flex flex-col items-end gap-1">
-                                    <span class="text-[9px] font-black px-3 py-1 rounded-full border ${o.status === 'Delivered' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-indigo-50 border-indigo-100 text-primary'} uppercase tracking-widest">${o.status}</span>
-                                    <span class="text-[8px] font-black px-2 ${isPaid ? 'text-emerald-500' : 'text-rose-500'} tracking-tighter underline underline-offset-4 decoration-current">${isPaid ? 'FULLY PAID' : 'PENDING CASH'}</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-2 mt-2">
-                                ${o.status === 'Placed' ? `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="flex-1 bg-indigo-500 text-white font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-indigo-600 active:scale-95 transition">Accept Order</button>` : ''}
-                                ${o.status === 'Processing' ? `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="flex-1 bg-amber-500 text-white font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-amber-600 active:scale-95 transition">Ship Order</button>` : ''}
-                                ${o.status === 'Shipped' ? `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="flex-1 bg-emerald-500 text-white font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-emerald-600 active:scale-95 transition">Complete delivery</button>` : ''}
-                                ${o.status === 'Delivered' && !isPaid ? `<button onclick="collectPayment('${o._id}', this)" class="flex-1 bg-indigo-100 text-primary font-black text-[10px] py-2.5 rounded-xl uppercase tracking-widest hover:bg-indigo-200 active:scale-95 transition">Verify Payment</button>` : ''}
-                                ${o.status === 'Delivered' && isPaid ? `<div class="flex-1 bg-emerald-50 text-emerald-600 flex items-center justify-center font-black text-[9px] py-2.5 rounded-xl uppercase tracking-widest border border-emerald-100"><i class="fa-solid fa-circle-check mr-1.5"></i> Order Finished</div>` : ''}
-                            </div>
-                        </div>`;
-                });
-                document.getElementById('sellerOrderList').innerHTML = o_html || '<p class="text-xs text-slate-400 text-center py-8 opacity-40 italic">Ready for your first sale!</p>';
-                
-                // ANALYTICS PEFORMANCE
-                let statsHtml = '';
-                Object.entries(p_stats).sort((a,b) => b[1] - a[1]).forEach(([name, rev]) => {
-                    statsHtml += `
-                        <div class="flex items-center justify-between py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition rounded-xl px-2">
-                            <span class="text-[11px] font-bold text-slate-700">${name}</span>
-                            <span class="text-xs font-black text-slate-900 font-mono">₹${rev.toLocaleString()}</span>
-                        </div>`;
-                });
-                document.getElementById('sellerDetailedSales').innerHTML = statsHtml || '<p class="text-[10px] text-slate-400 text-center py-4 font-bold uppercase tracking-widest">No completed sales to show.</p>';
-
-                // Global Stats Update
-                const paidOrders = orders.filter(o => o.paymentStatus === 'Paid');
-                const pendingOrders = orders.filter(o => o.paymentStatus !== 'Paid');
-                
-                const collectedRevenue = paidOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
-                const pendingRevenue = pendingOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
-                const grossSales = orders.reduce((acc, o) => acc + Number(o.price || 0), 0);
-                
-                document.getElementById('sellerRevenue').innerText = '₹' + collectedRevenue.toLocaleString();
-                document.getElementById('sellerPendingRevenue').innerText = '₹' + pendingRevenue.toLocaleString();
-                document.getElementById('sellerTotalSales').innerText = '₹' + grossSales.toLocaleString();
-                document.getElementById('sellerProductCount').innerText = products.filter(p => p.status !== 'Deleted').length;
-            } catch(e) {
-                console.error("Seller dashboard error:", e);
-                showToast("Could not load workspace data fully.", "error");
-            }
-        }
-        async function updateOrderStatus(id, status) {
-            const label = status === 'Delivered' ? 'Mark as Completed' : 'Update Status';
-            const msg = status === 'Delivered' ? 'Confirm order delivery? If payment is collected, we can record it now.' : `Move order to ${status}?`;
-            
-            showConfirm(label, msg, async () => {
-                try {
-                    const res = await fetch(`${API_URL}/marketplace/orders/${id}/status`, {
-                        method: 'PUT', 
-                        headers: getAuthHeaders(), 
-                        body: JSON.stringify({status})
-                    });
-                    
-                    if(res.ok) {
-                        showToast(`Status updated to ${status}`, "Success");
-                        loadSellerDashboard();
-                        
-                        if(status === 'Delivered') {
-                            // Delay slightly to let the first modal close fully before showing the second one
-                            setTimeout(() => {
-                                showConfirm("Record Payment", "Has the payment for this order been collected?", async () => {
-                                    await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
-                                        method: 'PUT', 
-                                        headers: getAuthHeaders()
-                                    });
-                                    loadSellerDashboard();
-                                });
-                            }, 500);
-                        }
-                    }
-                } catch(e) {
-                    showToast("Failed to update status", "Error");
-                }
-            });
-        }
-        function openEditProductByIndex(idx) {
-            if(!window._sellerProducts || !window._sellerProducts[idx]) return;
-            const p = window._sellerProducts[idx];
-            
-            document.getElementById('editPId').value = p._id;
-            document.getElementById('editPName').value = p.name;
-            document.getElementById('editPPrice').value = p.price;
-            document.getElementById('editPDesc').value = p.description || '';
-            document.getElementById('editPCategory').value = p.category || 'General';
-            
-            // Image Preview
-            if(p.image) {
-                document.getElementById('editImagePreview').src = p.image;
-                document.getElementById('editImagePreviewContainer').classList.remove('hidden');
-            } else {
-                document.getElementById('editImagePreviewContainer').classList.add('hidden');
-            }
-            document.getElementById('editUploadLabel').textContent = "Tap to change image";
-            
-            openModal('editProductModal');
-        }
-
-        function previewEditProductImage(input) {
-            if(input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('editImagePreview').src = e.target.result;
-                    document.getElementById('editImagePreviewContainer').classList.remove('hidden');
-                    document.getElementById('editUploadLabel').textContent = input.files[0].name;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        async function collectPayment(id, btn) {
-            showConfirm("Collect Payment", "Confirm you have received payment from the buyer?", async () => {
-                const og = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                btn.disabled = true;
-                try {
-                    const res = await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
-                        method: 'PUT', 
-                        headers: getAuthHeaders()
-                    });
-                    if(res.ok) {
-                        showToast("Payment recorded!", "Success");
-                        loadSellerDashboard();
-                    } else {
-                        btn.innerHTML = og;
-                        btn.disabled = false;
-                    }
-                } catch(e) {
-                    btn.innerHTML = og;
-                    btn.disabled = false;
-                }
-            });
-        }
-
-        async function deleteProduct(id, btn) {
-            showConfirm("Archive Listing", "Remove this item from the society market?", async () => {
-                const og = btn.innerHTML;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                try {
-                    const res = await fetch(`${API_URL}/marketplace/products/${id}`, { 
-                        method: 'DELETE',
-                        headers: getAuthHeaders()
-                    });
-                    if(res.ok) {
-                        showToast("Product archived successfully", "Marketplace");
-                        loadSellerDashboard();
-                    } else {
-                        btn.innerHTML = og;
-                    }
-                } catch(e) {
-                    btn.innerHTML = og;
-                }
-            });
-        }
-
-        function previewProductImage(input) {
-            if(input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.getElementById('imagePreview').src = e.target.result;
-                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
-                    document.getElementById('uploadLabel').textContent = input.files[0].name;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        document.getElementById('productForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = e.target.querySelector('button[type="submit"]');
-            const originalBtnText = btn.innerText;
-            btn.innerText = "Publishing Listing...";
-            btn.disabled = true;
-
-            try {
-                let imageData = document.getElementById('imagePreview').src;
-                if(!imageData || imageData.startsWith('window.')) imageData = "https://img.icons8.com/color/96/box--v1.png";
-
-                const payload = {
-                    name: document.getElementById('pName').value,
-                    price: document.getElementById('pPrice').value,
-                    description: document.getElementById('pDesc').value,
-                    category: document.getElementById('pCategory').value,
-                    image: imageData
-                };
-
-                const res = await fetch(`${API_URL}/marketplace/products`, {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(payload)
-                });
-
-                if(res.ok) {
-                    showToast("Your product is now LIVE!", "Market Update");
-                    e.target.reset();
-                    document.getElementById('imagePreviewContainer').classList.add('hidden');
-                    closeModal(null, 'addProductModal');
-                    loadSellerDashboard();
-                } else {
-                    const data = await res.json();
-                    showToast(data.error || "Failed to list item", "Error");
-                }
-            } catch(err) {
-                showToast("Network error publishing listing.", "Error");
-            } finally {
-                btn.innerText = originalBtnText;
-                btn.disabled = false;
-            }
-        });
         // --- MARKETPLACE LOGIC ---
         window._allProducts = [];
         window._allOrders = [];
@@ -2003,7 +1628,6 @@ This is a computer generated document.
         }
 
         function switchSellerTab(tab) {
-            localStorage.setItem('sellerActiveTab', tab);
             const views = ['sellerViewOrders', 'sellerViewAnalytics', 'sellerViewInventory'];
             const buttons = ['btnSellerOrders', 'btnSellerStats', 'btnSellerInv'];
             

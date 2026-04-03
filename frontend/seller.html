@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Seller Workspace - Society Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { 
+                        primary: '#6366F1', 
+                        secondary: '#10B981', 
+                        accent: '#F59E0B', 
+                        dark: '#0F172A', 
+                        light: '#F8FAFC',
+                        surface: 'rgba(255, 255, 255, 0.9)',
+                        emerald: { 500: '#10B981', 600: '#059669' },
+                        indigo: { 500: '#6366F1', 600: '#4F46E5', 700: '#4338CA' }
+                    },
+                    boxShadow: {
+                        'premium': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        'glow': '0 0 20px rgba(99, 102, 241, 0.3)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; min-height: 100vh; }
+        .glass-header { 
+            background: rgba(255, 255, 255, 0.8); 
+            backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3); 
+            position: sticky; 
+            top: 0; 
+            z-index: 50; 
+        }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); 
+            border-radius: 24px; 
+            backdrop-filter: blur(10px);
+        }
+        .premium-gradient {
+            background: linear-gradient(135deg, #4338CA 0%, #6366F1 50%, #818CF8 100%);
+        }
+        .tab-btn.active {
+            color: #4F46E5;
+            border-bottom-color: #4F46E5;
+        }
+        .tab-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .modal-overlay { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(8px); 
+            opacity: 0; 
+            visibility: hidden; 
+            transition: all 0.3s ease; 
+        }
+        .modal-overlay.active { 
+            opacity: 1; 
+            visibility: visible; 
+        }
+        .modal-content { 
+            transform: scale(0.95) translateY(20px); 
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        }
+        .modal-overlay.active .modal-content { 
+            transform: scale(1) translateY(0); 
+        }
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: slideIn 0.4s ease; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <!-- Login Screen -->
+    <div id="loginView" class="fixed inset-0 z-[1000] bg-slate-900 flex items-center justify-center p-6">
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-emerald-600/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+
+        <div class="w-full max-w-sm glass-card relative bg-white/95 backdrop-blur-3xl p-10 pt-14 text-center">
+            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-2xl flex items-center justify-center text-white text-3xl transform -rotate-12 transition-transform hover:rotate-0">
+                <i class="fa-solid fa-store"></i>
+            </div>
+            
+            <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight mb-2">Vendor Portal</h2>
+            <p class="text-xs text-slate-500 font-medium mb-8 leading-relaxed">Secure access for authorized society marketplace sellers. Managed orders & track growth.</p>
+            
+            <div class="space-y-4">
+                <div class="relative group">
+                    <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-primary transition"></i>
+                    <input type="password" id="sellerPinInput" placeholder="Enter Secure PIN" maxlength="5" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-center tracking-[0.8em] text-lg font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                </div>
+                
+                <button onclick="loginSeller()" id="loginBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-indigo-600 active:scale-95 transition-all flex items-center justify-center gap-2">
+                    Enter Workspace <i class="fa-solid fa-arrow-right-to-bracket text-xs opacity-50"></i>
+                </button>
+                
+                <a href="index.html" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 transition flex items-center justify-center gap-1.5 mt-6"><i class="fa-solid fa-arrow-left"></i> Back to Residential Hub</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workspace View -->
+    <div id="workspaceView" class="hidden h-screen flex flex-col overflow-hidden">
+        <header class="glass-header px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-shop"></i></div>
+                <div>
+                    <h1 class="text-lg font-black text-slate-900 tracking-tight">Seller Hub</h1>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-0.5">Marketplace Vendor Workspace</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="logoutSeller()" class="w-10 h-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100 transition shadow-sm border border-rose-100"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
+            <!-- Hero Stats -->
+            <div class="premium-gradient rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl">
+                <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h2 class="text-3xl font-black mb-2 leading-tight">Welcome back, Vendor.</h2>
+                        <p class="text-indigo-100 text-sm opacity-90 font-medium">Your society marketplace is active. Check your latest orders and manage listings below.</p>
+                        
+                        <div class="flex gap-4 mt-8">
+                            <button onclick="switchTab('inventory')" class="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest border border-white/20 hover:bg-white/30 transition">Inventory Management</button>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
+                            <p class="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Net Revenue</p>
+                            <h3 id="statRevenue" class="text-2xl font-black text-white">₹0</h3>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
+                            <p class="text-[10px] font-black text-amber-300 uppercase tracking-widest mb-1">Pending Pay</p>
+                            <h3 id="statPending" class="text-2xl font-black text-white">₹0</h3>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
+                            <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-1">Total Sales</p>
+                            <h3 id="statSales" class="text-2xl font-black text-white">₹0</h3>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
+                            <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-1">Live Listings</p>
+                            <h3 id="statProducts" class="text-2xl font-black text-white">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <i class="fa-solid fa-basket-shopping absolute -bottom-12 -right-12 text-[15rem] opacity-10 rotate-12"></i>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex items-center gap-8 border-b border-slate-200 sticky top-0 bg-slate-50/50 backdrop-blur-md z-10 px-2 pb-0 mb-4">
+                <button onclick="switchTab('orders')" id="tabBtn-orders" class="tab-btn py-4 text-xs font-black uppercase tracking-widest text-slate-400 border-b-4 border-transparent hover:text-slate-600 active">Active Orders</button>
+                <button onclick="switchTab('analytics')" id="tabBtn-analytics" class="tab-btn py-4 text-xs font-black uppercase tracking-widest text-slate-400 border-b-4 border-transparent hover:text-slate-600">Analytics Log</button>
+                <button onclick="switchTab('inventory')" id="tabBtn-inventory" class="tab-btn py-4 text-xs font-black uppercase tracking-widest text-slate-400 border-b-4 border-transparent hover:text-slate-600">Inventory Hub</button>
+            </div>
+
+            <!-- Content Sections -->
+            <div id="section-orders" class="view-section active">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div> Processing Pipeline</h3>
+                    <button onclick="loadSellerData()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition"><i class="fa-solid fa-rotate text-xs"></i></button>
+                </div>
+                <div id="orderList" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Orders Populated here -->
+                </div>
+            </div>
+
+            <div id="section-analytics" class="view-section">
+                <div class="glass-card p-8 border border-slate-100 shadow-sm mb-8">
+                    <h3 class="text-base font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3"><i class="fa-solid fa-chart-line text-emerald-500"></i> Performance Insights</h3>
+                    <div id="analyticsList" class="space-y-4">
+                        <!-- Stats here -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-inventory" class="view-section">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Marketplace Exposure</h3>
+                    <button onclick="openModal('addProductModal')" class="bg-indigo-600 text-white font-bold px-6 py-3 rounded-2xl text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95 flex items-center gap-2">
+                        <i class="fa-solid fa-plus"></i> New Product Listing
+                    </button>
+                </div>
+                <div id="productList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Products here -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="fixed inset-0 z-[2000] modal-overlay flex items-center justify-center p-4">
+        <div class="modal-content glass-card bg-white w-full max-w-lg p-8 relative">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Post New Listing</h3>
+                <button onclick="closeModal('addProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="productForm" class="space-y-5">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Identity</label>
+                    <input id="pName" type="text" placeholder="Title (e.g. Fresh Mangoes)" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
+                        <input id="pPrice" type="number" placeholder="0.00" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select id="pCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-700 appearance-none focus:ring-4 focus:ring-indigo-500/10 transition">
+                            <option value="General">General</option>
+                            <option value="Fresh & Grocery">Fresh & Grocery</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Home & Kitchen">Home & Kitchen</option>
+                            <option value="Services">Services</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Market Visual</label>
+                    <div id="imagePreviewContainer" class="hidden mb-3">
+                        <img id="imagePreview" class="w-full h-32 object-contain rounded-2xl bg-white border border-slate-100 shadow-sm p-2">
+                    </div>
+                    <label class="flex items-center justify-center gap-3 w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl py-4 px-5 text-sm cursor-pointer hover:bg-slate-100 transition shadow-inner">
+                        <i class="fa-solid fa-camera text-primary opacity-50"></i>
+                        <span id="uploadLabel" class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Select Display Image</span>
+                        <input id="pImage" type="file" accept="image/*" class="hidden" onchange="previewProductImage(this)">
+                    </label>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Marketing Pitch</label>
+                    <textarea id="pDesc" placeholder="Describe quality and quantity details..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600" rows="3"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-indigo-600 active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4 shadow-indigo-200">
+                    Publish Listing <i class="fa-solid fa-rocket opacity-40"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Product Modal -->
+    <div id="editProductModal" class="fixed inset-0 z-[2000] modal-overlay flex items-center justify-center p-4">
+        <div class="modal-content glass-card bg-white w-full max-w-lg p-8 relative">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Update Details</h3>
+                <button onclick="closeModal('editProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="editProductForm" class="space-y-5">
+                <input id="editPId" type="hidden">
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
+                    <input id="editPName" type="text" placeholder="Title" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
+                        <input id="editPPrice" type="number" placeholder="Price" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select id="editPCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-700 appearance-none focus:ring-4 focus:ring-indigo-500/10 transition">
+                            <option value="General">General</option>
+                            <option value="Fresh & Grocery">Fresh & Grocery</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Home & Kitchen">Home & Kitchen</option>
+                            <option value="Services">Services</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Visual Change</label>
+                    <div id="editImagePreviewContainer" class="mb-3 hidden">
+                        <img id="editImagePreview" class="w-full h-32 object-contain rounded-2xl bg-white border border-slate-100 shadow-sm p-2">
+                    </div>
+                    <label class="flex items-center justify-center gap-3 w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl py-4 px-5 text-sm cursor-pointer hover:bg-slate-100 transition shadow-inner">
+                        <i class="fa-solid fa-camera text-primary opacity-50"></i>
+                        <span id="editUploadLabel" class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Update Photo</span>
+                        <input id="editPImage" type="file" accept="image/*" class="hidden" onchange="previewEditProductImage(this)">
+                    </label>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Content Update</label>
+                    <textarea id="editPDesc" placeholder="Description..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600" rows="3"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-indigo-700 active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4">
+                    Save Changes <i class="fa-solid fa-check-double opacity-40"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-[5000] modal-overlay flex items-center justify-center p-4">
+        <div class="modal-content glass-card bg-white w-full max-w-xs p-8 text-center">
+            <div id="confirmIcon" class="w-16 h-16 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-6 border border-rose-100 shadow-sm">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirmTitle" class="text-2xl font-black text-slate-900 tracking-tight mb-2">Check Again</h3>
+            <p id="confirmText" class="text-xs font-medium text-slate-500 mb-8 leading-relaxed">Are you absolutely sure about this action?</p>
+            <div class="flex gap-4">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-2xl hover:bg-slate-200 transition text-xs uppercase tracking-widest">Nevermind</button>
+                <button id="confirmBtn" class="flex-1 bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-100 hover:bg-rose-600 active:scale-95 transition text-xs uppercase tracking-widest">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[6000] bg-slate-900 border border-slate-800 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-4 transition-all duration-300 translate-y-[200%] opacity-0 max-w-[90%] pointer-events-none">
+        <div id="toastIconBox" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0"><i id="tIcon" class="fa-solid fa-circle-check"></i></div>
+        <div>
+            <h4 id="toastTitle" class="text-[13px] font-black tracking-tight leading-none mb-1">Success</h4>
+            <p id="toastMessage" class="text-[11px] text-slate-400 font-medium leading-tight"></p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.)/.test(window.location.hostname) || window.location.hostname === "";
+        const API_URL = isLocal ? `http://${window.location.hostname || 'localhost'}:5000/api` : '/api';
+        
+        // Auth State
+        const getAuthHeaders = () => ({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('sellerToken')}`
+        });
+
+        const checkAuth = () => {
+            const token = localStorage.getItem('sellerToken');
+            if (token) {
+                document.getElementById('loginView').style.display = 'none';
+                document.getElementById('workspaceView').classList.remove('hidden');
+                loadSellerData();
+            } else {
+                document.getElementById('loginView').style.display = 'flex';
+                document.getElementById('workspaceView').classList.add('hidden');
+            }
+        };
+
+        // UI Helpers
+        const showToast = (msg, title = 'Market Alert', type = 'success') => {
+            const toast = document.getElementById('toast');
+            const iconBox = document.getElementById('toastIconBox');
+            const tIcon = document.getElementById('tIcon');
+            
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastMessage').innerText = msg;
+            
+            if (type === 'success') {
+                iconBox.className = 'w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-emerald-500/10 text-emerald-500';
+                tIcon.className = 'fa-solid fa-circle-check';
+            } else {
+                iconBox.className = 'w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-rose-500/10 text-rose-500';
+                tIcon.className = 'fa-solid fa-triangle-exclamation';
+            }
+            
+            toast.style.transform = 'translate(-50%, 0)';
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.transform = 'translate(-50%, 200%)';
+                toast.style.opacity = '0';
+            }, 4000);
+        };
+
+        let _confirmCallback = null;
+        const confirmAction = (title, text, callback, type = 'danger') => {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmText').innerText = text;
+            const btn = document.getElementById('confirmBtn');
+            const icon = document.getElementById('confirmIcon');
+            
+            if (type === 'danger') {
+                btn.className = 'flex-1 bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-100 hover:bg-rose-600 active:scale-95 transition text-xs uppercase tracking-widest';
+                icon.className = 'w-16 h-16 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-6 border border-rose-100 shadow-sm';
+            } else {
+                btn.className = 'flex-1 bg-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-600 active:scale-95 transition text-xs uppercase tracking-widest';
+                icon.className = 'w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-3xl mx-auto mb-6 border border-indigo-100 shadow-sm';
+            }
+            
+            _confirmCallback = callback;
+            document.getElementById('confirmModal').classList.add('active');
+        };
+
+        const closeConfirmModal = () => {
+            document.getElementById('confirmModal').classList.remove('active');
+            _confirmCallback = null;
+        };
+
+        document.getElementById('confirmBtn').onclick = () => {
+            if (_confirmCallback) _confirmCallback();
+            closeConfirmModal();
+        };
+
+        const openModal = (id) => document.getElementById(id).classList.add('active');
+        const closeModal = (id) => document.getElementById(id).classList.remove('active');
+
+        // Logic
+        async function loginSeller() {
+            const pin = document.getElementById('sellerPinInput').value;
+            const btn = document.getElementById('loginBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`${API_URL}/auth/seller-login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    localStorage.setItem('sellerToken', data.token);
+                    checkAuth();
+                    showToast("Workspace Unlocked. High growth awaits!", "Access Granted");
+                } else {
+                    showToast(data.error || "Invalid Credentials", "Security Denied", 'error');
+                }
+            } catch (e) {
+                showToast("Connection to backend lost.", "Server Offline", 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function logoutSeller() {
+            confirmAction("Exit Workspace?", "Are you sure you want to logout from the seller portal?", () => {
+                localStorage.removeItem('sellerToken');
+                checkAuth();
+            });
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-indigo-600', 'text-slate-900'));
+            
+            document.getElementById(`section-${tab}`).classList.add('active');
+            const btn = document.getElementById(`tabBtn-${tab}`);
+            btn.classList.add('active', 'border-indigo-600', 'text-slate-900');
+        }
+
+        async function loadSellerData() {
+            try {
+                const [pRes, oRes] = await Promise.all([
+                    fetch(`${API_URL}/marketplace/seller/products`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/marketplace/seller/orders`, { headers: getAuthHeaders() })
+                ]);
+                const products = await pRes.json();
+                const orders = await oRes.json();
+                
+                window._sellerProducts = Array.isArray(products) ? products : [];
+                window._sellerOrders = Array.isArray(orders) ? orders : [];
+                
+                renderDashboard();
+            } catch (e) {
+                showToast("Failed to fetch latest market data.", "Sync Error", 'error');
+            }
+        }
+
+        function renderDashboard() {
+            const products = window._sellerProducts.filter(p => p.status !== 'Deleted');
+            const orders = window._sellerOrders;
+            
+            // Stats
+            const paidOrders = orders.filter(o => o.paymentStatus === 'Paid');
+            const pendingOrders = orders.filter(o => o.paymentStatus !== 'Paid' && o.status === 'Delivered');
+            
+            const revenue = paidOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
+            const pendingRev = pendingOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
+            const totalSales = orders.reduce((acc, o) => acc + Number(o.price || 1), 0); // Simulated total transactional volume
+            
+            document.getElementById('statRevenue').innerText = '₹' + revenue.toLocaleString();
+            document.getElementById('statPending').innerText = '₹' + pendingRev.toLocaleString();
+            document.getElementById('statSales').innerText = '₹' + totalSales.toLocaleString();
+            document.getElementById('statProducts').innerText = products.length;
+
+            // Orders
+            const orderList = document.getElementById('orderList');
+            if (orders.length === 0) {
+                orderList.innerHTML = `
+                    <div class="col-span-full py-20 text-center opacity-40">
+                        <i class="fa-solid fa-truck-ramp-box text-6xl mb-4"></i>
+                        <p class="text-sm font-bold uppercase tracking-widest">Pipeline Empty. Ready for your first sale!</p>
+                    </div>`;
+            } else {
+                orderList.innerHTML = orders.map(o => {
+                    const isPaid = o.paymentStatus === 'Paid';
+                    let actionBtn = '';
+                    if (o.status === 'Placed') actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-indigo-700 transition lg">Accept & Process</button>`;
+                    else if (o.status === 'Processing') actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="w-full bg-amber-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-amber-600 transition lg">Handover / Ship</button>`;
+                    else if (o.status === 'Shipped') actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="w-full bg-emerald-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-emerald-600 transition lg">Confirm Delivery</button>`;
+                    else if (o.status === 'Delivered' && !isPaid) actionBtn = `<button onclick="collectPayment('${o._id}')" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-slate-800 transition lg">Verify Cash Payment</button>`;
+                    else actionBtn = `<div class="w-full bg-slate-50 text-slate-400 font-bold py-4 rounded-2xl uppercase tracking-widest text-[10px] text-center border border-slate-100 flex items-center justify-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> Transaction Finished</div>`;
+
+                    return `
+                        <div class="glass-card p-6 border border-slate-100 relative overflow-hidden group">
+                            <div class="flex justify-between items-start mb-6">
+                                <div class="flex gap-4">
+                                    <div class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm shrink-0">
+                                        <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <h4 class="text-base font-black text-slate-800 tracking-tight leading-tight">${o.productName}</h4>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Buyer: ${o.userName}</p>
+                                        <h5 class="text-lg font-black text-indigo-600 mt-2">₹${o.price}</h5>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-2">
+                                    <span class="text-[9px] font-black px-3 py-1.5 rounded-full border ${o.status === 'Delivered' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-indigo-50 border-indigo-100 text-indigo-600'} uppercase tracking-widest">${o.status}</span>
+                                    <span class="text-[8px] font-black ${isPaid ? 'text-emerald-500 bg-emerald-50' : 'text-rose-500 bg-rose-50'} px-2 py-0.5 rounded tracking-tighter">${isPaid ? 'FULLY PAID' : 'PENDING CASH'}</span>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-slate-50">
+                                ${actionBtn}
+                            </div>
+                        </div>`;
+                }).join('');
+            }
+
+            // Products
+            const productList = document.getElementById('productList');
+            if (products.length === 0) {
+                productList.innerHTML = `<div class="col-span-full py-10 text-center opacity-40 italic text-sm">No items listed. Press + New Item to start selling.</div>`;
+            } else {
+                productList.innerHTML = products.map((p, idx) => `
+                    <div class="glass-card overflow-hidden flex flex-col group/prod transition-all hover:translate-y-[-4px]">
+                        <div class="h-40 overflow-hidden bg-slate-50 relative">
+                            <img src="${p.image || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover transition-transform duration-700 group-hover/prod:scale-110">
+                            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-indigo-600 uppercase tracking-widest shadow-sm border border-white/50">${p.category || 'General'}</div>
+                        </div>
+                        <div class="p-5 flex flex-col gap-4 flex-1">
+                            <div>
+                                <h4 class="text-base font-black text-slate-800 leading-tight">${p.name}</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed mt-1 line-clamp-2">${p.description || 'No description provided.'}</p>
+                            </div>
+                            <div class="flex justify-between items-center mt-auto">
+                                <h3 class="text-xl font-black text-slate-900">₹${p.price}</h3>
+                                <div class="flex gap-2">
+                                    <button onclick="openEditProductByIndex(${idx})" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center justify-center border border-slate-100"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="deleteProduct('${p._id}')" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition flex items-center justify-center border border-slate-100"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`).join('');
+            }
+
+            // Analytics
+            const analyticsList = document.getElementById('analyticsList');
+            const performance = {};
+            orders.forEach(o => { if(o.paymentStatus === 'Paid') performance[o.productName] = (performance[o.productName] || 0) + o.price });
+            
+            if (Object.keys(performance).length === 0) {
+                analyticsList.innerHTML = `<p class="text-xs text-slate-400 text-center py-6 italic font-medium uppercase tracking-widest">Your sales trends will appear as you complete orders.</p>`;
+            } else {
+                analyticsList.innerHTML = Object.entries(performance).sort((a,b) => b[1]-a[1]).map(([name, rev]) => `
+                    <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-indigo-50/50 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shadow-sm"><i class="fa-solid fa-ranking-star"></i></div>
+                            <span class="text-xs font-black text-slate-700">${name}</span>
+                        </div>
+                        <span class="text-sm font-black text-slate-900 font-mono tracking-tighter">₹${rev.toLocaleString()}</span>
+                    </div>`).join('');
+            }
+        }
+
+        async function updateOrderStatus(id, status) {
+            confirmAction(`Update to ${status}?`, `Proceed with moving this order to the ${status} phase?`, async () => {
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/orders/${id}/status`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ status })
+                    });
+                    if (res.ok) {
+                        showToast(`Order is now ${status}!`, "Status Shift");
+                        loadSellerData();
+                    }
+                } catch (e) { showToast("Backend sync failed.", "Error", 'error'); }
+            });
+        }
+
+        async function collectPayment(id) {
+            confirmAction("Verify Payment?", "Confirm you've received the required amount from the buyer? This action will finalize revenue analytics.", async () => {
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
+                        method: 'PUT',
+                        headers: getAuthHeaders()
+                    });
+                    if (res.ok) {
+                        showToast("Revenue consolidated successfully.", "Payment Stored");
+                        loadSellerData();
+                    }
+                } catch (e) { showToast("Verification error.", "Status Error", 'error'); }
+            }, 'success');
+        }
+
+        async function deleteProduct(id) {
+            confirmAction("Archive Listing?", "Remove this product from the society market? This will not affect existing orders.", async () => {
+                try {
+                    const res = await fetch(`${API_URL}/marketplace/products/${id}`, {
+                        method: 'DELETE',
+                        headers: getAuthHeaders()
+                    });
+                    if (res.ok) {
+                        showToast("Product listing removed.", "Market Shift");
+                        loadSellerData();
+                    }
+                } catch (e) { showToast("Archival failed.", "Error", 'error'); }
+            });
+        }
+
+        function openEditProductByIndex(idx) {
+            const p = window._sellerProducts[idx];
+            document.getElementById('editPId').value = p._id;
+            document.getElementById('editPName').value = p.name;
+            document.getElementById('editPPrice').value = p.price;
+            document.getElementById('editPDesc').value = p.description || '';
+            document.getElementById('editPCategory').value = p.category || 'General';
+            
+            if (p.image) {
+                document.getElementById('editImagePreview').src = p.image;
+                document.getElementById('editImagePreviewContainer').classList.remove('hidden');
+            }
+            openModal('editProductModal');
+        }
+
+        // Image Previews
+        function previewProductImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreviewContainer').classList.remove('hidden');
+                    document.getElementById('uploadLabel').innerText = input.files[0].name;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function previewEditProductImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('editImagePreview').src = e.target.result;
+                    document.getElementById('editImagePreviewContainer').classList.remove('hidden');
+                    document.getElementById('editUploadLabel').innerText = input.files[0].name;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // Form Submits
+        document.getElementById('productForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const og = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing...';
+            btn.disabled = true;
+
+            const payload = {
+                name: document.getElementById('pName').value,
+                price: Number(document.getElementById('pPrice').value),
+                description: document.getElementById('pDesc').value,
+                category: document.getElementById('pCategory').value,
+                image: document.getElementById('imagePreview').src || "https://img.icons8.com/color/96/box--v1.png"
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/marketplace/products`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast("Your listing is now live in the society!", "Market Success");
+                    closeModal('addProductModal');
+                    e.target.reset();
+                    document.getElementById('imagePreviewContainer').classList.add('hidden');
+                    loadSellerData();
+                }
+            } catch (e) { showToast("Listing failed.", "Sync Error", 'error'); }
+            finally { btn.innerHTML = og; btn.disabled = false; }
+        };
+
+        document.getElementById('editProductForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editPId').value;
+            const btn = e.target.querySelector('button');
+            const og = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+            btn.disabled = true;
+
+            const payload = {
+                name: document.getElementById('editPName').value,
+                price: Number(document.getElementById('editPPrice').value),
+                description: document.getElementById('editPDesc').value,
+                category: document.getElementById('editPCategory').value,
+                image: document.getElementById('editImagePreview').src
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/marketplace/products/${id}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    showToast("Product listing refined.", "Update Success");
+                    closeModal('editProductModal');
+                    loadSellerData();
+                }
+            } catch (e) { showToast("Update failed.", "Sync Error", 'error'); }
+            finally { btn.innerHTML = og; btn.disabled = false; }
+        };
+
+        // Init
+        checkAuth();
+        setInterval(loadSellerData, 10000); // Periodic sync
+    </script>
+</body>
+</html>
