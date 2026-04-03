@@ -159,6 +159,12 @@ def verify_otp():
     )
     return jsonify({"token": token, "user": format_doc(user)})
 
+@app.route('/api/users/<u_id>', methods=['DELETE'])
+@admin_required
+def delete_user(u_id):
+    users_col.delete_one({"_id": ObjectId(u_id)})
+    return jsonify({"message": "User removed from society records"})
+
 @app.route('/api/auth/admin-login', methods=['POST'])
 def admin_login():
     data = request.json
@@ -577,7 +583,13 @@ def manage_bookings():
 @token_required
 def cancel_booking(b_id):
     user_id = request.user_data.get('user_id')
-    res = bookings_col.delete_one({"_id": ObjectId(b_id), "userId": user_id})
+    role = request.user_data.get('role')
+    
+    if role == 'admin':
+        res = bookings_col.delete_one({"_id": ObjectId(b_id)})
+    else:
+        res = bookings_col.delete_one({"_id": ObjectId(b_id), "userId": user_id})
+        
     if res.deleted_count > 0:
         return jsonify({"message": "Booking canceled successfully"})
     return jsonify({"error": "Failed to cancel booking (not found or unauthorized)"}), 400
@@ -866,9 +878,18 @@ def update_product(p_id):
     return jsonify({"message": "Product updated successfully"})
 
 @app.route('/api/marketplace/products/<p_id>', methods=['DELETE'])
+@token_required
 def delete_product(p_id):
+    user_id = request.user_data.get('user_id')
+    role = request.user_data.get('role')
+    
+    if role == 'admin':
+        products_col.delete_one({"_id": ObjectId(p_id)})
+        return jsonify({"message": "Product removed from marketplace by admin"})
+    
+    # Soft delete for sellers (could add ownership check here too if needed)
     products_col.update_one({"_id": ObjectId(p_id)}, {"$set": {"status": "Deleted"}})
-    return jsonify({"message": "Product deleted successfully"})
+    return jsonify({"message": "Product hidden by seller"})
 
 @app.route('/api/marketplace/orders', methods=['POST'])
 @token_required
