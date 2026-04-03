@@ -160,9 +160,16 @@
 
     <script>
         if(!localStorage.getItem('userToken')) window.location.href = 'index.html';
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:' ? 'http://localhost:5000/api' : '/api';
         let allProducts = [];
-        let cart = JSON.parse(localStorage.getItem('societyMarketCart') || '[]');
+        let cart = [];
+        try {
+            const raw = localStorage.getItem('societyMarketCart');
+            if (raw) cart = JSON.parse(raw);
+            if (!Array.isArray(cart)) cart = [];
+        } catch(e) {
+            cart = [];
+        }
         let currentCategory = 'All';
 
         function saveCart() {
@@ -203,7 +210,7 @@
                 return;
             }
 
-            grid.innerHTML = filtered.map(p => `
+            grid.innerHTML = filtered.map((p, idx) => `
                 <div class="product-card bg-white p-4 rounded-[2.5rem] flex flex-col group/card relative overflow-hidden">
                     <div class="relative h-44 rounded-[2rem] overflow-hidden mb-4 bg-slate-50">
                         <img src="${p.image || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700">
@@ -217,12 +224,12 @@
                     ${(() => {
                         const inCart = cart.find(c => c._id === p._id);
                         if(inCart) return `
-                            <button onclick="addToCart('${p._id}')" class="mt-4 w-full bg-emerald-500 text-white py-3 rounded-2xl font-bold text-[11px] transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
+                            <button onclick="addToCartIndex(${idx})" class="mt-4 w-full bg-emerald-500 text-white py-3 rounded-2xl font-bold text-[11px] transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
                                 In Basket (${inCart.qty}) <i class="fa-solid fa-check"></i>
                             </button>
                         `;
                         return `
-                            <button onclick="addToCart('${p._id}')" class="mt-4 w-full bg-slate-50 text-slate-700 py-3 rounded-2xl font-bold text-[11px] group-hover/card:bg-primary group-hover/card:text-white transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
+                            <button onclick="addToCartIndex(${idx})" class="mt-4 w-full bg-slate-50 text-slate-700 py-3 rounded-2xl font-bold text-[11px] group-hover/card:bg-primary group-hover/card:text-white transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2">
                                 Add to Basket <i class="fa-solid fa-plus opacity-50"></i>
                             </button>
                         `;
@@ -234,6 +241,17 @@
 
         function filterProducts() {
             renderProducts();
+        }
+
+        function addToCartIndex(idx) {
+            const p = allProducts.filter(p => {
+                const searchVal = document.getElementById('marketSearch').value.toLowerCase();
+                const matchCat = currentCategory === 'All' || (p.category && p.category === currentCategory);
+                const matchSearch = p.name.toLowerCase().includes(searchVal) || (p.description && p.description.toLowerCase().includes(searchVal));
+                return matchCat && matchSearch;
+            })[idx];
+            
+            if(p) addToCart(p._id);
         }
 
         function changeCategory(cat) {
