@@ -777,9 +777,8 @@
 
     <!-- Scripts -->
     <script>
-        const API_URL = (['localhost', '127.0.0.1', ''].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.')) 
-            ? `http://${window.location.hostname || 'localhost'}:5000/api` 
-            : '/api';
+        const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.)/.test(window.location.hostname) || window.location.hostname === "";
+        const API_URL = isLocal ? `http://${window.location.hostname || 'localhost'}:5000/api` : '/api';
         
         window.localNotifications = [];
         
@@ -831,7 +830,7 @@
         }
 
         function checkAuth() {
-            const token = localStorage.getItem('userToken');
+            const token = localStorage.getItem('userToken') || localStorage.getItem('sellerToken');
             const userName = localStorage.getItem('userName');
             const socName = localStorage.getItem('userSocietyName');
             
@@ -840,6 +839,17 @@
                 document.getElementById('appContent').style.display = 'block';
                 if(userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
                 if(socName) document.getElementById('societyNameDisplay').innerText = socName;
+                
+                // Restore Tab Persistence
+                const lastTab = localStorage.getItem('activeTab') || 'home';
+                const lastSubTab = localStorage.getItem('sellerActiveTab');
+                
+                if(lastTab === 'seller') {
+                    showSellerPortal();
+                    if(lastSubTab) switchSellerTab(lastSubTab);
+                } else {
+                    switchTab(lastTab);
+                }
                 
                 fetchDashboardData();
             }
@@ -919,8 +929,14 @@
             document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            event.currentTarget.classList.add('active');
+            const tabEl = document.getElementById(`tab-${tabId}`);
+            if(tabEl) tabEl.classList.add('active');
+            
+            // Find the nav button for this tabId
+            const navBtn = document.querySelector(`.nav-item[onclick*="switchTab('${tabId}')"]`);
+            if(navBtn) navBtn.classList.add('active');
+            
+            localStorage.setItem('activeTab', tabId);
             
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
@@ -1061,18 +1077,23 @@
                         body: JSON.stringify({status})
                     });
                     
-                    if(res.ok && status === 'Delivered') {
-                        // After marking delivered, optionally mark paid
-                        showConfirm("Record Payment", "Has the payment for this order been collected?", async () => {
-                            await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
-                                method: 'PUT', 
-                                headers: getAuthHeaders()
-                            });
-                            loadSellerDashboard();
-                        });
+                    if(res.ok) {
+                        showToast(`Status updated to ${status}`, "Success");
+                        loadSellerDashboard();
+                        
+                        if(status === 'Delivered') {
+                            // Delay slightly to let the first modal close fully before showing the second one
+                            setTimeout(() => {
+                                showConfirm("Record Payment", "Has the payment for this order been collected?", async () => {
+                                    await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
+                                        method: 'PUT', 
+                                        headers: getAuthHeaders()
+                                    });
+                                    loadSellerDashboard();
+                                });
+                            }, 500);
+                        }
                     }
-                    
-                    loadSellerDashboard();
                 } catch(e) {
                     showToast("Failed to update status", "Error");
                 }
@@ -1982,6 +2003,7 @@ This is a computer generated document.
         }
 
         function switchSellerTab(tab) {
+            localStorage.setItem('sellerActiveTab', tab);
             const views = ['sellerViewOrders', 'sellerViewAnalytics', 'sellerViewInventory'];
             const buttons = ['btnSellerOrders', 'btnSellerStats', 'btnSellerInv'];
             

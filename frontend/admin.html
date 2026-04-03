@@ -286,9 +286,8 @@
 
     <!-- Scripts -->
     <script>
-        const API_URL = (['localhost', '127.0.0.1', ''].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.')) 
-            ? `http://${window.location.hostname || 'localhost'}:5000/api` 
-            : '/api';
+        const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.)/.test(window.location.hostname) || window.location.hostname === "";
+        const API_URL = isLocal ? `http://${window.location.hostname || 'localhost'}:5000/api` : '/api';
         
         function getAuthHeaders() { return {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`} }
 
