@@ -667,6 +667,7 @@ def create_poll():
         "question": data.get("question"),
         "options": [{"text": opt, "votes": 0} for opt in data.get("options", [])],
         "voters": [],
+        "voters_v2": [], # [{uid, opt}, ...]
         "createdAt": datetime.utcnow().isoformat(),
         "expiresAt": data.get("expiresAt")
     }
@@ -697,17 +698,38 @@ def vote_poll(p_id):
     poll = polls_col.find_one({"_id": ObjectId(p_id)})
     if not poll: return jsonify({"error": "Poll not found"}), 404
     
-    if user_id in poll.get('voters', []):
+    # Check both old and new formats
+    if user_id in poll.get('voters', []) or any(v.get('uid') == user_id for v in poll.get('voters_v2', [])):
         return jsonify({"error": "Already voted"}), 400
         
     polls_col.update_one(
         {"_id": ObjectId(p_id)},
         {
             "$inc": {f"options.{option_index}.votes": 1},
-            "$push": {"voters": user_id}
+            "$push": {"voters_v2": {"uid": user_id, "opt": option_index}}
         }
     )
-    return jsonify({"message": "Vote recorded"})
+    return jsonify({"message": "Vote recorded"}), 200
+
+@app.route('/api/polls/<p_id>/vote', methods=['DELETE'])
+@token_required
+def retract_vote(p_id):
+    user_id = request.user_data.get('user_id')
+    poll = polls_col.find_one({"_id": ObjectId(p_id)})
+    if not poll: return jsonify({"error": "Poll not found"}), 404
+    
+    found_vote = next((v for v in poll.get('voters_v2', []) if v.get('uid') == user_id), None)
+    if not found_vote:
+        return jsonify({"error": "No vote found to retract"}), 400
+        
+    polls_col.update_one(
+        {"_id": ObjectId(p_id)},
+        {
+            "$inc": {f"options.{found_vote['opt']}.votes": -1},
+            "$pull": {"voters_v2": {"uid": user_id}}
+        }
+    )
+    return jsonify({"message": "Vote retracted"})
 
 # -------------- EMERGENCY / SOS MODULE --------------
 @app.route('/api/sos', methods=['POST'])

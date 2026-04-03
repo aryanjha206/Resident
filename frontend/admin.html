@@ -935,18 +935,18 @@
             try {
                 const res = await fetch(`${API_URL}/polls${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
                 const polls = await res.json();
+                window._activePolls = polls; // Store globally
                 let listHtml = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Active & Past Polls</h4>';
                 if(polls.length === 0) listHtml += `<p class="text-xs text-slate-400">No polls created yet.</p>`;
                 
-                polls.forEach(p => {
+                polls.forEach((p, idx) => {
                     const totalVotes = p.options.reduce((acc, opt) => acc + opt.votes, 0);
-                    const pollData = JSON.stringify(p).replace(/"/g, '&quot;');
                     listHtml += `
                         <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
                             <div class="flex justify-between items-start mb-3">
                                 <h4 class="text-sm font-bold text-dark">${p.question}</h4>
                                 <div class="flex gap-2">
-                                    <button onclick="editPoll('${pollData}')" class="text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
+                                    <button onclick="editPoll(${idx})" class="text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
                                     <button onclick="deletePoll('${p._id}')" class="text-[10px] text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
                                 </div>
                             </div>
@@ -1010,8 +1010,8 @@
             } catch(e) { btn.innerText = og; }
         }
 
-        function editPoll(pollData) {
-            const p = JSON.parse(pollData.replace(/&quot;/g, '"'));
+        function editPoll(idx) {
+            const p = window._activePolls[idx];
             const form = document.querySelector('form[onsubmit="postPoll(event)"]');
             form.dataset.id = p._id;
             document.getElementById('pollQuestion').value = p.question;
@@ -1087,6 +1087,7 @@
             try {
                 const res = await fetch(`${API_URL}/vehicles${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
                 const vehicles = await res.json();
+                window._activeVehicles = vehicles;
                 let html = `
                     <div id="vehicleFormContainer" class="hidden mb-4 p-4 border border-slate-200 rounded-xl bg-slate-50"></div>
                     <h4 class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Registered Resident Vehicles</h4>`;
@@ -1094,9 +1095,8 @@
                 if(vehicles.length === 0) {
                     html += '<p class="text-xs text-slate-400 text-center py-10">No vehicles registered in the selected scope.</p>';
                 } else {
-                    vehicles.forEach(v => {
+                    vehicles.forEach((v, idx) => {
                         const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
-                        const vData = JSON.stringify(v).replace(/"/g, '&quot;');
                         html += `
                             <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-3">
@@ -1112,7 +1112,7 @@
                                         <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-bold">${v.parkingSlot || 'NO SLOT'}</span>
                                     </div>
                                     <div class="flex gap-2">
-                                        <button onclick="editVehicle('${vData}')" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
+                                        <button onclick="editVehicle(${idx})" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
                                         <button onclick="deleteVehicle('${v._id}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
                                     </div>
                                 </div>
@@ -1124,8 +1124,8 @@
             } catch(e) {}
         }
 
-        function editVehicle(vData) {
-            const v = JSON.parse(vData.replace(/&quot;/g, '"'));
+        function editVehicle(idx) {
+            const v = window._activeVehicles[idx];
             const ctn = document.getElementById('vehicleFormContainer');
             ctn.classList.remove('hidden');
             ctn.innerHTML = `
