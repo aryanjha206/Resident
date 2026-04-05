@@ -376,7 +376,7 @@
                     const data = await res.json();
                     localStorage.setItem('adminToken', data.token);
                     document.getElementById('errorMsg').classList.add('hidden');
-                    btn.innerText = "Success!";
+                    btn.innerText = "Access Granted";
                     setTimeout(() => { showAdmin(); btn.innerText = originalText; }, 500);
                 } else {
                     document.getElementById('errorMsg').classList.remove('hidden');
@@ -410,19 +410,9 @@
                     const societies = await res.json();
                     const sel = document.getElementById('adminSocietySelect');
                     sel.innerHTML = '<option value="">Aggregate All (Global)</option>';
-                    let htmlList = '';
                     societies.forEach(s => {
                         sel.innerHTML += `<option value="${s._id}">${s.name} (Code: ${s.code})</option>`;
-                        htmlList += `
-                            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center">
-                                <div><h4 class="text-sm font-bold">${s.name}</h4><p class="text-[10px] text-slate-500">${s.address || 'No Address'}</p></div>
-                                <div class="bg-indigo-100 text-primary text-xs font-bold py-1 px-2 rounded tracking-widest">${s.code}</div>
-                            </div>
-                        `;
                     });
-                    if(societies.length > 0) {
-                        // Societies loaded into dropdown
-                    }
                 }
             } catch(e) {}
         }
@@ -444,109 +434,287 @@
             } catch(e) {}
         }
 
-        function toggleSection(section) {
-            if (section === 'createSocietyManager') {
-                openModule("Register New Society");
-                const content = document.getElementById('moduleContent');
-                content.innerHTML = `
-                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm">
-                        <form onsubmit="postSociety(event)" class="space-y-3">
-                            <input id="socName" type="text" placeholder="Society Name (e.g. Gokuldham)" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
-                            <input id="socAddr" type="text" placeholder="Full Address" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
-                            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 mt-2 rounded-xl text-sm hover:bg-indigo-700 transition shadow-md">Generate Society & Access Code</button>
-                        </form>
-                    </div>`;
-            }
-        }
-        
         async function loadNotices() {
-            openModule("Notices & Alerts");
+            openModule("Broadcast Center");
             const content = document.getElementById('moduleContent');
-            
             const sid = document.getElementById('adminSocietySelect').value;
-            content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>`;
-
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-indigo-400/20">
+                    <i class="fa-solid fa-bullhorn absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight mb-0.5">Community Alerts</h3>
+                    <p class="text-[11px] text-indigo-100/60 uppercase tracking-widest font-bold">Public Society Broadcasts</p>
+                    <button onclick="showNoticeForm()" class="mt-4 bg-white/10 hover:bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition border border-white/20 shadow-sm">+ Push New Announcement</button>
+                </div>
+                <div id="noticeFormContainer" class="hidden mb-6 p-6 border border-indigo-100 rounded-[2.5rem] bg-indigo-50/20 backdrop-blur-sm"></div>
+                <div id="noticeList" class="space-y-4 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-indigo-500"></i></div>
+                </div>
+            `;
             try {
-                const res = await fetch(`${API_URL}/notices`, {headers: getAuthHeaders()});
-                if(res.ok) {
-                    const allNotices = await res.json();
-                    const data = sid ? allNotices.filter(n => n.societyId === sid) : allNotices;
-                    
-                    let html = `
-                    <button onclick="showNoticeForm()" class="w-full mb-4 bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-bold py-2 rounded-lg hover:bg-indigo-100 transition">+ Post Notice Here</button>
-                    <div id="noticeFormContainer" class="hidden mb-4 p-4 border border-slate-200 rounded-xl bg-slate-50"></div>
-                    <div class="space-y-3">
-                    `;
-                    
-                    if(data.length === 0) html += `<p class="text-xs text-slate-500 text-center py-4">No active notices.</p>`;
-                    window._activeNotices = data;
+                const res = await fetch(`${API_URL}/notices`, { headers: getAuthHeaders() });
+                const all = await res.json();
+                const data = sid ? all.filter(n => n.societyId === sid) : all;
+                window._activeNotices = data;
+                let html = '';
+                if(data.length === 0) {
+                    html = '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-envelope-open text-6xl mb-4 block"></i><p class="text-[10px] font-black uppercase tracking-widest">Broadcast Void</p></div>';
+                } else {
                     data.forEach((n, idx) => {
                         html += `
-                        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex justify-between items-start mb-3">
-                            <div>
-                                <h4 class="text-sm font-bold text-dark mb-1">${n.title}</h4>
-                                <p class="text-[11px] text-slate-500 leading-relaxed">${n.content}</p>
-                                <div class="mt-2 text-[9px] font-bold text-indigo-400 p-1 bg-white inline-block rounded border border-indigo-100">${n.category.toUpperCase()} • ${new Date(n.createdAt || n.date || Date.now()).toLocaleDateString()}</div>
+                            <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm transition hover:border-indigo-100 group relative overflow-hidden">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <span class="text-[9px] font-black bg-indigo-50 text-indigo-500 px-2.5 py-1 rounded-xl uppercase tracking-widest border border-indigo-100">${n.category}</span>
+                                            <span class="text-[9px] text-slate-300 font-bold uppercase tracking-widest">${new Date(n.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <h4 class="text-lg font-black text-slate-800 leading-tight group-hover:text-indigo-600 transition duration-500">${n.title}</h4>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editNotice(${idx})" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-300 hover:text-indigo-600 hover:bg-white hover:shadow-lg transition border border-slate-100 flex items-center justify-center active:scale-90"><i class="fa-solid fa-pen-nib text-sm"></i></button>
+                                        <button onclick="deleteNotice('${n._id}')" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-300 hover:text-rose-500 hover:bg-white hover:shadow-lg transition border border-slate-100 flex items-center justify-center active:scale-90"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                                    </div>
+                                </div>
+                                <p class="text-[13px] text-slate-500 leading-relaxed font-medium line-clamp-3">${n.content}</p>
                             </div>
-                            <div class="flex flex-col gap-2">
-                                <button onclick="editNotice(${idx})" class="text-indigo-400 hover:text-indigo-600 transition text-sm"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="deleteNotice('${n._id}')" class="text-red-400 hover:text-red-600 transition text-sm"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>`;
+                        `;
                     });
-                    html += `</div>`;
-                    content.innerHTML = html;
-                } else {
-                    content.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Failed to fetch notices.</p>`;
                 }
-            } catch (err) {
-                 content.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Network error.</p>`;
-            }
+                document.getElementById('noticeList').innerHTML = html;
+            } catch(e) {}
         }
-        
+
+        async function loadComplaints() {
+            openModule("Response Desk");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-rose-500 to-rose-600 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-rose-400/20">
+                    <i class="fa-solid fa-headset absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Grievance Terminal</h3>
+                    <p class="text-[11px] text-rose-100/60 uppercase tracking-widest font-bold">Resident Response & Support</p>
+                </div>
+                <div id="complaintList" class="space-y-4 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-rose-500"></i></div>
+                </div>
+            `;
+            try {
+                const res = await fetch(`${API_URL}/complaints${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const data = await res.json();
+                let html = '';
+                if(data.length === 0) {
+                    html = '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-clipboard-check text-6xl mb-4 block"></i><p class="text-[10px] font-black uppercase tracking-widest">No pending grievances</p></div>';
+                } else {
+                    data.forEach(c => {
+                        const resolved = c.status === 'Resolved';
+                        html += `
+                            <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm transition hover:border-rose-200 group relative overflow-hidden">
+                                ${!resolved ? '<div class="absolute left-0 top-0 w-2 h-full bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.3)]"></div>' : ''}
+                                <div class="flex items-center justify-between mb-4">
+                                     <div class="flex items-center gap-2">
+                                        <span class="text-[9px] font-black bg-slate-50 text-slate-500 px-2 py-1 rounded-xl uppercase tracking-widest border border-slate-100">${c.category}</span>
+                                        <h4 class="text-[13px] font-black text-slate-800 tracking-tight">${c.userName}</h4>
+                                     </div>
+                                     <span class="text-[10px] font-black uppercase tracking-widest ${resolved ? 'text-emerald-500' : 'text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl border border-rose-100 shadow-sm'}">${c.status}</span>
+                                </div>
+                                <p class="text-[13px] text-slate-600 leading-relaxed font-medium mb-6">${c.description}</p>
+                                ${!resolved ? `<button onclick="updateComplaint('${c._id}')" class="w-full py-4.5 bg-slate-900 text-white rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] transition shadow-xl active:scale-95 hover:bg-slate-800">Verify & Resolve Case</button>` : ''}
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('complaintList').innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function loadVisitorsAdmin() {
+            openModule("Access Control");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-slate-600/20">
+                    <i class="fa-solid fa-address-card absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Visitor Pass Registry</h3>
+                    <p class="text-[11px] text-slate-100/60 uppercase tracking-widest font-bold">Secure Guard Log History</p>
+                </div>
+                <div id="visitorList" class="space-y-3 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-slate-400"></i></div>
+                </div>
+            `;
+            try {
+                const res = await fetch(`${API_URL}/visitors${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const data = await res.json();
+                let html = '';
+                if(data.length === 0) {
+                    html = '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-user-lock text-6xl mb-4 block"></i><p class="text-[10px] font-black uppercase tracking-widest">No entries found</p></div>';
+                } else {
+                    data.forEach(v => {
+                         const statusColor = v.status === 'Entered' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-400 border-slate-100';
+                         html += `
+                            <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm flex justify-between items-center group transition hover:border-slate-300">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition duration-500">
+                                        <i class="fa-solid fa-id-card-clip text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[14px] font-black text-slate-800 leading-tight">${v.visitorName}</h4>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-[8px] font-black ${statusColor} px-2 py-0.5 rounded-lg border uppercase tracking-widest">${v.status}</span>
+                                            <span class="text-[9px] text-slate-400 font-bold uppercase"><i class="fa-solid fa-house-user text-[8px] mr-1"></i>${v.userName}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-[10px] font-black text-slate-800 uppercase tracking-tighter">${new Date(v.date).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
+                                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter mt-1">${new Date(v.date).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('visitorList').innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function loadBookingsAdmin() {
+            openModule("Amenity Schedule");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-teal-500 to-emerald-600 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-teal-400/20">
+                    <i class="fa-solid fa-calendar-check absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Asset Reservations</h3>
+                    <p class="text-[11px] text-teal-100/60 uppercase tracking-widest font-bold">Facility Booking Controls</p>
+                </div>
+                <div id="bookingList" class="space-y-4 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-teal-500"></i></div>
+                </div>
+            `;
+            try {
+                const res = await fetch(`${API_URL}/bookings${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const data = await res.json();
+                let html = '';
+                if(data.length === 0) {
+                    html = '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-calendar-xmark text-6xl mb-4 block"></i><p class="text-[10px] font-black uppercase tracking-widest">No active reservations</p></div>';
+                } else {
+                    data.forEach(b => {
+                        html += `
+                            <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-teal-200 transition duration-500">
+                                <div class="flex items-center gap-5">
+                                    <div class="w-14 h-14 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center text-2xl border-4 border-white shadow-xl shadow-teal-100 group-hover:bg-teal-600 group-hover:text-white transition duration-500">
+                                        <i class="fa-solid ${b.facility === 'Swimming Pool' ? 'fa-person-swimming' : (b.facility === 'Gym' ? 'fa-dumbbell' : 'fa-handshake')}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[16px] font-black text-slate-800 leading-tight mb-0.5">${b.facility}</h4>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-black text-teal-600 uppercase tracking-widest">${b.userName}</span>
+                                            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">${b.slot}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end">
+                                    <p class="text-[11px] font-black text-slate-800 uppercase tracking-widest">${new Date(b.date).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
+                                    <button onclick="cancelBookingAdmin('${b._id}')" class="text-[9px] font-black text-rose-500 bg-rose-50 px-3 py-1.5 rounded-xl mt-3 uppercase tracking-widest hover:bg-rose-500 hover:text-white transition border border-rose-100">Terminate</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('bookingList').innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function cancelBookingAdmin(id) {
+            showConfirm("Force Cancellation?", "Ensure you wish to terminate this reservation. This will clear the slot immediately.", async () => {
+                await fetch(`${API_URL}/bookings/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                loadBookingsAdmin();
+                fetchAdminAnalytics();
+            });
+        }
+
+        async function loadFinanceAdmin() {
+            openModule("Revenue Dashboard");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-emerald-600 to-teal-700 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-emerald-400/20">
+                    <i class="fa-solid fa-money-bill-trend-up absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Society Finance Terminal</h3>
+                    <p class="text-[11px] text-emerald-100/60 uppercase tracking-widest font-bold">Billing & Maintenance Control</p>
+                </div>
+                <div class="bg-white p-7 rounded-[2.5rem] border border-emerald-100 shadow-sm mb-8 relative overflow-hidden">
+                    <h4 class="text-[11px] font-black text-emerald-600 mb-5 uppercase tracking-[0.2em] flex items-center gap-2"><i class="fa-solid fa-plus-circle"></i> Deploy Monthly Invoices</h4>
+                    <form onsubmit="postBulkDues(event)" class="space-y-4">
+                        <div class="relative">
+                            <i class="fa-solid fa-indian-rupee-sign absolute left-5 top-1/2 -translate-y-1/2 text-emerald-400 text-lg"></i>
+                            <input id="duesAmount" type="number" step="1" placeholder="Total Society Setup Amount" required class="w-full text-sm bg-slate-50 border border-slate-100 rounded-3xl pl-12 pr-5 py-4 font-black outline-none focus:ring-4 focus:ring-emerald-500/10 focus:bg-white transition focus:border-emerald-200">
+                        </div>
+                        <div class="relative">
+                            <i class="fa-solid fa-calendar-day absolute left-5 top-1/2 -translate-y-1/2 text-emerald-400 text-lg"></i>
+                            <input id="duesDate" type="date" required class="w-full text-sm bg-slate-50 border border-slate-100 rounded-3xl pl-12 pr-5 py-4 font-black outline-none focus:ring-4 focus:ring-emerald-500/10 focus:bg-white transition focus:border-emerald-200">
+                        </div>
+                        <button type="submit" class="w-full bg-emerald-600 text-white font-black py-4 rounded-3xl text-[12px] uppercase tracking-widest shadow-xl shadow-emerald-100 active:scale-95 transition hover:bg-emerald-700">Split & Authorize Billing</button>
+                    </form>
+                </div>
+                <div id="financeList" class="space-y-4 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div>
+                </div>
+            `;
+            try {
+                const res = await fetch(`${API_URL}/dues${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const dues = await res.json();
+                let html = '<h4 class="text-[10px] font-black text-slate-400 px-2 mb-4 uppercase tracking-[0.2em]">Live Transaction Ledger</h4>';
+                if(dues.length === 0) {
+                    html += '<div class="text-center py-12 opacity-30"><p class="text-[10px] font-black uppercase tracking-widest">Registry Vacuum - No Invoices</p></div>';
+                } else {
+                    dues.forEach(d => {
+                        const paid = d.status === 'Paid';
+                        html += `
+                            <div class="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex justify-between items-center group transition hover:border-emerald-100">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition duration-500">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[15px] font-black text-slate-800 leading-tight">₹${d.amount.toLocaleString()}</h4>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">${d.userName}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] font-black px-3 py-1.5 rounded-xl border ${paid ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-amber-50 text-amber-600 border-amber-100'} uppercase tracking-widest shadow-sm">${d.status}</span>
+                                    <p class="text-[9px] text-slate-300 font-bold uppercase mt-2 tracking-tighter">Due: ${new Date(d.dueDate).toLocaleDateString([], {day:'2-digit', month:'short'})}</p>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('financeList').innerHTML = html;
+            } catch(e) {}
+        }
+
         function showNoticeForm(id = null, title = '', contentTxt = '', category = 'General') {
             const sid = document.getElementById('adminSocietySelect').value;
-            if(!sid) { showToast("Please select a specific Society in the top filter to post a notice!", "error"); return; }
-            
+            if(!sid) { showToast("Select a society to target broadcast!", "error"); return; }
             const ctn = document.getElementById('noticeFormContainer');
             ctn.classList.remove('hidden');
-            const btnText = id ? 'Update Notice' : 'Broadcast Notice';
-            
+            const btnText = id ? 'Update Digital Notice' : 'Broadcast Alert';
             ctn.innerHTML = `
-                <form onsubmit="submitNotice(event, '${id || ''}')" class="space-y-3">
-                    <input id="nTitle" type="text" placeholder="Notice Title" value="${title}" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                    <textarea id="nContent" placeholder="Notice Description..." rows="3" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 resize-none">${contentTxt}</textarea>
-                    <select id="nCat" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                        <option ${category==='General'?'selected':''}>General</option>
-                        <option ${category==='Important'?'selected':''}>Important</option>
-                        <option ${category==='Event'?'selected':''}>Event</option>
-                    </select>
-                    <div class="flex gap-2">
-                        <button type="submit" class="flex-1 bg-primary text-white font-bold py-2 rounded-lg text-sm transition">${btnText}</button>
-                        <button type="button" onclick="document.getElementById('noticeFormContainer').classList.add('hidden')" class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm">Cancel</button>
+                <h4 class="text-[11px] font-black text-indigo-600 mb-4 uppercase tracking-[0.2em] px-1">${id ? 'Edit System Notice' : 'New Broadcast Message'}</h4>
+                <form onsubmit="submitNotice(event, '${id || ''}')" class="space-y-4">
+                    <input id="nTitle" type="text" placeholder="Announcement Header" value="${title}" required class="w-full text-sm bg-white border border-slate-200 rounded-2xl px-5 py-4 font-black outline-none focus:ring-4 focus:ring-indigo-500/5 transition">
+                    <textarea id="nContent" placeholder="Describe the announcement in detail..." rows="4" required class="w-full text-sm bg-white border border-slate-200 rounded-2xl px-5 py-4 font-medium outline-none focus:ring-4 focus:ring-indigo-500/5 transition shadow-inner">${contentTxt}</textarea>
+                    <div class="flex items-center gap-4">
+                        <select id="nCat" class="flex-1 text-sm bg-white border border-slate-200 rounded-2xl px-5 py-4 font-black outline-none appearance-none">
+                            <option ${category==='General'?'selected':''}>General</option>
+                            <option ${category==='Important'?'selected':''}>Important</option>
+                            <option ${category==='Event'?'selected':''}>Event</option>
+                        </select>
+                        <button type="submit" class="bg-slate-900 text-white font-black px-8 py-4 rounded-2xl text-[11px] uppercase tracking-widest shadow-xl active:scale-95 transition whitespace-nowrap">${btnText}</button>
                     </div>
                 </form>
             `;
         }
 
-        function editNotice(idx) {
-            const n = window._activeNotices[idx];
-            showNoticeForm(n._id, n.title, n.content, n.category);
-            const form = document.querySelector('form[onsubmit*="submitNotice"]');
-            form.querySelector('button[type="submit"]').innerText = "Save Updated Notice";
-            window.scrollTo({top: 0, behavior: 'smooth'});
-
-        }
-
-        async function deleteNotice(id) {
-            showConfirm("Remove Alert?", "This notice will be removed from all resident boards. Proceed?", async () => {
-                try {
-                    await fetch(`${API_URL}/notices/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                    loadNotices();
-                } catch(e) { showToast("Failed to delete", "error"); }
-            });
-        }
-        
         async function submitNotice(e, id) {
             e.preventDefault();
             const sid = document.getElementById('adminSocietySelect').value;
@@ -556,299 +724,175 @@
                 content: document.getElementById('nContent').value,
                 category: document.getElementById('nCat').value
             };
-            
             try {
-                if(id) {
-                    await fetch(`${API_URL}/notices/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
-                } else {
-                    await fetch(`${API_URL}/notices`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
-                }
-                loadNotices(); // Refresh to show new set
-            } catch(e) {}
-        }
-
-        async function loadComplaints() {
-            openModule("Review Complaints");
-            const content = document.getElementById('moduleContent');
-
-            const sid = document.getElementById('adminSocietySelect').value;
-            const query = sid ? `?societyId=${sid}` : '';
-
-            try {
-                const res = await fetch(`${API_URL}/complaints${query}`, {headers: getAuthHeaders()});
-                if(res.ok) {
-                    const data = await res.json();
-                    let html = '';
-                    if(data.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No active complaints.</p>`;
-                    data.forEach(c => {
-                        const style = c.status === 'Resolved' ? 'text-emerald-500' : 'text-red-500';
-                        html += `
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-start mb-2">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold inline-block">${c.category}</span>
-                                    <span class="text-[10px] text-primary font-bold"><i class="fa-solid fa-user"></i> ${c.userName || 'Resident'}</span>
-                                </div>
-                                <p class="text-xs text-dark mt-1">${c.description}</p>
-                            </div>
-                            <div class="text-right ml-2 flex flex-col items-end gap-2">
-                                <span class="text-[10px] font-bold ${style} block">${c.status}</span>
-                                <button onclick="updateComplaint('${c._id}')" class="text-[10px] bg-slate-200 px-2 py-1 rounded">Mark Resolved</button>
-                            </div>
-                        </div>`;
-
-                    });
-                    content.innerHTML = `<div class="space-y-2">${html}</div>`;
-                }
-            } catch (err) {}
-        }
-        
-        async function updateComplaint(id) {
-            try {
-                await fetch(`${API_URL}/complaints/${id}/status`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({status: 'Resolved'}) });
-                loadComplaints();
+                if(id) { await fetch(`${API_URL}/notices/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) }); }
+                else { await fetch(`${API_URL}/notices`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) }); }
+                showToast("Broadcast deployed to network.", "success", "Alert Published");
+                loadNotices();
             } catch(e){}
         }
 
-        async function loadVisitorsAdmin() {
-            openModule("Gate Pass Log");
-            const content = document.getElementById('moduleContent');
-
-            const sid = document.getElementById('adminSocietySelect').value;
-            const query = sid ? `?societyId=${sid}` : '';
-
-            try {
-                const res = await fetch(`${API_URL}/visitors${query}`, {headers: getAuthHeaders()});
-                if(res.ok) {
-                    const data = await res.json();
-                    let html = '';
-                    if(data.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No gate logs recorded.</p>`;
-                    data.forEach(v => {
-                        let style = 'bg-slate-100 text-slate-600';
-                        let borderStyle = 'border-slate-200';
-                        if(v.status === 'Entered') { style = 'bg-emerald-100 text-emerald-700'; borderStyle = 'border-emerald-200'; }
-                        else if(v.status === 'Expected') { style = 'bg-amber-100 text-amber-600'; borderStyle = 'border-indigo-200'; }
-                        
-                        html += `
-                        <div class="bg-white border-2 border-dashed ${borderStyle} p-3 rounded-xl mb-3 relative overflow-hidden">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <h4 class="text-[14px] font-bold text-dark">${v.visitorName}</h4>
-                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Purpose: ${v.purpose}</p>
-                                </div>
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${style}">${v.status}</span>
-                            </div>
-                            <div class="bg-slate-50 p-2 rounded-lg mt-2 flex justify-between items-center text-xs">
-                                <span class="text-slate-500 font-semibold"><i class="fa-solid fa-house-user"></i> ${v.userName}</span>
-                                <span class="font-bold text-primary tracking-widest text-sm bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${v.status === 'Expected' ? v.passCode : 'XXXXXX'}</span>
-                            </div>
-                        </div>`;
-                    });
-                    content.innerHTML = `<div class="space-y-1">${html}</div>`;
-                }
-            } catch (err) {}
+        function editNotice(idx) {
+            const n = window._activeNotices[idx];
+            showNoticeForm(n._id, n.title, n.content, n.category);
+            const container = document.getElementById('moduleContent');
+            container.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        async function loadBookingsAdmin() {
-            openModule("Amenity Reservations");
-            const content = document.getElementById('moduleContent');
-
-            const sid = document.getElementById('adminSocietySelect').value;
-            const query = sid ? `?societyId=${sid}` : '';
-
-            try {
-                const res = await fetch(`${API_URL}/bookings${query}`, {headers: getAuthHeaders()});
-                if(res.ok) {
-                    const bookings = await res.json();
-                    let html = '';
-                    if(bookings.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No amenity reservations detected in the registry.</p>`;
-                    bookings.forEach(b => {
-                        html += `
-                        <div class="bg-white border-2 border-dashed border-emerald-200 p-3 rounded-xl mb-3 relative overflow-hidden flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl"><i class="fa-solid fa-bookmark"></i></div>
-                            <div class="flex-1">
-                                <h4 class="text-[14px] font-bold text-dark">${b.facility}</h4>
-                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mt-0.5">🗓️ ${b.date} • ${b.slot.split('(')[0]}</p>
-                            </div>
-                            <div class="text-right flex flex-col items-end gap-2">
-                                <span class="bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded text-[10px] block mb-1"><i class="fa-solid fa-user"></i> ${b.userName}</span>
-                                <button onclick="cancelBookingAdmin('${b._id}')" class="text-[9px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded">Cancel</button>
-                            </div>
-                        </div>`;
-                    });
-                    content.innerHTML = `<div class="space-y-1">${html}</div>`;
-                }
-            } catch (err) {}
+        async function deleteNotice(id) {
+            showConfirm("Retract Announcement?", "This will purge the notice from all resident terminals.", async () => {
+                await fetch(`${API_URL}/notices/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                loadNotices();
+            });
         }
-
-        async function cancelBookingAdmin(id) {
-            showConfirm("Cancel Booking", "Are you sure you want to cancel this reservation?", async () => {
-                try {
-                    await fetch(`${API_URL}/bookings/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                    loadBookingsAdmin();
-                } catch(e) {}
+        
+        async function updateComplaint(id) {
+            showConfirm("Resolve Citizen Grievance?", "Has the issue been sufficiently addressed? This will archive the report.", async () => {
+                await fetch(`${API_URL}/complaints/${id}/status`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({status: 'Resolved'}) });
+                loadComplaints();
+                fetchAdminAnalytics();
             });
         }
 
-        async function loadFinanceAdmin() {
-            openModule("Financial Billing & History");
-            const content = document.getElementById('moduleContent');
-            const sid = document.getElementById('adminSocietySelect').value;
-            const query = sid ? `?societyId=${sid}` : '';
-
-            let formHtml = `
-                    <div class="bg-emerald-50/50 p-4 border border-emerald-100 rounded-xl mb-4">
-                        <h4 class="text-xs font-bold text-emerald-700 mb-2 uppercase tracking-wide">Generate Invoices</h4>
-                        <form onsubmit="postBulkDues(event)" class="space-y-3">
-                            <input id="duesAmount" type="number" step="0.01" placeholder="Total Setup Amount (₹)" required class="w-full text-sm bg-white border border-emerald-200 rounded-lg px-3 py-2 font-bold">
-                            <input id="duesDate" type="date" required class="w-full text-sm bg-white border border-emerald-200 rounded-lg px-3 py-2">
-                            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-emerald-700 transition lg cursor-pointer border border-emerald-700">Split & Issue Invoices</button>
-                        </form>
-                    </div><div id="financeList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div></div>`;
-            content.innerHTML = formHtml;
-
-            try {
-                const res = await fetch(`${API_URL}/dues${query}`, {headers: getAuthHeaders()});
-                if(res.ok) {
-                    const dues = await res.json();
-                    let html = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Resident Invoice History</h4>';
-                    if(dues.length === 0) html += `<p class="text-xs text-slate-400">No invoices issued yet.</p>`;
-                    dues.forEach(d => {
-                        const paid = d.status === 'Paid';
-                        html += `
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center mb-2">
-                            <div>
-                                <h4 class="text-sm font-bold text-dark">₹${d.amount} <span class="text-[10px] text-slate-500 font-normal ml-1">Due: ${d.dueDate}</span></h4>
-                                <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-user text-[9px] mr-0.5"></i> ${d.userName}</p>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] font-bold px-2 py-1 rounded bg-white text-${paid?'emerald-600':'amber-600'} border border-slate-100">${d.status}</span>
-                            </div>
-                        </div>`;
-                    });
-                    document.getElementById('financeList').innerHTML = html;
-                }
-            } catch(e) {}
-        }
 
 
         async function loadPeopleAdmin() {
-            openModule("People & Services Directory");
+            openModule("Personnel & Citizenry");
             const content = document.getElementById('moduleContent');
             const sid = document.getElementById('adminSocietySelect').value;
-            const query = sid ? `?societyId=${sid}` : '';
-
-            let formHtml = `
-                    <div class="bg-amber-50/50 p-4 border border-amber-100 rounded-xl mb-4">
-                        <h4 class="text-xs font-bold text-amber-600 mb-2 uppercase tracking-wide">Register New Service</h4>
-                        <form onsubmit="postService(event)" class="space-y-3">
-                            <input id="sName" type="text" placeholder="Full Name or Business Name" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
-                            <input id="sRole" type="text" placeholder="Role (Plumber, Manager)" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
-                            <input id="sPhone" type="tel" placeholder="Contact Phone Number" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
-                            <button type="submit" class="w-full bg-amber-500 text-white font-bold py-2 rounded-lg text-sm hover:bg-amber-600 transition">Publish Staff Details</button>
-                        </form>
-                    </div><div id="peopleList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-amber-500"></i></div></div>`;
-            content.innerHTML = formHtml;
-
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-amber-500 to-orange-600 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-amber-400/20">
+                    <i class="fa-solid fa-people-group absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Community Identity Hub</h3>
+                    <p class="text-[11px] text-amber-100/60 uppercase tracking-widest font-bold">Operational Staff & Resident Directory</p>
+                    <button onclick="showStaffForm()" class="mt-4 bg-white/10 hover:bg-white/20 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition border border-white/20 shadow-sm">+ Enlist Personnel</button>
+                </div>
+                <div id="staffFormContainer" class="hidden mb-6 p-6 border border-amber-100 rounded-[2.5rem] bg-amber-50/20 backdrop-blur-sm">
+                    <h4 class="text-[11px] font-black text-amber-600 mb-4 uppercase tracking-[0.2em] px-1">Identity Enrollment</h4>
+                    <form onsubmit="postService(event)" class="space-y-4">
+                        <input id="sName" type="text" placeholder="Full Name" required class="w-full text-sm bg-white border border-slate-200 rounded-2xl px-5 py-4 font-black outline-none focus:ring-4 focus:ring-amber-500/5 transition">
+                        <input id="sRole" type="text" placeholder="Operational Role (e.g. Electrician)" required class="w-full text-sm bg-white border border-slate-200 rounded-2xl px-5 py-4 font-black outline-none focus:ring-4 focus:ring-amber-500/5 transition">
+                        <input id="sPhone" type="tel" placeholder="Secure Contact Vector" required class="w-full text-sm bg-white border border-slate-200 rounded-2xl px-5 py-4 font-black outline-none focus:ring-4 focus:ring-amber-500/5 transition">
+                        <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl text-[11px] uppercase tracking-widest shadow-xl active:scale-95 transition">Authorize Credentials</button>
+                    </form>
+                </div>
+                <div id="peopleList" class="space-y-8 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-amber-500"></i></div>
+                </div>
+            `;
             try {
-                const [usersRes, servRes] = await Promise.all([
-                    fetch(`${API_URL}/users${query}`, {headers: getAuthHeaders()}),
-                    fetch(`${API_URL}/services${query}`, {headers: getAuthHeaders()})
+                const [resUsers, resServ] = await Promise.all([
+                    fetch(`${API_URL}/admin/users${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/services${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() })
                 ]);
-                const users = await usersRes.json();
-                const services = servRes.ok ? await servRes.json() : [];
-
-                let html = '<h4 class="text-[10px] font-black text-amber-600 mb-3 uppercase tracking-widest">Active Staff & Services</h4>';
+                const users = await resUsers.json();
+                const services = await resServ.json();
+                
+                let html = '<div><h4 class="text-[10px] font-black text-slate-400 px-3 mb-4 uppercase tracking-[0.3em]">Command & Operations</h4> <div class="space-y-3">';
                 services.forEach(s => {
                     html += `
-                        <div class="bg-amber-50/30 p-3 rounded-xl border border-amber-100 mb-2 flex justify-between items-center group hover:bg-amber-50/50 transition">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-sm shadow-sm"><i class="fa-solid fa-user-gear"></i></div>
-                                <div>
-                                    <h4 class="text-xs font-bold text-dark">${s.name}</h4>
-                                    <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">${s.role} \u2022 ${s.phone}</p>
+                        <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm flex justify-between items-center group hover:border-amber-100 transition duration-500">
+                             <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center text-xl shadow_inner border border-amber-100 group-hover:bg-amber-600 group-hover:text-white transition duration-500">
+                                    <i class="fa-solid fa-user-shield"></i>
                                 </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="editStaff('${s._id}', '${s.name}', '${s.role}', '${s.phone}')" class="w-8 h-8 rounded-full bg-white text-slate-400 flex items-center justify-center hover:text-indigo-500 transition shadow-sm"><i class="fa-solid fa-pen-to-square text-[10px]"></i></button>
-                                <button onclick="deleteStaff('${s._id}')" class="w-8 h-8 rounded-full bg-white text-slate-400 flex items-center justify-center hover:text-red-500 transition shadow-sm"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
-                            </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-[14px] font-black text-slate-800 leading-tight truncate">${s.name}</h4>
+                                    <p class="text-[9px] text-amber-600 font-black uppercase tracking-widest mt-1">${s.role} \u2022 ${s.phone}</p>
+                                </div>
+                             </div>
+                             <button onclick="deleteStaff('${s._id}')" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition flex items-center justify-center border border-slate-100"><i class="fa-solid fa-trash-can text-sm"></i></button>
                         </div>`;
                 });
+                html += '</div></div>';
 
-                html += '<h4 class="text-[10px] font-black text-slate-400 mt-6 mb-3 uppercase tracking-widest">Resident Directory</h4>';
+                html += '<div class="mt-8"><h4 class="text-[10px] font-black text-slate-400 px-3 mb-4 uppercase tracking-[0.3em]">Society Civil List</h4> <div class="space-y-3">';
                 users.forEach(u => {
                     html += `
-                        <div class="bg-white p-3 rounded-xl border border-slate-100 mb-2 flex justify-between items-center group hover:bg-slate-50 transition shadow-sm">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center text-sm"><i class="fa-solid fa-house-user"></i></div>
-                                <div>
-                                    <h4 class="text-xs font-bold text-dark">${u.name}</h4>
-                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">${u.email}</p>
+                        <div class="bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm flex justify-between items-center group hover:border-slate-300 transition duration-500">
+                             <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center text-xl shadow_inner border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition duration-500">
+                                    <i class="fa-solid fa-house-chimney-user"></i>
                                 </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="viewResidentDetails('${u.name}', '${u.email}', '${u.role}')" class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:text-primary transition shadow-sm border border-slate-100"><i class="fa-solid fa-circle-info text-[9px]"></i></button>
-                                <button onclick="deleteResident('${u._id}')" class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:text-red-500 transition shadow-sm border border-slate-100"><i class="fa-solid fa-user-minus text-[9px]"></i></button>
-                            </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-[14px] font-black text-slate-800 leading-tight truncate">${u.name}</h4>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase mt-1 truncate">${u.email}</p>
+                                </div>
+                             </div>
+                             <button onclick="deleteResident('${u._id}')" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-300 hover:text-rose-600 transition flex items-center justify-center border border-slate-100"><i class="fa-solid fa-user-minus text-sm"></i></button>
                         </div>`;
                 });
-                if(users.length === 0 && services.length === 0) html += `<p class="text-xs text-slate-400 text-center py-6 opacity-40 italic">Society is empty. Awaiting registrations.</p>`;
-                
+                html += '</div></div>';
                 document.getElementById('peopleList').innerHTML = html;
             } catch(e) {}
         }
-        
+
+        function showStaffForm() { document.getElementById('staffFormContainer').classList.toggle('hidden'); }
         async function deleteResident(id) {
-            showConfirm("Eject Resident?", "This will immediately remove this user from the society portal directory. Their data will be archived.", async () => {
+            showConfirm("Terminate Citizen Access?", "This will immediately revoke their portal credentials and linked data access. Confirm?", async () => {
                 await fetch(`${API_URL}/users/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
                 loadPeopleAdmin();
             });
         }
-
-        async function editStaff(id, name, role, phone) {
-            document.getElementById('sName').value = name;
-            document.getElementById('sRole').value = role;
-            document.getElementById('sPhone').value = phone;
-            const form = document.querySelector('form[onsubmit="postService(event)"]');
-            form.setAttribute('onsubmit', `updateService(event, '${id}')`);
-            form.querySelector('button').innerText = "Update Staff Member";
-            form.querySelector('button').classList.replace('bg-amber-500', 'bg-indigo-600');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function updateService(e, id) {
-            e.preventDefault();
-            const sid = document.getElementById('adminSocietySelect').value;
-            const payload = {
-                societyId: sid,
-                name: document.getElementById('sName').value,
-                role: document.getElementById('sRole').value,
-                phone: document.getElementById('sPhone').value
-            };
-            try {
-                const res = await fetch(`${API_URL}/services/${id}`, { 
-                    method: 'PUT', 
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(payload)
-                });
-                if(res.ok) {
-                    showToast("Staff updated successfully", "success", "Updated");
-                    loadPeopleAdmin();
-                }
-            } catch(e) {}
-        }
-
         async function deleteStaff(id) {
-            showConfirm("Remove Staff", "Are you sure you want to remove this staff member?", async () => {
+            showConfirm("Retract Personnel profile?", "Ensure you wish to remove this staff profile from the community directory.", async () => {
                 await fetch(`${API_URL}/services/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                showToast("Staff member removed", "success", "Deleted");
                 loadPeopleAdmin();
             });
         }
 
-        function viewResidentDetails(name, email, role) {
-            showToast(`Registered Resident`, `${name} (${email}) - ${role}`, "success", "Info");
+        async function loadVehiclesAdmin() {
+            openModule("Global Motor Registry");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-slate-700/20">
+                    <i class="fa-solid fa-car-burst absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Vehicle Fleet control</h3>
+                    <p class="text-[11px] text-slate-400/60 uppercase tracking-widest font-bold">Authorized Transport Directory</p>
+                </div>
+                <div id="vehicleList" class="space-y-4 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-slate-500"></i></div>
+                </div>
+            `;
+            try {
+                const res = await fetch(`${API_URL}/vehicles${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const vehicles = await res.json();
+                let html = '';
+                if(vehicles.length === 0) {
+                    html = '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-car-rear text-6xl mb-4 block"></i><p class="text-[10px] font-black uppercase tracking-widest">Motor pool empty</p></div>';
+                } else {
+                    vehicles.forEach(v => {
+                        const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car-side';
+                        html += `
+                            <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-slate-400 transition duration-500">
+                                <div class="flex items-center gap-5">
+                                    <div class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl border-4 border-white shadow-xl shadow-slate-100 group-hover:bg-indigo-600 transition duration-500">
+                                        <i class="fa-solid ${icon}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[17px] font-black text-slate-900 leading-tight uppercase tracking-tight">${v.vehicleNumber}</h4>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">${v.userName}</span>
+                                            <span class="text-[10px] font-bold text-slate-300 uppercase italic"> \u2022 ${v.model}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] font-black bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl border border-emerald-100 uppercase tracking-[0.2em] shadow-sm">${v.parkingSlot || 'N/A'}</span>
+                                    <button onclick="deleteVehicle('${v._id}')" class="block mt-4 text-[11px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl transition hover:bg-rose-500 hover:text-white uppercase tracking-widest border border-rose-100">Purge</button>
+                                </div>
+                            </div>`;
+                    });
+                }
+                document.getElementById('vehicleList').innerHTML = html;
+            } catch(e) {}
+        }
+        async function deleteVehicle(id) {
+            showConfirm("Revoke Vehicle Identity?", "This will remove the vehicle from the authorized community registry.", async () => {
+                await fetch(`${API_URL}/vehicles/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                loadVehiclesAdmin();
+            });
         }
 
         async function loadVaultAdmin() {
@@ -857,36 +901,62 @@
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
 
-            content.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl"></i><p class="text-xs text-slate-400 mt-2 font-bold uppercase tracking-widest">Accessing Secure Vault...</p></div>';
+            content.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-primary text-2xl"></i><p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-4">Accessing Security Archives...</p></div>';
 
             try {
                 const res = await fetch(`${API_URL}/admin/vault/all${query}`, { headers: getAuthHeaders() });
                 const docs = await res.json();
                 
-                let html = '<div class="space-y-3">';
-                if(docs.length === 0) html += '<p class="text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">No resident documents submitted yet.</p>';
-                
+                const grouped = {};
                 docs.forEach(d => {
-                    html += `
-                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center group hover:bg-slate-50 transition border-l-4 border-l-indigo-500">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl"><i class="fa-solid fa-file-shield"></i></div>
-                                <div>
-                                    <h4 class="text-[12px] font-black text-dark tracking-tight leading-none mb-1">${d.documentType}</h4>
-                                    <p class="text-[10px] text-slate-500 font-medium">Resident: <span class="font-bold text-primary">${d.userName}</span></p>
-                                    <p class="text-[8px] text-slate-400 mt-1 font-bold uppercase tracking-widest px-2 py-0.5 bg-slate-50 rounded-md inline-block border border-slate-100">${new Date(d.createdAt).toLocaleDateString()} \u2022 ${d.fileName}</p>
-                                </div>
-                            </div>
-                            <button onclick="viewVaultDoc('${d.fileData}')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-primary hover:text-white transition shadow-sm"><i class="fa-solid fa-eye"></i></button>
-                        </div>
-                    `;
+                    if (!grouped[d.userName]) grouped[d.userName] = [];
+                    grouped[d.userName].push(d);
                 });
-                html += '</div>';
+
+                let html = `
+                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 p-6 rounded-3xl text-white mb-8 relative overflow-hidden shadow-lg border border-indigo-400/20">
+                        <i class="fa-solid fa-shield-halved absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                        <h3 class="text-xl font-black tracking-tight mb-0.5">Asset Repository</h3>
+                        <p class="text-[11px] text-indigo-100/60 uppercase tracking-widest font-bold">Verified Resident Documentation</p>
+                    </div>
+                `;
+
+                if (docs.length === 0) {
+                    html += '<div class="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100"><i class="fa-solid fa-folder-open text-5xl text-slate-100 mb-4 block"></i><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Vault Status: Vacuum</p></div>';
+                } else {
+                    Object.keys(grouped).forEach(resident => {
+                        html += `
+                            <div class="mb-8">
+                                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 px-3">
+                                    <i class="fa-solid fa-user-tag text-indigo-500"></i> Records for ${resident}
+                                </h4>
+                                <div class="grid grid-cols-1 gap-3">
+                        `;
+                        grouped[resident].forEach(d => {
+                            html += `
+                                <div class="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-indigo-100 transition duration-500">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-indigo-600 group-hover:text-white transition duration-500">
+                                            <i class="fa-solid ${d.documentType === 'ID Proof' ? 'fa-id-card' : 'fa-file-shield'} text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-[14px] font-black text-slate-800 leading-tight mb-1 truncate max-w-[150px]">${d.fileName}</h4>
+                                            <span class="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-xl uppercase tracking-widest border border-indigo-100">${d.documentType}</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="previewDocument('${d.fileData}', '${d.fileName}')" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-300 hover:text-indigo-600 hover:bg-white hover:shadow-lg transition border border-slate-100 flex items-center justify-center active:scale-90"><i class="fa-solid fa-eye text-sm"></i></button>
+                                </div>
+                            `;
+                        });
+                        html += '</div></div>';
+                    });
+                }
                 content.innerHTML = html;
             } catch(err) {
-                content.innerHTML = '<p class="text-center text-xs text-red-500 font-bold">Failed to load vault.</p>';
+                showToast("Repository decryption failed.", "error");
             }
         }
+
 
         function viewVaultDoc(data) {
             const win = window.open();
@@ -946,66 +1016,91 @@
         }
 
         async function loadPollsAdmin() {
-            openModule("Polls & Community Voice");
+            openModule("Public Opinion");
             const content = document.getElementById('moduleContent');
             const sid = document.getElementById('adminSocietySelect').value;
 
-            let html = `
-                <div class="bg-indigo-50/50 p-4 border border-indigo-100 rounded-xl mb-4">
-                    <h4 class="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">Create New Poll</h4>
-                    <form onsubmit="postPoll(event)" class="space-y-3">
-                        <input id="pollQuestion" type="text" placeholder="Question (e.g. Next social gathering?)" required class="w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2 font-bold">
-                        <div id="pollOptionsContainer" class="space-y-2">
-                            <input type="text" placeholder="Option 1" required class="poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2">
-                            <input type="text" placeholder="Option 2" required class="poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2">
-                        </div>
-                        <button type="button" onclick="addPollOption()" class="text-[10px] font-bold text-primary underline">+ Add Option</button>
-                        <button type="submit" class="w-full bg-primary text-white font-bold py-2 rounded-lg text-sm hover:bg-indigo-700 transition">Deploy Poll to Residents</button>
-                    </form>
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg">
+                    <i class="fa-solid fa-square-poll-vertical absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Democracy engine</h3>
+                    <p class="text-[11px] text-indigo-100/60 uppercase tracking-widest font-bold">Society Governance & Surveys</p>
+                    <button onclick="showPollForm()" class="mt-4 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition border border-white/20 shadow-sm">+ Launch New Poll</button>
                 </div>
-                <div id="pollsListAdmin" class="space-y-3">
-                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                <div id="pollFormContainer" class="hidden mb-6 p-6 border border-indigo-100 rounded-[2.5rem] bg-indigo-50/20 backdrop-blur-sm"></div>
+                <div id="pollsListAdmin" class="space-y-4 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-indigo-500"></i></div>
                 </div>
             `;
-            content.innerHTML = html;
 
             try {
                 const res = await fetch(`${API_URL}/polls${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
                 const polls = await res.json();
-                window._activePolls = polls; // Store globally
-                let listHtml = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Active & Past Polls</h4>';
-                if(polls.length === 0) listHtml += `<p class="text-xs text-slate-400">No polls created yet.</p>`;
-                
-                polls.forEach((p, idx) => {
-                    const totalVotes = p.options.reduce((acc, opt) => acc + opt.votes, 0);
-                    listHtml += `
-                        <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
-                            <div class="flex justify-between items-start mb-3">
-                                <h4 class="text-sm font-bold text-dark">${p.question}</h4>
-                                <div class="flex gap-2">
-                                    <button onclick="editPoll(${idx})" class="text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
-                                    <button onclick="deletePoll('${p._id}')" class="text-[10px] text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                window._activePolls = polls; 
+                let listHtml = '';
+                if(polls.length === 0) {
+                    listHtml += '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-chart-column text-6xl block mb-4"></i><p class="text-[10px] font-black uppercase tracking-widest">No active ballots</p></div>';
+                } else {
+                    polls.forEach((p, idx) => {
+                        const totalVotes = p.options.reduce((acc, opt) => acc + opt.votes, 0);
+                        listHtml += `
+                            <div class="bg-white border border-slate-100 p-6 rounded-[2.5rem] shadow-sm relative overflow-hidden">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div class="flex-1">
+                                        <div class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-600 text-[9px] font-black px-2 py-1 rounded-lg uppercase tracking-widest border border-emerald-100 mb-3">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Open Ballot
+                                        </div>
+                                        <h4 class="text-[17px] font-black text-slate-800 leading-tight">${p.question}</h4>
+                                    </div>
+                                    <button onclick="deletePoll('${p._id}')" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-300 hover:text-red-500 transition border border-slate-100 flex items-center justify-center"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                                </div>
+                                <div class="space-y-4">
+                                    ${p.options.map(opt => {
+                                        const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+                                        return `
+                                            <div>
+                                                <div class="flex justify-between items-center mb-1.5 px-1">
+                                                    <span class="text-[11px] font-bold text-slate-500">${opt.text}</span>
+                                                    <span class="text-[11px] font-black text-indigo-600">${percent}%</span>
+                                                </div>
+                                                <div class="w-full h-3 bg-slate-50 rounded-full overflow-hidden border border-slate-50 p-0.5">
+                                                    <div class="h-full bg-indigo-600 rounded-full transition-all duration-1000 shadow-md" style="width: ${percent}%"></div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                                <div class="mt-6 pt-4 border-t border-slate-50 flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                    <span>${totalVotes} Certified Responses</span>
+                                    <span>ID: ${p._id.slice(-6)}</span>
                                 </div>
                             </div>
-                            <div class="space-y-2">
-                                ${p.options.map(opt => {
-                                    const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
-                                    return `
-                                        <div class="relative w-full h-6 bg-slate-50 rounded overflow-hidden">
-                                            <div class="absolute top-0 left-0 h-full bg-indigo-500/10" style="width: ${percent}%"></div>
-                                            <div class="relative z-10 h-full flex justify-between items-center px-2 text-[9px] font-bold">
-                                                <span class="text-slate-700">${opt.text}</span>
-                                                <span class="text-indigo-600">${opt.votes} votes (${percent}%)</span>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                }
                 document.getElementById('pollsListAdmin').innerHTML = listHtml;
             } catch(e) {}
+        }
+
+        function showPollForm() {
+            const sid = document.getElementById('adminSocietySelect').value;
+            if(!sid) { showToast("Select a society to authorize deployment!", "error"); return; }
+            const ctn = document.getElementById('pollFormContainer');
+            ctn.classList.toggle('hidden');
+            ctn.innerHTML = `
+                <h4 class="text-[11px] font-black text-indigo-600 mb-4 uppercase tracking-[0.2em]">Poll Authorization</h4>
+                <form onsubmit="postPoll(event)" class="space-y-4">
+                    <input id="pollQuestion" type="text" placeholder="Constitutional Question?" required class="w-full text-sm bg-white border border-slate-200 rounded-2xl px-4 py-4 font-bold outline-none focus:ring-4 focus:ring-indigo-500/5 transition">
+                    <div id="pollOptionsContainer" class="space-y-3">
+                        <input type="text" placeholder="Option 1" required class="poll-opt w-full text-sm bg-white border border-slate-200 rounded-2xl px-4 py-3.5 font-bold outline-none">
+                        <input type="text" placeholder="Option 2" required class="poll-opt w-full text-sm bg-white border border-slate-200 rounded-2xl px-4 py-3.5 font-bold outline-none">
+                    </div>
+                    <div class="flex items-center justify-between pt-2">
+                        <button type="button" onclick="addPollOption()" class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">+ Append Option</button>
+                        <button type="submit" class="bg-indigo-600 text-white font-black px-6 py-3 rounded-2xl text-[11px] uppercase tracking-widest shadow-xl shadow-indigo-100 active:scale-95 transition">Deploy Ballot</button>
+                    </div>
+                </form>
+            `;
         }
 
         function addPollOption() {
@@ -1014,106 +1109,74 @@
             input.type = 'text';
             input.placeholder = `Option ${container.children.length + 1}`;
             input.required = true;
-            input.className = 'poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2';
+            input.className = 'poll-opt w-full text-sm bg-white border border-slate-200 rounded-2xl px-4 py-3.5 font-bold outline-none';
             container.appendChild(input);
         }
 
         async function postPoll(e) {
             e.preventDefault();
             const sid = document.getElementById('adminSocietySelect').value;
-            if(!sid) { showToast("Select a society first!", "error"); return; }
-            
-            const btn = e.target.querySelector('button[type="submit"]');
-            const og = btn.innerText;
-            btn.innerText = "Deploying...";
-            
             const options = Array.from(document.querySelectorAll('.poll-opt')).map(i => i.value).filter(v => v.trim() !== '');
-            
-            try {
-                const url = e.target.dataset.id ? `${API_URL}/polls/${e.target.dataset.id}` : `${API_URL}/polls`;
-                const method = e.target.dataset.id ? 'PUT' : 'POST';
-                const res = await fetch(url, {
-                    method: method, headers: getAuthHeaders(),
-                    body: JSON.stringify({ 
-                        societyId: sid, 
-                        question: document.getElementById('pollQuestion').value,
-                        options: options
-                    })
-                });
-                if(res.ok) {
-                    showToast(e.target.dataset.id ? "Poll updated!" : "Community poll is now live!", "success", "Poll Deployed");
-                    loadPollsAdmin();
-                }
-            } catch(e) { btn.innerText = og; }
-        }
-
-        function editPoll(idx) {
-            const p = window._activePolls[idx];
-            const form = document.querySelector('form[onsubmit="postPoll(event)"]');
-            form.dataset.id = p._id;
-            document.getElementById('pollQuestion').value = p.question;
-            const container = document.getElementById('pollOptionsContainer');
-            container.innerHTML = '';
-            p.options.forEach((opt, idx) => {
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.placeholder = `Option ${idx + 1}`;
-                input.value = opt.text;
-                input.required = true;
-                input.className = 'poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2';
-                container.appendChild(input);
+            const res = await fetch(`${API_URL}/polls`, {
+                method: 'POST', headers: getAuthHeaders(),
+                body: JSON.stringify({ societyId: sid, question: document.getElementById('pollQuestion').value, options: options })
             });
-            form.querySelector('button[type="submit"]').innerText = "Update Poll & Reset Votes";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if(res.ok) {
+                showToast("Society Ballot is now LIVE!", "success", "Deployment Authorized");
+                loadPollsAdmin();
+            }
         }
 
         async function deletePoll(id) {
-            showConfirm("Delete Poll", "Are you sure? This will remove all results.", async () => {
+            showConfirm("Purge Ballot Data?", "This will permanently terminate results and remove the poll from resident feeds.", async () => {
                 await fetch(`${API_URL}/polls/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                showToast("Poll removed", "success");
+                showToast("Ballot Purged", "success");
                 loadPollsAdmin();
             });
         }
 
         async function loadSOSAdmin() {
-            openModule("Emergency SOS Monitoring");
+            openModule("SOS Incident Command");
             const content = document.getElementById('moduleContent');
             const sid = document.getElementById('adminSocietySelect').value;
-            
             content.innerHTML = `
-                <div class="bg-red-50 p-4 border border-red-100 rounded-xl mb-4 flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-red-500 text-2xl animate-pulse shadow-sm"><i class="fa-solid fa-bell"></i></div>
-                    <div class="flex-1">
-                        <h4 class="text-sm font-bold text-red-700">Live SOS Feed</h4>
-                        <p class="text-[10px] text-red-600 font-medium opacity-80 uppercase tracking-widest mt-1">Real-time Emergency Monitoring</p>
-                    </div>
-                    <div class="bg-white/50 px-2.5 py-1 rounded-lg border border-red-200 text-[10px] font-black text-red-600 animate-pulse">LIVE</div>
+                <div class="bg-gradient-to-br from-red-600 to-rose-700 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg animate-pulse">
+                    <i class="fa-solid fa-truck-medical absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Emergency Feed</h3>
+                    <p class="text-[11px] text-red-100/60 uppercase tracking-widest font-bold">Priority Distress signals</p>
                 </div>
-                <div id="sosListAdmin" class="space-y-3">
+                <div id="sosListAdmin" class="space-y-4 pb-12">
                     <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-red-500"></i></div>
                 </div>
             `;
-
             try {
                 const res = await fetch(`${API_URL}/sos${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
                 const alerts = await res.json();
                 let html = '';
                 if(alerts.length === 0) {
-                    html += '<p class="text-xs text-slate-400 text-center py-10 opacity-30 italic">No active distress signals in the society.</p>';
+                    html += '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-shield-heart text-6xl mb-4 block"></i><p class="text-[10px] font-black uppercase tracking-widest">Network Secure - No Alerts</p></div>';
                 } else {
                     alerts.forEach(a => {
                         const resolved = a.status === 'Resolved';
                         html += `
-                            <div class="bg-white border-2 ${resolved ? 'border-slate-100 opacity-60' : 'border-red-100 animate-pulse shadow-sm shadow-red-100'} p-4 rounded-2xl mb-3 flex items-start justify-between">
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black tracking-widest uppercase">${a.type || 'SOS'}</span>
-                                        <span class="text-[10px] text-slate-400 font-bold">${new Date(a.createdAt).toLocaleTimeString()}</span>
-                                    </div>
-                                    <h4 class="text-sm font-bold text-dark mb-0.5">${a.userName} • Flat ${a.flatNumber || 'N/A'}</h4>
-                                    <p class="text-xs text-slate-500">${a.location || 'Reported from Resident App'}</p>
+                            <div class="bg-white border-2 ${resolved ? 'border-slate-50 opacity-60' : 'border-red-100 animate-pulse shadow-xl shadow-red-500/5'} p-5 rounded-[2.5rem] relative overflow-hidden">
+                                ${!resolved ? '<div class="absolute top-0 right-0 w-2 h-full bg-red-600"></div>' : ''}
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="bg-red-50 text-red-600 px-3 py-1 rounded-xl text-[10px] font-black tracking-widest uppercase border border-red-100">Distress Code: ${a.type || 'SOS'}</div>
+                                    <span class="text-[10px] text-slate-400 font-bold">${new Date(a.createdAt).toLocaleTimeString()}</span>
                                 </div>
-                                ${!resolved ? `<button onclick="resolveSOS('${a._id}')" class="text-[9px] font-black text-white bg-red-600 px-3 py-1.5 rounded-lg active:scale-95 transition shadow-sm uppercase tracking-wider">Respond Now</button>` : `<span class="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded">RESOLVED</span>`}
+                                <div class="flex items-center gap-4 mb-4">
+                                    <div class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-xl shadow-lg leading-none"><i class="fa-solid fa-person-running"></i></div>
+                                    <div>
+                                        <h4 class="text-[16px] font-black text-slate-800 leading-tight">${a.userName}</h4>
+                                        <p class="text-[10px] text-red-600 font-black uppercase tracking-widest mt-1">${a.location || 'Unknown Coordinates'}</p>
+                                    </div>
+                                </div>
+                                ${!resolved ? `
+                                    <button onclick="resolveSOS('${a._id}')" class="w-full py-3.5 bg-red-600 text-white rounded-2xl text-[11px] font-black uppercase tracking-widest transition shadow-lg shadow-red-200 active:scale-95">Verify & Close Incident</button>
+                                ` : `
+                                    <div class="w-full py-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-2xl text-center text-[10px] font-black uppercase tracking-widest">Incident Resolved</div>
+                                `}
                             </div>
                         `;
                     });
@@ -1123,19 +1186,18 @@
         }
 
         async function resolveSOS(id) {
-            showConfirm("SOS Incident Resolved?", "Has the emergency situation been stabilized? This will archive the alert.", async () => {
-                const res = await fetch(`${API_URL}/sos/${id}/resolve`, { method: 'PUT', headers: getAuthHeaders() });
-                if(res.ok) {
-                    showToast("Emergency signal cleared.", "success", "Resolved");
-                    loadSOSAdmin();
-                }
+            showConfirm("Conclude Emergency Response?", "Ensure the distress signal has been verified and neutralized.", async () => {
+                await fetch(`${API_URL}/sos/${id}/resolve`, { method: 'PUT', headers: getAuthHeaders() });
+                loadSOSAdmin();
+                fetchAdminAnalytics();
             });
         }
 
         async function loadMarketplaceAdmin() {
-            openModule("Marketplace Performance");
+            openModule("Marketplace Control");
             const content = document.getElementById('moduleContent');
             const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-slate-400"></i><p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-4">Auditing Flow Registry...</p></div>';
 
             try {
                 const [pRes, oRes] = await Promise.all([
@@ -1147,126 +1209,42 @@
                 
                 const totalRevenue = orders.reduce((acc, o) => acc + (o.price || 0), 0);
                 const collectedRevenue = orders.filter(o => o.paymentStatus === 'Paid').reduce((acc, o) => acc + (o.price || 0), 0);
-                const pendingRevenue = orders.filter(o => o.paymentStatus !== 'Paid').reduce((acc, o) => acc + (o.price || 0), 0);
-                const totalProducts = products.length;
-
-                const catStats = {};
-                orders.forEach(o => {
-                    if(o.paymentStatus === 'Paid') {
-                        catStats[o.category || 'General'] = (catStats[o.category || 'General'] || 0) + (o.price || 0);
-                    }
-                });
-
                 let html = `
                     <div class="grid grid-cols-2 gap-4 mb-8">
-                        <div class="glass-card p-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl group">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors">Total Possible Revenue</p>
-                            <h4 class="text-2xl font-black mt-1">\u20b9${totalRevenue.toLocaleString()}</h4>
-                            <div class="mt-3 flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
-                                <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Global Aggregate</span>
-                            </div>
+                        <div class="bg-slate-900 p-6 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden group">
+                           <i class="fa-solid fa-chart-line absolute -bottom-2 -right-2 text-5xl opacity-10"></i>
+                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-500">Gross Flow</p>
+                            <h4 class="text-2xl font-black mt-1">₹${totalRevenue.toLocaleString()}</h4>
                         </div>
-                        <div class="glass-card p-5 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 group">
-                            <p class="text-[9px] font-black uppercase tracking-widest text-emerald-100/60">Revenue Collected</p>
-                            <h4 class="text-2xl font-black mt-1">\u20b9${collectedRevenue.toLocaleString()}</h4>
-                            <div class="mt-3 flex items-center gap-2">
-                                <i class="fa-solid fa-circle-check text-[10px] text-emerald-100"></i>
-                                <span class="text-[8px] font-bold text-emerald-100 uppercase tracking-widest">Finalized Cash</span>
-                            </div>
-                        </div>
-                        <div class="glass-card p-5 border-amber-100 bg-white shadow-sm flex flex-col justify-between">
-                            <div>
-                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Invoiced Pending</p>
-                                <h4 class="text-2xl font-black mt-1 text-amber-500">\u20b9${pendingRevenue.toLocaleString()}</h4>
-                            </div>
-                            <p class="text-[8px] font-bold text-slate-400 mt-3 uppercase tracking-widest italic leading-tight">Waiting for seller confirmation</p>
-                        </div>
-                        <div class="glass-card p-5 border-indigo-100 bg-white shadow-sm flex flex-col justify-between">
-                            <div>
-                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Unique Products</p>
-                                <h4 class="text-2xl font-black mt-1 text-indigo-600">${totalProducts}</h4>
-                            </div>
-                            <div class="flex items-center gap-2 mt-3">
-                                <span class="text-[8px] font-bold text-indigo-400 uppercase tracking-widest">Active Listings</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 mb-8 shadow-sm">
-                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-500"></i> Category Sales Distribution</h4>
-                        <div class="space-y-5">
-                            ${Object.entries(catStats).sort((a,b) => b[1] - a[1]).map(([cat, rev]) => {
-                                const percent = collectedRevenue > 0 ? Math.round((rev / collectedRevenue) * 100) : 0;
-                                return `
-                                    <div class="group">
-                                        <div class="flex justify-between items-center mb-2 px-1 text-slate-700">
-                                            <span class="text-[10px] font-black uppercase tracking-tighter">${cat}</span>
-                                            <span class="text-[10px] font-black text-slate-900">\u20b9${rev.toLocaleString()} <span class="text-slate-300 ml-1">(${percent}%)</span></span>
-                                        </div>
-                                        <div class="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
-                                            <div class="h-full bg-slate-900 transition-all duration-1000 group-hover:bg-primary" style="width: ${percent}%"></div>
-                                        </div>
-                                    </div>
-                                `;
-                            }).join('') || '<p class="text-[10px] text-slate-400 text-center py-4 italic font-bold uppercase tracking-widest opacity-40">No confirmed revenue distribution available yet.</p>'}
+                        <div class="bg-gradient-to-br from-fuchsia-600 to-indigo-600 p-6 rounded-[2.5rem] text-white shadow-lg shadow-fuchsia-100 group">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-fuchsia-100/60">Finalized</p>
+                            <h4 class="text-2xl font-black mt-1">₹${collectedRevenue.toLocaleString()}</h4>
                         </div>
                     </div>
                 `;
 
-                html += '<h4 class="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest flex items-center gap-2 px-1"><i class="fa-solid fa-clock-rotate-left"></i> Recent Transactions</h4>';
-                if(orders.length === 0) {
-                    html += '<p class="text-xs text-slate-400 text-center py-10 opacity-50">No marketplace traffic detected.</p>';
-                } else {
-                    html += `<div class="space-y-2 mb-8">`;
-                    orders.slice(0, 5).forEach(o => {
-                        let color = o.status === 'Delivered' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-indigo-500 bg-indigo-50 border-indigo-100';
-                        html += `
-                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-primary/20 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-[10px] text-slate-400 border border-slate-100 overflow-hidden shadow-sm">
-                                        <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover">
-                                    </div>
-                                    <div>
-                                        <h4 class="text-xs font-bold text-dark">${o.productName}</h4>
-                                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">${o.userName}</p>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xs font-black text-dark">\u20b9${o.price}</p>
-                                    <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${color}">${o.status}</span>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += `</div>`;
-                }
-
-                html += '<h4 class="text-xs font-black text-slate-400 mb-3 mt-8 uppercase tracking-widest flex items-center gap-2 px-1"><i class="fa-solid fa-shield-halved"></i> Global Product Scrutiny</h4>';
                 if(products.length === 0) {
-                    html += '<p class="text-xs text-slate-400 text-center py-6 italic opacity-50">No active product listings in the registry.</p>';
+                    html += '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-store-slash text-6xl block mb-4"></i><p class="text-[10px] font-black uppercase tracking-widest">Market Vacuum</p></div>';
                 } else {
-                    html += `<div class="space-y-2">`;
+                    html += '<h4 class="text-[10px] font-black text-slate-400 mb-4 px-3 uppercase tracking-[0.3em]">Listing Scrutiny</h4> <div class="space-y-3">';
                     products.forEach(p => {
                         if(p.status === 'Deleted') return;
                         html += `
-                            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-red-100 transition">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-slate-50 overflow-hidden">
+                            <div class="bg-white p-4 rounded-[2rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-fuchsia-100 transition duration-500">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-slate-50 overflow-hidden shadow_inner border border-slate-100">
                                         ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-slate-200"><i class="fa-solid fa-image"></i></div>'}
                                     </div>
-                                    <div>
-                                        <h4 class="text-xs font-bold text-dark">${p.name}</h4>
-                                        <p class="text-[9px] text-fuchsia-500 font-black uppercase tracking-widest">\u20b9${p.price}</p>
+                                    <div class="min-w-0">
+                                        <h4 class="text-[14px] font-black text-slate-800 leading-tight truncate max-w-[140px]">${p.name}</h4>
+                                        <p class="text-[10px] text-fuchsia-600 font-black uppercase tracking-widest mt-1">₹${p.price.toLocaleString()}</p>
                                     </div>
                                 </div>
-                                <button onclick="deleteProductAdmin('${p._id}')" class="w-8 h-8 rounded-full bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 transition border border-slate-100 flex items-center justify-center"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                            </div>
-                        `;
+                                <button onclick="deleteProductAdmin('${p._id}')" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition border border-slate-100 flex items-center justify-center"><i class="fa-solid fa-trash-can text-sm"></i></button>
+                            </div>`;
                     });
-                    html += `</div>`;
+                    html += '</div>';
                 }
-
                 content.innerHTML = html;
             } catch(e) {}
         }
@@ -1323,124 +1301,123 @@
             } catch(e) {}
         }
 
-        function editVehicle(idx) {
-            const v = window._activeVehicles[idx];
-            const ctn = document.getElementById('vehicleFormContainer');
-            ctn.classList.remove('hidden');
-            ctn.innerHTML = `
-                <h4 class="text-xs font-bold text-dark mb-3">Update Vehicle: ${v.vehicleNumber}</h4>
-                <form onsubmit="submitVehicleUpdate(event, '${v._id}')" class="space-y-3">
-                    <input id="vNum" type="text" value="${v.vehicleNumber}" placeholder="Number Plate" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                    <select id="vType" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                        <option value="Car" ${v.vehicleType==='Car'?'selected':''}>Car</option>
-                        <option value="Bike" ${v.vehicleType==='Bike'?'selected':''}>Bike</option>
-                    </select>
-                    <input id="vModel" type="text" value="${v.model}" placeholder="Model (e.g. BMW X5)" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                    <input id="vSlot" type="text" value="${v.parkingSlot}" placeholder="Parking Slot" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
-                    <div class="flex gap-2">
-                        <button type="submit" class="flex-1 bg-primary text-white font-bold py-2 rounded-lg text-sm">Update Registry</button>
-                        <button type="button" onclick="document.getElementById('vehicleFormContainer').classList.add('hidden')" class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm">Cancel</button>
-                    </div>
-                </form>
+        async function loadVehiclesAdmin() {
+            openModule("Fleet Registry");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-3xl text-white mb-6 relative overflow-hidden shadow-lg border border-slate-700/20">
+                    <i class="fa-solid fa-car-burst absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                    <h3 class="text-xl font-black tracking-tight text-white mb-0.5">Vehicle Fleet Control</h3>
+                    <p class="text-[11px] text-slate-400/60 uppercase tracking-widest font-bold">Authorized Transport Directory</p>
+                </div>
+                <div id="vehicleList" class="space-y-4 pb-12">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-slate-500"></i></div>
+                </div>
             `;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function submitVehicleUpdate(e, id) {
-            e.preventDefault();
-            const payload = {
-                vehicleNumber: document.getElementById('vNum').value,
-                vehicleType: document.getElementById('vType').value,
-                model: document.getElementById('vModel').value,
-                parkingSlot: document.getElementById('vSlot').value
-            };
-            await fetch(`${API_URL}/vehicles/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
-            showToast("Vehicle updated", "success");
-            loadVehiclesAdmin();
+            try {
+                const res = await fetch(`${API_URL}/vehicles${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const vehicles = await res.json();
+                let html = '';
+                if(vehicles.length === 0) {
+                    html = '<div class="text-center py-20 opacity-20"><i class="fa-solid fa-car-rear text-6xl mb-4 block"></i><p class="text-[10px] font-black uppercase tracking-widest">Motor pool empty</p></div>';
+                } else {
+                    vehicles.forEach(v => {
+                        const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car-side';
+                        html += `
+                            <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-slate-400 transition duration-500">
+                                <div class="flex items-center gap-5">
+                                    <div class="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-2xl border-4 border-white shadow-xl shadow-slate-100 group-hover:bg-indigo-600 transition duration-500">
+                                        <i class="fa-solid ${icon}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[17px] font-black text-slate-900 leading-tight uppercase tracking-tight">${v.vehicleNumber}</h4>
+                                        <div class="flex items-center gap-2 mt-1">
+                                            <span class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">${v.userName}</span>
+                                            <span class="text-[10px] font-bold text-slate-300 uppercase italic"> • ${v.model}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] font-black bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-xl border border-emerald-100 uppercase tracking-[0.2em] shadow-sm">${v.parkingSlot || 'N/A'}</span>
+                                    <button onclick="deleteVehicle('${v._id}')" class="block mt-4 text-[11px] font-black text-rose-500 bg-rose-50 px-4 py-2 rounded-xl transition hover:bg-rose-500 hover:text-white uppercase tracking-widest border border-rose-100">Purge</button>
+                                </div>
+                            </div>`;
+                    });
+                }
+                document.getElementById('vehicleList').innerHTML = html;
+            } catch(e) {}
         }
 
         async function deleteVehicle(id) {
-            showConfirm("Remove Vehicle", "Permanently remove this vehicle from registry?", async () => {
+            showConfirm("Revoke Vehicle Identity?", "Procedural override: This will remove the vehicle from the authorized community registry.", async () => {
                 await fetch(`${API_URL}/vehicles/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                showToast("Vehicle removed", "success");
                 loadVehiclesAdmin();
             });
         }
-
 
         async function loadVaultAdmin() {
             openModule("Digital Document Vault");
             const content = document.getElementById('moduleContent');
             const sid = document.getElementById('adminSocietySelect').value;
             const query = sid ? `?societyId=${sid}` : '';
+            content.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-primary text-2xl"></i><p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-4">Accessing Security Archives...</p></div>';
 
             try {
                 const res = await fetch(`${API_URL}/admin/vault/all${query}`, { headers: getAuthHeaders() });
-                if (res.ok) {
-                    const docs = await res.json();
-                    
-                    // Group documents by Resident
-                    const grouped = {};
-                    docs.forEach(d => {
-                        if (!grouped[d.userName]) grouped[d.userName] = [];
-                        grouped[d.userName].push(d);
-                    });
+                const docs = await res.json();
+                
+                const grouped = {};
+                docs.forEach(d => {
+                    if (!grouped[d.userName]) grouped[d.userName] = [];
+                    grouped[d.userName].push(d);
+                });
 
-                    let html = `
-                        <div class="mb-6">
-                            <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden mb-6">
-                                <i class="fa-solid fa-shield-halved absolute -bottom-4 -right-4 text-7xl opacity-10"></i>
-                                <h3 class="text-xl font-black tracking-tight">Security Repository</h3>
-                                <p class="text-[10px] font-bold text-indigo-100/60 uppercase tracking-[0.2em] mt-1">Verified Resident Assets</p>
-                            </div>
-                        </div>
-                    `;
+                let html = `
+                    <div class="bg-gradient-to-br from-indigo-500 to-indigo-700 p-6 rounded-3xl text-white mb-8 relative overflow-hidden shadow-lg border border-indigo-400/20">
+                        <i class="fa-solid fa-shield-halved absolute -bottom-4 -right-4 text-7xl opacity-20"></i>
+                        <h3 class="text-xl font-black tracking-tight mb-0.5">Asset Repository</h3>
+                        <p class="text-[11px] text-indigo-100/60 uppercase tracking-widest font-bold">Verified Resident Documentation</p>
+                    </div>
+                `;
 
-                    if (docs.length === 0) {
-                        html += '<div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-100"><i class="fa-solid fa-folder-open text-4xl text-slate-100 mb-3 block"></i><p class="text-xs text-slate-400 font-bold uppercase tracking-widest leading-none">Vault is currently empty</p></div>';
-                    } else {
-                        Object.keys(grouped).forEach(resident => {
+                if (docs.length === 0) {
+                    html += '<div class="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100"><i class="fa-solid fa-folder-open text-5xl text-slate-100 mb-4 block"></i><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Vault Status: Vacuum</p></div>';
+                } else {
+                    Object.keys(grouped).forEach(resident => {
+                        html += `
+                            <div class="mb-8">
+                                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2 px-3">
+                                    <i class="fa-solid fa-user-tag text-indigo-500"></i> Records for ${resident}
+                                </h4>
+                                <div class="grid grid-cols-1 gap-3">
+                        `;
+                        grouped[resident].forEach(d => {
                             html += `
-                                <div class="mb-8">
-                                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
-                                        <i class="fa-solid fa-user-tag text-indigo-500"></i> Documents for ${resident}
-                                    </h4>
-                                    <div class="grid grid-cols-1 gap-3">
-                            `;
-                            
-                            grouped[resident].forEach(d => {
-                                html += `
-                                    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-indigo-100 transition">
-                                        <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
-                                                <i class="fa-solid ${d.documentType === 'ID Proof' ? 'fa-id-card' : 'fa-file-contract'} text-xl"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="text-[13px] font-bold text-dark">${d.fileName}</h4>
-                                                <div class="flex items-center gap-2 mt-0.5">
-                                                    <span class="text-[9px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded uppercase tracking-wider">${d.documentType}</span>
-                                                    <span class="text-[9px] text-slate-300 font-bold uppercase">${new Date(d.createdAt).toLocaleDateString()}</span>
-                                                </div>
-                                            </div>
+                                <div class="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm flex items-center justify-between group hover:border-indigo-100 transition duration-500">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 group-hover:bg-indigo-600 group-hover:text-white transition duration-500">
+                                            <i class="fa-solid ${d.documentType === 'ID Proof' ? 'fa-id-card' : 'fa-file-shield'} text-xl"></i>
                                         </div>
-                                        <div class="flex items-center gap-2">
-                                            <button onclick="previewDocument('${d.fileData}', '${d.fileName}')" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center hover:text-indigo-600 hover:bg-indigo-50 transition border border-slate-100 shadow-sm"><i class="fa-solid fa-eye text-sm"></i></button>
+                                        <div>
+                                            <h4 class="text-[14px] font-black text-slate-800 leading-tight mb-1 truncate max-w-[150px]">${d.fileName}</h4>
+                                            <span class="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2.5 py-1 rounded-xl uppercase tracking-widest border border-indigo-100">${d.documentType}</span>
                                         </div>
                                     </div>
-                                `;
-                            });
-                            
-                            html += `</div></div>`;
+                                    <button onclick="previewDocument('${d.fileData}')" class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-300 hover:text-indigo-600 hover:bg-white hover:shadow-lg transition border border-slate-100 flex items-center justify-center active:scale-90"><i class="fa-solid fa-eye text-sm"></i></button>
+                                </div>
+                            `;
                         });
-                    }
-                    content.innerHTML = html;
+                        html += '</div></div>';
+                    });
                 }
-            } catch (e) {
-                showToast("Network Error accessing vault.", "error");
+                content.innerHTML = html;
+            } catch(err) {
+                showToast("Repository decryption failed.", "error");
             }
         }
 
-        function previewDocument(data, name) {
+        function previewDocument(data) {
             document.getElementById('docViewer').src = data;
             document.getElementById('viewModalDoc').classList.remove('hidden');
         }
@@ -1453,12 +1430,10 @@
         async function postService(e) {
             e.preventDefault();
             const sid = document.getElementById('adminSocietySelect').value;
-            if(!sid) { showToast("Select a specific society first to add a service!", "error"); return; }
-            
+            if(!sid) { showToast("Select a society to authorize personnel entry!", "error"); return; }
             const btn = e.target.querySelector('button');
             const og = btn.innerText;
-            btn.innerText = "Publishing...";
-            
+            btn.innerText = "Authorizing Registry...";
             try {
                 const res = await fetch(`${API_URL}/services`, {
                     method: 'POST', headers: getAuthHeaders(),
@@ -1469,18 +1444,11 @@
                         phone: document.getElementById('sPhone').value
                     })
                 });
-                
                 if(res.ok) {
-                    showToast("Service contact securely deployed to user directory!", "success", "Success");
+                    showToast("Personnel securely enrolled in network.", "success", "Credential Granted");
                     loadPeopleAdmin();
-                } else {
-                    showToast("Failed to publish contact.", "error");
-                    btn.innerText = og;
-                }
-            } catch(err) {
-                showToast("Network error publishing service.", "error");
-                btn.innerText = og;
-            }
+                } else { btn.innerText = og; }
+            } catch(err) { btn.innerText = og; }
         }
     </script>
     <!-- Doc View Modal -->
