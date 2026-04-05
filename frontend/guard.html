@@ -117,15 +117,6 @@
         </header>
 
         <main class="p-5 space-y-6">
-            <!-- Broadcast Control -->
-            <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-7 rounded-[2rem] flex items-center justify-between text-white group cursor-pointer active:scale-95 transition-all shadow-xl relative overflow-hidden" onclick="broadcastToManagement()">
-                <div class="relative z-10">
-                    <h2 class="text-2xl font-black tracking-tight">Broadcast</h2>
-                    <p class="text-[10px] font-semibold opacity-80 uppercase tracking-widest">Message Management Hub</p>
-                </div>
-                <i class="fa-solid fa-paper-plane text-4xl opacity-30 relative z-10 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-500"></i>
-                <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </div>
 
             <!-- Terminal View Tabs -->
             <div id="view-scanner" class="view-tab active space-y-6">
@@ -151,19 +142,12 @@
                     </div>
                 </div>
 
-                <!-- Recent Entries -->
-                <div class="space-y-4">
-                    <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400 ml-2">Recent Logs</h3>
-                    <div id="recentEntries" class="space-y-3">
-                        <!-- Data injected via JS -->
-                    </div>
-                </div>
             </div>
 
             <div id="view-visitors" class="view-tab space-y-6">
-                <h2 class="text-2xl font-black tracking-tight px-2 text-slate-800">Active Guests</h2>
-                <div id="activeVisitors" class="space-y-4">
-                    <p class="text-center py-10 opacity-30 italic text-xs">Waiting for gate entry activity...</p>
+                <h2 class="text-2xl font-black tracking-tight px-2 text-slate-800">Visitor Logs</h2>
+                <div id="recentEntries" class="space-y-3">
+                    <!-- Data injected via JS -->
                 </div>
             </div>
 
@@ -249,13 +233,6 @@
             }
         }
 
-        function broadcastToManagement() {
-            const msg = prompt("Enter broadcast message for management:");
-            if(msg) {
-                alert("MESSAGE BROADCASTED: " + msg);
-                // Optionally send to /api/chat/messages if we have a societyId, but guard currently doesn't
-            }
-        }
 
         function startScanning(type) {
             alert(`Initializing ${type} Scanner... Please allow camera access.`);
@@ -310,6 +287,8 @@
             
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`btn-${tab}`).classList.add('active');
+
+            if(tab === 'visitors') loadRecentLogs();
         }
 
         document.getElementById('verifyForm').addEventListener('submit', async (e) => {
