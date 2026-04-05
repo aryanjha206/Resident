@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -448,41 +449,59 @@
             </div>
 
             <!-- PROPERTY TAB -->
-            <div id="tab-property" class="tab-view space-y-6">
-                <h2 class="text-lg font-bold text-dark">Facilities, Security & Logs</h2>
+                <!-- SOCIETY REAL ESTATE -->
+                <div class="mb-8">
+                    <div class="flex justify-between items-center mb-4 text-slate-800">
+                        <h2 class="text-xl font-black tracking-tight">Society Homes <span class="text-indigo-600">&</span> Rentals</h2>
+                        <button onclick="openModal('propertyModal')" class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg active:scale-95 transition"><i class="fa-solid fa-plus text-xs"></i></button>
+                    </div>
+                    
+                    <div id="propertyList" class="flex gap-4 overflow-x-auto carousel-hide-scrollbar pb-4 snap-x">
+                        <div class="text-center py-10 w-full opacity-30 italic text-[10px]">Loading society listings...</div>
+                    </div>
+                </div>
 
-                <!-- BOOKINGS -->
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">My Bookings</h3>
-                    <div id="myBookingsList" class="space-y-3 mb-6">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div>
+                <!-- QUICK ACTIONS GRID -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-card p-5 border-slate-100 flex flex-col items-center text-center group cursor-pointer active:scale-95 transition" onclick="openModal('visitorModal')">
+                        <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg mb-3 shadow-inner group-hover:bg-indigo-600 group-hover:text-white transition-all"><i class="fa-solid fa-id-badge"></i></div>
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest leading-none">Entry Pass</h4>
+                        <p class="text-[8px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Gate Pre-Approval</p>
+                    </div>
+                    <div class="glass-card p-5 border-slate-100 flex flex-col items-center text-center group cursor-pointer active:scale-95 transition" onclick="openModal('bookingModal')">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg mb-3 shadow-inner group-hover:bg-emerald-500 group-hover:text-white transition-all"><i class="fa-solid fa-calendar-check"></i></div>
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest leading-none">Amenities</h4>
+                        <p class="text-[8px] text-slate-400 font-bold mt-1 uppercase tracking-wider">Clubhouse & More</p>
                     </div>
                 </div>
                 
-                <!-- GATE PASSES -->
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Active Gate Passes</h3>
-                    <div id="myVisitorsList" class="space-y-3 mb-6">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                <!-- LOGS & TRACKING -->
+                <div class="space-y-6 pt-4">
+                    <div>
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">Security Clearances <div class="h-[1px] flex-1 bg-slate-100"></div></h3>
+                        <div id="myVisitorsList" class="space-y-3">
+                            <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">My Vehicle Registry</h3>
-                    <div id="myVehiclesList" class="space-y-3 mb-6">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">My Vehicles <div class="h-[1px] flex-1 bg-slate-100"></div></h3>
+                            <button onclick="openModal('vehicleModal')" class="text-[9px] font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 uppercase tracking-wider">+ ADD</button>
+                        </div>
+                        <div id="myVehiclesList" class="space-y-3">
+                            <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                        </div>
                     </div>
-                    <button onclick="openModal('vehicleModal')" class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-100 transition shadow-sm mb-6">+ Register New Vehicle</button>
-                </div>
 
-                <!-- COMPLAINTS -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">My Complaints</h3>
-                    </div>
-                    <button onclick="openModal('complaintModal')" class="w-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-[11px] font-bold py-3 rounded-xl hover:bg-indigo-100 transition shadow-sm mb-4">+ Raise New Complaint</button>
-                    <div id="myComplaintsList" class="space-y-3">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">My Complaints <div class="h-[1px] flex-1 bg-slate-100"></div></h3>
+                            <button onclick="openModal('complaintModal')" class="text-[9px] font-black text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100 uppercase tracking-wider">+ NEW</button>
+                        </div>
+                        <div id="myComplaintsList" class="space-y-3 pb-24">
+                            <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -564,7 +583,27 @@
         </div>
     </div>
 
-    <!-- Visitor Modal -->
+    <!-- Property Listing Modal -->
+    <div id="propertyModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'propertyModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-md font-bold text-dark">List Your Property</h3>
+                <button onclick="closeModal(null, 'propertyModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="propertyForm" class="space-y-4">
+                <input id="pTitle" type="text" placeholder="Title (e.g. 3BHK Semi-Furnished)" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                <div class="grid grid-cols-2 gap-3">
+                    <input id="pPrice" type="number" placeholder="Price (₹ / month)" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                    <select id="pType" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                        <option>1 BHK</option><option>2 BHK</option><option selected>3 BHK</option><option>4+ BHK</option><option>Penthouse</option>
+                    </select>
+                </div>
+                <textarea id="pDescription" rows="3" placeholder="Additional details (amenities, floor...)" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none resize-none"></textarea>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-4 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Publish Listing</button>
+            </form>
+        </div>
+    </div>
     <div id="visitorModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'visitorModal')">
         <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
@@ -580,13 +619,23 @@
                     <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Generate Security Code</button>
                 </form>
             </div>
-            <div id="visitorSuccess" class="hidden text-center py-4">
-                <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl mb-4"><i class="fa-solid fa-check"></i></div>
-                <h3 class="text-lg font-bold text-dark mb-1">Gate Pass Ready</h3>
-                <p class="text-xs text-slate-500 mb-4">Share this completely unique code with your visitor or delivery agent.</p>
-                <div class="bg-indigo-50 border-2 border-dashed border-indigo-200 p-4 rounded-xl">
-                    <h2 id="generatedPasscode" class="text-3xl font-bold tracking-[0.2em] text-primary">000000</h2>
+            <div id="visitorSuccess" class="hidden text-center py-6">
+                <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl mb-4"><i class="fa-solid fa-check-double scale-110"></i></div>
+                <h3 class="text-xl font-black text-dark mb-1 tracking-tight">Gate Pass Active</h3>
+                <p class="text-[11px] text-slate-500 mb-6 font-medium px-4">Visitor/Delivery can enter by showing this pass or sharing the numeric code.</p>
+                
+                <div class="bg-slate-50 border border-slate-100 p-6 rounded-[2.5rem] shadow-inner mb-6 flex flex-col items-center">
+                    <!-- QR Code Container -->
+                    <div id="qrcode" class="bg-white p-4 rounded-3xl shadow-xl shadow-indigo-100/50 mb-6 border border-slate-100"></div>
+                    
+                    <div class="w-full h-[1px] bg-slate-200/50 mb-6 relative">
+                        <span class="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-50 px-3 text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em]">Numeric PIN</span>
+                    </div>
+                    
+                    <h2 id="generatedPasscode" class="text-4xl font-black tracking-[0.3em] text-primary">000000</h2>
                 </div>
+                
+                <button onclick="closeModal(null, 'visitorModal')" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest active:scale-95 transition mt-2">I HAVE SHARED THIS</button>
             </div>
         </div>
     </div>
@@ -853,7 +902,13 @@
             if(tabId === 'money') loadUserDues();
             if(tabId === 'people') loadSocietyUsers();
             if(tabId === 'marketplace') loadMarketplace();
-            if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); loadUserVehicles(); }
+            if(tabId === 'property') { 
+                loadProperties(); 
+                loadUserComplaints(); 
+                loadUserVisitors(); 
+                loadUserBookings(); 
+                loadUserVehicles(); 
+            }
         }
 
 
@@ -1360,6 +1415,19 @@ This is a computer generated document.
                     fetchDashboardData();
                     document.getElementById('visitorFormContainer').classList.add('hidden');
                     document.getElementById('generatedPasscode').innerText = data.passCode;
+                    
+                    // Generate QR Code
+                    const qrContainer = document.getElementById('qrcode');
+                    qrContainer.innerHTML = '';
+                    new QRCode(qrContainer, {
+                        text: data.passCode,
+                        width: 160,
+                        height: 160,
+                        colorDark: "#4F46E5",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
                     document.getElementById('visitorSuccess').classList.remove('hidden');
                     e.target.reset();
                     if(document.getElementById('tab-property').classList.contains('active')) loadUserVisitors();
@@ -1367,6 +1435,67 @@ This is a computer generated document.
             } catch(e) {}
             btn.innerText = ogTxt;
         });
+
+        document.getElementById('propertyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const ogTxt = btn.innerText;
+            btn.innerText = "Publishing...";
+            try {
+                const res = await fetch(`${API_URL}/properties`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ 
+                        title: document.getElementById('pTitle').value, 
+                        price: document.getElementById('pPrice').value,
+                        type: document.getElementById('pType').value,
+                        description: document.getElementById('pDescription').value
+                    })
+                });
+                if(res.ok) {
+                    closeModal(null, 'propertyModal');
+                    pushNotif('Listing Published', 'Your property is now visible to all residents.', 'fa-house-circle-check', 'text-indigo-500', 'bg-indigo-50');
+                    loadProperties();
+                    e.target.reset();
+                }
+            } catch(e) {}
+            btn.innerText = ogTxt;
+        });
+
+        async function loadProperties() {
+            const list = document.getElementById('propertyList');
+            if(!list) return;
+            try {
+                const res = await fetch(`${API_URL}/properties`, { headers: getAuthHeaders() });
+                const props = await res.json();
+                let html = '';
+                if(props.length === 0) {
+                    html = '<div class="min-w-full text-center py-10 opacity-30 italic text-[10px]">No active listings in the community yet. Be the first!</div>';
+                } else {
+                    props.forEach(p => {
+                        html += `
+                            <div class="carousel-item snap-start min-w-[240px] glass-card p-0 flex flex-col shadow-lg overflow-hidden border-slate-100/50">
+                                <div class="h-32 bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                                     <i class="fa-solid fa-hotel text-slate-200 text-5xl"></i>
+                                     <div class="absolute top-3 left-3 bg-indigo-600 text-[8px] font-black text-white px-2 py-1 rounded-full uppercase tracking-widest shadow-lg">${p.type}</div>
+                                </div>
+                                <div class="p-4">
+                                    <h4 class="text-sm font-black text-slate-800 leading-tight line-clamp-1 mb-1">${p.title}</h4>
+                                    <p class="text-[10px] text-slate-500 line-clamp-2 min-h-[30px] leading-relaxed mb-3">${p.description || 'No description provided.'}</p>
+                                    <div class="flex justify-between items-center mt-auto border-t border-slate-50 pt-3">
+                                        <div>
+                                            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-wider block leading-none mb-1">Asking Price</span>
+                                            <span class="text-xs font-black text-slate-800 tracking-tight">₹${Number(p.price).toLocaleString()}</span>
+                                        </div>
+                                        <button class="bg-indigo-50 text-indigo-600 font-black text-[9px] px-3 py-2 rounded-xl border border-indigo-100 uppercase tracking-widest hover:bg-indigo-600 hover:text-white transition-all">Enquire</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                list.innerHTML = html;
+            } catch(e) { }
+        }
 
         document.getElementById('bookingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
