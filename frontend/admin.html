@@ -26,6 +26,37 @@
     </style>
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col">
+    <!-- Initial Loading Screen -->
+    <div id="loadingScreen" class="fixed inset-0 z-[1000] bg-[#020617] flex flex-col items-center justify-center transition-opacity duration-700">
+        <div class="relative">
+            <div class="absolute -inset-8 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <img src="icons/nivas.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3061/3061341.png'" class="w-24 h-24 relative z-10 animate-bounce shadow-2xl rounded-3xl" alt="Society Hub">
+        </div>
+        <div class="mt-8 flex flex-col items-center">
+            <h2 class="text-white text-md font-black tracking-[0.2em] uppercase opacity-70">Admin Control</h2>
+            <div class="w-32 h-1 bg-white/5 rounded-full mt-4 overflow-hidden relative">
+                <div class="absolute top-0 left-0 h-full bg-indigo-500 animate-[loading_2s_ease-in-out_infinite]" style="width: 30%"></div>
+            </div>
+        </div>
+    </div>
+    <style>
+        @keyframes loading {
+            0% { transform: translateX(-100%); width: 30%; }
+            50% { width: 60%; }
+            100% { transform: translateX(330%); width: 30%; }
+        }
+    </style>
+    <script>
+        window.addEventListener('load', () => {
+            const ls = document.getElementById('loadingScreen');
+            if(ls) {
+                setTimeout(() => {
+                    ls.style.opacity = '0';
+                    setTimeout(() => ls.remove(), 750);
+                }, 1000);
+            }
+        });
+    </script>
 
     <!-- Login View -->
     <div id="loginView" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#020617] overflow-hidden z-[200]">
