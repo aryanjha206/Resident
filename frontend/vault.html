@@ -8,96 +8,210 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Outfit', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; }
-        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 2.5rem; }
-        .vault-header { background: rgba(2, 6, 23, 0.8); backdrop-filter: blur(15px); border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-        .primary-gradient { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #020617; 
+            color: #f8fafc; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 2.5rem; 
+        }
+        
+        .premium-gradient { 
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); 
+        }
+        
+        .vault-header { 
+            background: rgba(2, 6, 23, 0.8); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05); 
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .btn-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-hover:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-24 no-scrollbar">
+    <!-- Background Glows -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-600/10 rounded-full blur-[120px] animate-pulse"></div>
+        <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+    </div>
+
     <!-- Header -->
     <header class="vault-header sticky top-0 z-50 px-6 py-5 flex justify-between items-center">
         <div class="flex items-center gap-4">
-            <button onclick="window.history.back()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/70 hover:text-white transition"><i class="fa-solid fa-arrow-left"></i></button>
+            <button onclick="window.location.href='index.html'" class="w-12 h-12 rounded-3xl bg-white/5 flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition-all border border-white/5">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
             <div>
-                <h1 class="text-xl font-black tracking-tight">Digital Vault</h1>
-                <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Secure Documents</p>
+                <h1 class="text-xl font-black tracking-tight">Security Vault</h1>
+                <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Encrypted Storage
+                </p>
             </div>
         </div>
-        <div class="w-10 h-10 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xl border border-indigo-500/20 shadow-lg shadow-indigo-500/10">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
     </header>
 
-    <main class="p-6 space-y-8">
-        <!-- Summary Card -->
-        <div class="glass-card p-8 primary-gradient shadow-2xl relative overflow-hidden">
+    <main class="p-6 space-y-8 relative z-10">
+        <!-- Summary Dashboard Card -->
+        <div class="glass-card p-10 premium-gradient shadow-2xl relative overflow-hidden animate-fade-in">
             <div class="relative z-10">
-                <h2 class="text-3xl font-black text-white leading-tight">Your Private Documents</h2>
-                <p class="text-indigo-100/70 text-xs mt-2 font-medium">Encrypted and accessible only by you and the society admin.</p>
-                <div class="mt-6 flex gap-6">
-                    <div><p class="text-[9px] font-black uppercase text-indigo-200/50">Total Files</p><h4 id="docCount" class="text-2xl font-black text-white">0</h4></div>
-                    <div><p class="text-[9px] font-black uppercase text-indigo-200/50">Security Level</p><h4 class="text-lg font-black text-white flex items-center gap-1.5 mt-1">Military <i class="fa-solid fa-check-circle text-xs"></i></h4></div>
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-4xl font-black text-white leading-tight tracking-tighter">Your Digital<br>Document Repository</h2>
+                        <p class="text-indigo-100/70 text-[13px] mt-4 font-medium max-w-[240px] leading-relaxed">Securely store rentals, ID proofs, and society certificates with military-grade encryption.</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-md p-4 rounded-3xl border border-white/20 text-white text-center min-w-[80px]">
+                        <p class="text-[9px] font-black uppercase tracking-widest opacity-60">Status</p>
+                        <h4 class="text-lg font-black mt-1">SAFE <i class="fa-solid fa-lock text-[10px] ml-1"></i></h4>
+                    </div>
+                </div>
+                
+                <div class="mt-10 flex gap-10">
+                    <div>
+                        <p class="text-[10px] font-black uppercase text-white/40 tracking-[0.2em] mb-1">Stored Assets</p>
+                        <h4 id="docCount" class="text-3xl font-black text-white">0</h4>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-black uppercase text-white/40 tracking-[0.2em] mb-1">Last Sync</p>
+                        <h4 class="text-3xl font-black text-white">Today</h4>
+                    </div>
                 </div>
             </div>
-            <i class="fa-solid fa-vault absolute top-4 right-4 text-[120px] opacity-10 rotate-12"></i>
+            <!-- Decorative Icon -->
+            <i class="fa-solid fa-vault absolute -bottom-8 -right-8 text-[180px] text-white opacity-5 rotate-12 transition-transform duration-1000 group-hover:rotate-0"></i>
         </div>
 
-        <!-- Upload Section -->
-        <div class="glass-card p-6">
-            <h3 class="text-sm font-black uppercase tracking-widest text-white/50 mb-4 ml-1">New Submission</h3>
-            <form id="vaultForm" class="space-y-4">
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Document Type</label>
-                    <select id="docType" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-5 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/20 transition outline-none appearance-none">
-                        <option value="Rent Agreement" class="bg-slate-900">Rent Agreement</option>
-                        <option value="ID Proof" class="bg-slate-900">ID Proof (Aadhar/PAN)</option>
-                        <option value="Society Documents" class="bg-slate-900">Society Forms</option>
-                        <option value="Maintenance Receipt" class="bg-slate-900">Maintenance Receipt</option>
-                    </select>
-                </div>
-                <div>
-                    <label id="uploadLabel" class="flex flex-col items-center justify-center gap-3 w-full bg-white/5 border-2 border-dashed border-white/10 rounded-3xl py-8 cursor-pointer hover:bg-white/10 transition group">
-                        <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl group-hover:scale-110 transition duration-500"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                        <div class="text-center">
-                            <p class="text-sm font-bold text-white">Upload Document</p>
-                            <p class="text-[10px] text-white/40 mt-0.5">PDF, PNG or JPG (Max 5MB)</p>
+        <!-- Submission Hub -->
+        <div class="space-y-4 animate-fade-in" style="animation-delay: 0.1s;">
+            <div class="flex items-center justify-between px-2">
+                <h3 class="text-[11px] font-black uppercase tracking-[0.25em] text-white/40 mb-2">Sync New Document</h3>
+                <i class="fa-solid fa-cloud-arrow-up text-indigo-400 text-sm"></i>
+            </div>
+            
+            <div class="glass-card p-8 bg-white/5 border-white/10 group">
+                <form id="vaultForm" class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-indigo-400 uppercase tracking-widest ml-1">Archive Category</label>
+                        <div class="relative">
+                            <select id="docType" class="w-full bg-white/5 border border-white/10 rounded-3xl py-5 px-6 text-sm font-bold text-white focus:ring-4 focus:ring-indigo-500/20 transition outline-none appearance-none cursor-pointer">
+                                <option value="Rent Agreement" class="bg-slate-950">Rent Agreement</option>
+                                <option value="ID Proof" class="bg-slate-950">ID Proof (Aadhar/PAN)</option>
+                                <option value="Society Documents" class="bg-slate-950">Society Credentials</option>
+                                <option value="Maintenance Receipt" class="bg-slate-950">Financial Receipt</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none group-focus-within:text-indigo-400 transition"></i>
                         </div>
-                        <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(this)">
-                    </label>
-                </div>
-                <button type="submit" id="submitBtn" class="w-full bg-white text-indigo-900 font-black py-4 rounded-3xl shadow-xl active:scale-95 transition-all flex items-center justify-center gap-2">
-                    Sync to Vault <i class="fa-solid fa-lock"></i>
-                </button>
-            </form>
+                    </div>
+                    
+                    <div class="pt-2">
+                        <label id="uploadLabel" class="flex flex-col items-center justify-center gap-5 w-full bg-slate-400/5 border-2 border-dashed border-white/10 rounded-[2.5rem] py-12 cursor-pointer hover:bg-white/10 hover:border-indigo-500/50 transition-all duration-500 group/upload relative overflow-hidden">
+                            <div class="w-16 h-16 rounded-[1.5rem] bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-3xl group-hover/upload:scale-110 group-hover/upload:rotate-3 transition duration-500 border border-indigo-500/10 shadow-xl shadow-indigo-500/5">
+                                <i class="fa-solid fa-fingerprint"></i>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[15px] font-black text-white tracking-tight">Select File</p>
+                                <p class="text-[10px] font-bold text-white/30 mt-1 uppercase tracking-widest">Biometric Check Needed</p>
+                            </div>
+                            <input type="file" id="fileInput" class="hidden" onchange="handleFileSelect(this)">
+                        </label>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-white text-slate-950 font-black py-5 rounded-[2rem] shadow-2xl shadow-indigo-500/20 active:scale-95 transition-all text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 btn-hover">
+                        DEPOSIT INTO VAULT <i class="fa-solid fa-key text-[10px]"></i>
+                    </button>
+                </form>
+            </div>
         </div>
 
-        <!-- History Section -->
-        <div>
-            <h3 class="text-sm font-black uppercase tracking-widest text-white/50 mb-4 ml-1">Safe Files</h3>
-            <div id="docList" class="space-y-3"></div>
+        <!-- Repository History -->
+        <div class="space-y-4 animate-fade-in" style="animation-delay: 0.2s;">
+            <div class="flex items-center justify-between px-2">
+                <h3 class="text-[11px] font-black uppercase tracking-[0.25em] text-white/40">Secure History</h3>
+                <span class="text-[9px] font-black text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/10">ALL VERIFIED</span>
+            </div>
+            <div id="docList" class="space-y-4">
+                <!-- Data injected via JS -->
+            </div>
         </div>
     </main>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 glass-card px-6 py-4 flex items-center gap-4 transition-all duration-500 translate-y-40 opacity-0 z-[100] w-[90%] max-w-sm">
-        <div id="toastIcon" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl"></div>
-        <div><h4 id="toastTitle" class="text-sm font-black"></h4><p id="toastMsg" class="text-[10px] text-white/50 font-medium"></p></div>
+    <!-- Toast Component -->
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 glass-card bg-slate-900 border-white/10 px-8 py-5 flex items-center gap-6 transition-all duration-500 translate-y-40 opacity-0 z-[100] w-[90%] max-w-sm shadow-2xl shadow-black/50">
+        <div id="toastIcon" class="w-12 h-12 rounded-[1.25rem] flex items-center justify-center text-xl shrink-0 border"></div>
+        <div>
+            <h4 id="toastTitle" class="text-sm font-black text-white tracking-tight"></h4>
+            <p id="toastMsg" class="text-[10px] text-white/50 font-bold uppercase tracking-widest mt-0.5"></p>
+        </div>
+    </div>
+
+    <!-- Doc View Modal -->
+    <div id="viewModal" class="fixed inset-0 z-[6000] bg-black/95 backdrop-blur-xl flex flex-col hidden items-center justify-center p-4">
+        <div class="w-full max-w-4xl flex flex-col h-[90vh]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-white tracking-tight">Document Preview</h3>
+                <button onclick="closeDocView()" class="w-12 h-12 rounded-3xl bg-white/10 text-white flex items-center justify-center hover:bg-rose-500 transition-all active:scale-90"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex-1 rounded-[2.5rem] overflow-hidden bg-slate-900 border border-white/10 shadow-2xl">
+                <iframe id="docViewer" class="w-full h-full border-0"></iframe>
+            </div>
+        </div>
     </div>
 
     <script>
         if(!localStorage.getItem('userToken')) window.location.href = 'index.html';
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
+        const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.)/.test(window.location.hostname) || window.location.hostname === "";
+        const API_URL = isLocal ? `http://${window.location.hostname || 'localhost'}:5000/api` : '/api';
+        
         const getHeaders = () => ({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('userToken')}` });
 
         function showToast(title, msg, type='success') {
             const t = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
-            if(type === 'success') { icon.className = 'w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl'; icon.innerHTML = '<i class="fa-solid fa-check-circle"></i>'; }
-            else { icon.className = 'w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl'; icon.innerHTML = '<i class="fa-solid fa-times-circle"></i>'; }
+            if(type === 'success') { 
+                icon.className = 'w-12 h-12 rounded-[1.25rem] bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xl border-emerald-500/20'; 
+                icon.innerHTML = '<i class="fa-solid fa-check"></i>'; 
+            } else { 
+                icon.className = 'w-12 h-12 rounded-[1.25rem] bg-rose-500/10 text-rose-400 flex items-center justify-center text-xl border-rose-500/20'; 
+                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>'; 
+            }
             document.getElementById('toastTitle').innerText = title;
             document.getElementById('toastMsg').innerText = msg;
             t.classList.replace('translate-y-40', 'translate-y-0');
             t.classList.replace('opacity-0', 'opacity-100');
-            setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-40'); t.classList.replace('opacity-100', 'opacity-0'); }, 3000);
+            setTimeout(() => { 
+                t.classList.replace('translate-y-0', 'translate-y-40'); 
+                t.classList.replace('opacity-100', 'opacity-0'); 
+            }, 3000);
         }
 
         let selectedFileBase64 = null;
@@ -110,8 +224,10 @@
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     selectedFileBase64 = e.target.result;
-                    document.getElementById('uploadLabel').querySelector('.text-white').innerText = file.name;
-                    document.getElementById('uploadLabel').querySelector('.text-white/40').innerText = (file.size/1024/1024).toFixed(2) + ' MB \u2022 Verified';
+                    const container = document.getElementById('uploadLabel');
+                    container.querySelector('.text-white').innerText = file.name;
+                    container.querySelector('.text-white/30').innerText = 'READIED FOR DEPOSIT';
+                    container.classList.add('bg-indigo-500/10', 'border-indigo-500/40');
                 };
                 reader.readAsDataURL(file);
             }
@@ -119,11 +235,11 @@
 
         document.getElementById('vaultForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(!selectedFileBase64) { showToast("Missing File", "Please select a document to upload.", "error"); return; }
+            if(!selectedFileBase64) { showToast("Empty Slot", "Select a file to secure.", "error"); return; }
             
             const btn = document.getElementById('submitBtn');
             const og = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Encrypting...';
+            btn.innerHTML = '<i class="fa-solid fa-fingerprint fa-bounce"></i> SECURING...';
             btn.disabled = true;
 
             const payload = {
@@ -139,14 +255,18 @@
                     body: JSON.stringify(payload)
                 });
                 if(res.ok) {
-                    showToast("Vault Updated", "Your document has been securely stored.");
+                    showToast("Sync Successful", "Asset locked in digital vault.");
                     fetchDocs();
                     e.target.reset();
-                    document.getElementById('uploadLabel').querySelector('.text-white').innerText = 'Upload Document';
-                    document.getElementById('uploadLabel').querySelector('.text-white/40').innerText = 'PDF, PNG or JPG (Max 5MB)';
+                    const container = document.getElementById('uploadLabel');
+                    container.querySelector('.text-white').innerText = 'Select File';
+                    container.querySelector('.text-white/30').innerText = 'Biometric Check Needed';
+                    container.classList.remove('bg-indigo-500/10', 'border-indigo-500/40');
                     selectedFileBase64 = null;
                 }
-            } catch(err) {}
+            } catch(err) {
+                showToast("Terminal Fault", "Connection timed out.", "error");
+            }
             btn.innerHTML = og;
             btn.disabled = false;
         });
@@ -158,27 +278,40 @@
                 document.getElementById('docCount').innerText = docs.length;
                 
                 let html = '';
-                docs.forEach(d => {
+                docs.forEach((d, idx) => {
                     html += `
-                        <div class="glass-card p-5 flex items-center justify-between group hover:bg-white/5 transition">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl"><i class="fa-solid fa-file-shield"></i></div>
+                        <div class="glass-card p-6 flex items-center justify-between group hover:bg-white/5 transition-all border-white/5 active:scale-[0.98]">
+                            <div class="flex items-center gap-5">
+                                <div class="w-14 h-14 rounded-[1.25rem] bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-xl border border-indigo-500/10 group-hover:rotate-6 transition-all shadow-lg"><i class="fa-solid fa-file-shield text-indigo-400"></i></div>
                                 <div>
-                                    <h4 class="text-sm font-bold text-white">${d.documentType}</h4>
-                                    <p class="text-[9px] text-white/40 font-bold uppercase tracking-widest mt-0.5">${new Date(d.createdAt).toLocaleDateString()} \u2022 ${d.fileName}</p>
+                                    <h4 class="text-[15px] font-black text-white tracking-tight">${d.documentType}</h4>
+                                    <p class="text-[9px] text-white/30 font-black uppercase tracking-[0.15em] mt-1.5 flex items-center gap-2">
+                                        <i class="fa-solid fa-calendar text-[8px]"></i> ${new Date(d.createdAt).toLocaleDateString()}
+                                        <span class="opacity-20 flex-1 h-px bg-white min-w-[20px]"></span>
+                                        ${d.fileName.length > 15 ? d.fileName.substring(0,12)+'...' : d.fileName}
+                                    </p>
                                 </div>
                             </div>
-                            <button onclick="viewDoc('${d.fileData}')" class="w-10 h-10 rounded-full bg-white/5 text-white/40 flex items-center justify-center hover:text-white hover:bg-indigo-500 transition"><i class="fa-solid fa-eye"></i></button>
+                            <button onclick="viewDoc('${d.fileData}')" class="w-12 h-12 rounded-[1.25rem] bg-indigo-500 text-white flex items-center justify-center hover:bg-indigo-400 transition-all shadow-xl shadow-indigo-500/20 active:scale-90"><i class="fa-solid fa-magnifying-glass"></i></button>
                         </div>
                     `;
                 });
-                document.getElementById('docList').innerHTML = html || '<p class="text-xs text-white/30 text-center py-10 italic">No documents in vault yet.</p>';
+                document.getElementById('docList').innerHTML = html || `
+                    <div class="text-center py-16 opacity-30 animate-pulse">
+                        <i class="fa-solid fa-layer-group text-5xl mb-6 block"></i>
+                        <p class="text-[10px] font-black uppercase tracking-widest leading-loose">Secure database is empty<br>Waiting for initial sync...</p>
+                    </div>`;
             } catch(err) {}
         }
 
         function viewDoc(data) {
-            const win = window.open();
-            win.document.write('<iframe src="' + data + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+            document.getElementById('docViewer').src = data;
+            document.getElementById('viewModal').classList.remove('hidden');
+        }
+
+        function closeDocView() {
+            document.getElementById('viewModal').classList.add('hidden');
+            document.getElementById('docViewer').src = '';
         }
 
         fetchDocs();

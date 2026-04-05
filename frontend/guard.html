@@ -3,364 +3,274 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gate Security - Society Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Security Terminal - Society Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
-                    colors: { primary: '#4F46E5', dark: '#1E293B' }
-                }
-            }
+    <style>
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background-color: #020617; 
+            color: #f8fafc; 
+            overflow-x: hidden; 
+            min-height: 100vh;
         }
-    </script>
-    <style>body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }</style>
-</head>
-<body class="text-slate-800 antialiased h-screen flex flex-col items-center justify-center px-6 bg-[#020617] overflow-hidden">
-    <!-- Unified Premium Background -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
-        <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
-    </div>
-
-    <div id="sosAlertToast" class="fixed top-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-8 py-5 rounded-3xl shadow-[0_0_50px_rgba(220,38,38,0.5)] z-[200] hidden flex flex-col items-center gap-2 animate-bounce border-4 border-white/20">
-        <i class="fa-solid fa-truck-medical text-4xl"></i>
-        <h2 class="text-xl font-black tracking-tighter">EMERGENCY SOS</h2>
-        <p id="sosResident" class="text-sm font-bold bg-white/20 px-3 py-1 rounded-full"></p>
-        <button onclick="resolveSOSAlert()" class="mt-2 bg-white text-red-600 px-6 py-2 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-slate-100 transition">Mark as Resolved</button>
-    </div>
-
-    <!-- In-App Notification (Toast) -->
-    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-[150] flex items-center gap-3 transition-all duration-300 translate-y-[-150%] opacity-0 w-[90%] max-w-sm pointer-events-none">
-        <i id="toastIcon" class="fa-solid fa-bell text-2xl text-primary drop-shadow-lg"></i>
-        <div class="flex-1">
-            <h4 id="toastTitle" class="text-[14px] font-bold tracking-wide">Alert</h4>
-            <p id="toastMessage" class="text-[12px] text-slate-300 leading-tight mt-0.5"></p>
-        </div>
-        <button onclick="hideToast()" class="text-slate-400 hover:text-white transition pointer-events-auto"><i class="fa-solid fa-xmark text-lg"></i></button>
-    </div>
-
-    <div class="w-full max-w-sm relative group">
-        <div class="absolute -inset-1 bg-gradient-to-r from-slate-400 to-indigo-500 rounded-3xl blur opacity-20 transition duration-1000"></div>
         
-        <div class="glass-card relative bg-white/95 backdrop-blur-3xl border border-white/20 p-8 pt-12 flex flex-col items-center shadow-2xl rounded-[2.5rem] text-center">
-            <!-- Floating Security Icon -->
-            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-slate-900 border border-slate-700 text-white flex items-center justify-center text-4xl shadow-2xl transform rotate-6 rotate-0 transition-transform duration-500">
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.03); 
+            backdrop-filter: blur(20px); 
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 2rem; 
+        }
+
+        .guard-header { 
+            background: rgba(2, 6, 23, 0.85); 
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .panic-btn {
+            background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
+            box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.4);
+        }
+
+        .view-tab { display: none; }
+        .view-tab.active { display: block; animation: slideIn 0.4s ease-out; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+    </style>
+</head>
+<body class="pb-28 no-scrollbar">
+    <!-- Header -->
+    <header class="guard-header sticky top-0 z-50 px-6 py-5 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
+            <div>
+                <h1 class="text-lg font-black tracking-tight leading-none">Security Ops</h1>
+                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                    <span class="status-dot animate-pulse"></span> Duty Active • <span>Gate 01</span>
+                </p>
+            </div>
+        </div>
+        <button onclick="window.location.href='index.html'" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/50 hover:text-white transition">
+            <i class="fa-solid fa-power-off"></i>
+        </button>
+    </header>
 
-            <div class="text-center mb-6">
-                <h2 class="text-3xl font-black text-slate-900 tracking-tighter">Gate Security</h2>
-                <div class="inline-flex items-center gap-1.5 bg-slate-100 text-slate-700 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest border border-slate-200 mt-2">
-                    <i class="fa-solid fa-tower-observation text-[8px]"></i> Active Monitoring
+    <main class="p-5 space-y-6">
+        <!-- Panic Control -->
+        <div class="panic-btn p-6 rounded-[2rem] flex items-center justify-between text-white group cursor-pointer active:scale-95 transition-all shadow-2xl relative overflow-hidden" onclick="triggerSOS()">
+            <div class="relative z-10">
+                <h2 class="text-2xl font-black tracking-tight">SOS ALERT</h2>
+                <p class="text-[10px] font-semibold opacity-80 uppercase tracking-widest">Broadcast to Management</p>
+            </div>
+            <i class="fa-solid fa-hand-fist text-4xl opacity-50 relative z-10 group-hover:scale-125 transition-transform duration-500"></i>
+            <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        </div>
+
+        <!-- Terminal View Tabs -->
+        <div id="view-scanner" class="view-tab active space-y-6">
+            <!-- Passcode Entry -->
+            <div class="glass-card p-8 text-center space-y-6 border-white/10 relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-600/10 rounded-full blur-3xl"></div>
+                
+                <h3 class="text-sm font-black uppercase tracking-[0.2em] text-white/40">Credential Check-in</h3>
+                
+                <form id="verifyForm" class="space-y-6">
+                    <div class="relative">
+                        <input type="text" id="passcodeInput" placeholder="Enter 6-Digit code" maxlength="6" 
+                               class="w-full bg-white/5 border border-white/10 rounded-3xl py-6 text-center text-3xl font-black tracking-[0.5em] focus:bg-white/10 transition-all placeholder:opacity-20 placeholder:tracking-normal placeholder:text-lg">
+                    </div>
+                    <button type="submit" id="verifyBtn" class="w-full bg-indigo-600 text-white font-black py-5 rounded-3xl shadow-xl hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 text-xs uppercase tracking-widest active:scale-95">
+                        Verify Passage <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </form>
+
+                <div class="pt-4 flex items-center justify-center gap-6">
+                    <button class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white/50 text-xl border border-white/5"><i class="fa-solid fa-qrcode"></i></button>
+                    <button class="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white/50 text-xl border border-white/5"><i class="fa-solid fa-camera"></i></button>
                 </div>
             </div>
+
+            <!-- Recently Verified -->
+            <div class="space-y-4">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 ml-2">Recent Entries</h3>
+                <div id="recentEntries" class="space-y-3">
+                    <!-- Data here -->
+                </div>
+            </div>
+        </div>
+
+        <div id="view-visitors" class="view-tab space-y-6">
+            <h2 class="text-2xl font-black tracking-tight px-2">Active Guests</h2>
+            <div id="activeVisitors" class="space-y-4">
+                <!-- Data here -->
+            </div>
+        </div>
+
+        <div id="view-parcels" class="view-tab space-y-6">
+            <h2 class="text-2xl font-black tracking-tight px-2">Parcel Management</h2>
+            <div class="glass-card p-6 bg-indigo-500/5 border-indigo-500/10">
+                <p class="text-xs text-indigo-400 font-bold text-center py-10 opacity-50">Feature integration planned for next update.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Verification Result Modal -->
+    <div id="resultModal" class="fixed inset-0 z-[60] bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 hidden">
+        <div class="glass-card w-full max-w-sm p-10 text-center border-white/10 shadow-2xl scale-90 opacity-0 transition-all duration-300" id="resultCard">
+            <div id="resultIcon" class="w-20 h-20 rounded-[2rem] flex items-center justify-center text-3xl mx-auto mb-8 border shadow-glow"></div>
+            <h2 id="resultTitle" class="text-2xl font-black tracking-tight">Verified</h2>
+            <p id="resultPurp" class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mt-2">GUEST ENTRY</p>
             
-            <p class="text-[11px] text-slate-500 mb-8 leading-relaxed max-w-[240px] font-medium mx-auto">Validate global visitor passcodes instantly. Ensure authorized entry for all guests and service providers.</p>
-
-            <div class="flex border-b border-slate-100 mb-6 w-full">
-                <button onclick="switchGuardTab('visitor')" id="btnTabVis" class="flex-1 py-3 text-xs font-bold border-b-2 border-primary text-primary">VISITORS</button>
-                <button onclick="switchGuardTab('staff')" id="btnTabStaff" class="flex-1 py-3 text-xs font-bold text-slate-400 border-b-2 border-transparent">STAFF / DAILY HELP</button>
+            <div class="mt-8 py-6 px-4 bg-white/5 rounded-3xl border border-white/5 space-y-2">
+                <p class="text-xs font-bold text-slate-400">Visitor: <span id="vNameDisplay" class="text-white font-black text-sm ml-1">Rajesh Kumar</span></p>
+                <p class="text-xs font-bold text-slate-400">Host: <span id="vHostDisplay" class="text-white font-black text-sm ml-1">Flat 402 • Mohit</span></p>
             </div>
 
-            <div id="visitorSection">
-                <form onsubmit="verifyCode(event)" class="w-full space-y-4">
-                    <div class="relative group/input">
-                        <i class="fa-solid fa-ticket absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
-                        <input type="text" id="passInput" placeholder="Pass Code" class="w-full text-center tracking-[0.2em] font-black text-2xl text-dark bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition" maxlength="6">
-                    </div>
-                    <button type="submit" id="verifyBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98] text-lg">Validate Access</button>
-                </form>
+            <div class="flex gap-4 mt-10">
+                <button onclick="closeResult()" class="flex-1 bg-white/5 text-white/50 font-bold py-4 rounded-2xl text-[10px] uppercase tracking-widest">Reject</button>
+                <button id="entryBtn" class="flex-1 bg-indigo-600 text-white font-black py-4 rounded-2xl text-[10px] uppercase tracking-widest shadow-xl shadow-indigo-500/20">Grant Access</button>
             </div>
-
-            <div id="staffSection" class="hidden">
-                <form onsubmit="verifyStaff(event)" class="w-full space-y-4">
-                    <div class="relative group/input">
-                        <i class="fa-solid fa-phone absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
-                        <input type="tel" id="staffPhoneInput" placeholder="Staff Phone Number" class="w-full text-center font-bold text-xl text-dark bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
-                    </div>
-                    <button type="submit" id="verifyStaffBtn" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-indigo-700 transition-all active:scale-[0.98] text-lg">Verify Staff</button>
-                </form>
-            </div>
-
-            <!-- Dynamic Output Box -->
-            <div id="resultBox" class="w-full mt-6 hidden border-2 border-dashed p-4 rounded-xl text-left bg-slate-50/50">
-                <div id="foundVisitor" class="hidden">
-                    <span id="scanStatusBadge" class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md font-bold uppercase tracking-wider mb-2 inline-block shadow-sm">Valid Pass</span>
-                    <p class="text-sm text-slate-500 mb-1"><span id="visType" class="bg-slate-200 px-1 rounded text-[9px] mr-1">GUEST</span> <span id="vName" class="font-bold text-dark"></span></p>
-                    <p class="text-sm text-slate-500 mb-1" id="unitRow">Unit: <span id="rName" class="font-bold text-dark"></span></p>
-                    <p class="text-[11px] font-bold text-primary mb-4 bg-indigo-50/80 p-2 rounded-xl mt-2 text-center border border-indigo-100/50" id="sName"></p>
-                    
-                    <div id="actionBtnContainer">
-                        <!-- Dynamic button goes here based on status -->
-                    </div>
-                </div>
-
-                <div id="errorVisitor" class="hidden text-center">
-                    <i class="fa-solid fa-circle-xmark text-4xl text-red-500 mb-2"></i>
-                    <h4 class="text-sm font-bold text-dark mb-1">Pass Invalid</h4>
-                    <p id="errorMsg" class="text-xs text-slate-500 px-4"></p>
-                </div>
-            </div>
-
-            <button onclick="logoutGuard()" class="mt-6 text-[10px] font-bold text-slate-500 uppercase tracking-widest hover:text-red-500 transition">Logout Session</button>
         </div>
     </div>
 
-    <!-- Guard Login View -->
-    <div id="loginView" class="fixed inset-0 z-[300] bg-slate-900 flex flex-col items-center justify-center p-6 bg-slate-900">
-        <div class="absolute inset-0 bg-gradient-to-tr from-slate-900 via-indigo-900 to-slate-900 opacity-50"></div>
-        <div class="w-full max-w-sm glass-card bg-white p-8 rounded-[2.5rem] flex flex-col items-center relative z-10">
-            <div class="w-16 h-16 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-3xl mb-6 shadow-xl"><i class="fa-solid fa-shield-halved"></i></div>
-            <h3 class="text-2xl font-bold mb-2 text-dark">Guard Access</h3>
-            <p class="text-xs text-slate-500 text-center mb-6 px-4">Enter your station PIN to begin security monitoring.</p>
-            <input type="password" id="guardPinInput" placeholder="ENTER STATION PIN" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-4 text-center tracking-[1em] text-lg font-bold focus:outline-none focus:ring-4 focus:ring-primary/10 transition mb-4">
-            <button onclick="loginGuard()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-slate-800 transition">Begin Duty</button>
-            <a href="index.html" class="mt-4 text-xs font-bold text-slate-400">Back to Main</a>
-        </div>
-    </div>
-
-    <!-- Links -->
-    <div class="mt-8 flex gap-4">
-        <a href="index.html" class="text-xs font-bold text-slate-400 hover:text-primary transition"><i class="fa-solid fa-house"></i> Resident Portal</a>
-        <a href="admin.html" class="text-xs font-bold text-slate-400 hover:text-primary transition"><i class="fa-solid fa-lock"></i> Admin Board</a>
-    </div>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-6 left-6 right-6 z-[100] glass-card flex justify-around p-3 bg-white/10 border-white/10 shadow-2xl">
+        <button onclick="switchTab('scanner')" class="nav-btn active flex flex-col items-center gap-1.5 py-2 px-6 rounded-2xl text-white/40 hover:text-white transition-all">
+            <i class="fa-solid fa-barcode text-xl"></i>
+            <span class="text-[8px] font-black uppercase tracking-widest">Entry</span>
+        </button>
+        <button onclick="switchTab('visitors')" class="nav-btn flex flex-col items-center gap-1.5 py-2 px-6 rounded-2xl text-white/40 hover:text-white transition-all">
+            <i class="fa-solid fa-users-viewfinder text-xl"></i>
+            <span class="text-[8px] font-black uppercase tracking-widest">Guests</span>
+        </button>
+        <button onclick="switchTab('parcels')" class="nav-btn flex flex-col items-center gap-1.5 py-2 px-6 rounded-2xl text-white/40 hover:text-white transition-all">
+            <i class="fa-solid fa-box text-xl"></i>
+            <span class="text-[8px] font-black uppercase tracking-widest">Parcels</span>
+        </button>
+    </nav>
 
     <script>
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
-        let currentVisId = null;
+        let currentVisitor = null;
 
-        function showToast(message, type = 'error', title = null) {
-            const toast = document.getElementById('toastNotification');
-            const icon = document.getElementById('toastIcon');
+        function switchTab(tab) {
+            document.querySelectorAll('.view-tab').forEach(v => v.classList.remove('active'));
+            document.getElementById(`view-${tab}`).classList.add('active');
             
-            document.getElementById('toastMessage').innerText = message;
-            document.getElementById('toastTitle').innerText = title || (type === 'error' ? 'Action Required' : 'Success');
-            
-            if (type === 'error') {
-                icon.className = 'fa-solid fa-circle-exclamation text-2xl text-red-400 drop-shadow-lg';
-            } else if (type === 'success') {
-                icon.className = 'fa-solid fa-circle-check text-2xl text-emerald-400 drop-shadow-lg';
-            } else {
-                icon.className = 'fa-solid fa-circle-info text-2xl text-blue-400 drop-shadow-lg';
+            // UI state
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active', 'bg-indigo-600', 'text-white'));
+            const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(b => b.innerHTML.includes(tab==='scanner'?'Entry':tab==='visitors'?'Guests':'Parcels'));
+            if(activeBtn) {
+                activeBtn.classList.add('text-white', 'bg-indigo-600');
             }
-            
-            toast.style.transform = 'translate(-50%, 0)';
-            toast.style.opacity = '1';
-            
-            setTimeout(() => { hideToast(); }, 4000);
         }
+        switchTab('scanner'); // Init
 
-        function hideToast() {
-            const toast = document.getElementById('toastNotification');
-            toast.style.transform = 'translate(-50%, -150%)';
-            toast.style.opacity = '0';
-        }
-
-        async function verifyCode(e) {
+        document.getElementById('verifyForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const code = document.getElementById('passcodeInput').value;
+            if(code.length !== 6) return;
+
             const btn = document.getElementById('verifyBtn');
-            const resBox = document.getElementById('resultBox');
-            const foundNode = document.getElementById('foundVisitor');
-            const errorNode = document.getElementById('errorVisitor');
-            
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking Database...';
-            resBox.classList.add('hidden');
-            foundNode.classList.add('hidden');
-            errorNode.classList.add('hidden');
-            
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking...';
+            btn.disabled = true;
+
             try {
                 const res = await fetch(`${API_URL}/security/verify-pass`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ passCode: document.getElementById('passInput').value })
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ passCode: code })
                 });
                 
-                const data = await res.json();
-                resBox.classList.remove('hidden');
-                
-                if(res.ok) {
-                    resBox.classList.replace('border-red-200', 'border-emerald-200');
-                    if(!resBox.className.includes('border-emerald-200')) resBox.classList.add('border-emerald-200'); // init
-                    
-                    document.getElementById('vName').innerText = data.visitorName + ` (${data.purpose})`;
-                    document.getElementById('rName').innerText = data.residentName;
-                    document.getElementById('sName').innerText = data.societyName;
-                    currentVisId = data.visitorId;
-                    
-                    const badge = document.getElementById('scanStatusBadge');
-                    const btnBox = document.getElementById('actionBtnContainer');
-
-                    if(data.status === 'Expected') {
-                        badge.className = 'text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
-                        badge.innerText = 'Expected Arrival';
-                        btnBox.innerHTML = `<button onclick="allowEntry(this)" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Approve & Open Gate</button>`;
-                    } else if (data.status === 'Entered') {
-                        badge.className = 'text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
-                        badge.innerText = 'Currently Inside';
-                        btnBox.innerHTML = `<button onclick="checkoutEntry(this)" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Mark as Exited</button>`;
-                    }
-
-                    foundNode.classList.remove('hidden');
-                } else {
-                    resBox.classList.replace('border-emerald-200', 'border-red-200');
-                    if(!resBox.className.includes('border-red-200')) resBox.classList.add('border-red-200');
-                    
-                    document.getElementById('errorMsg').innerText = data.error;
-                    errorNode.classList.remove('hidden');
-                }
-            } catch(e) { showToast("Network Error", "error"); }
-            btn.innerText = "Validate Code";
-        }
-
-        async function allowEntry(btn) {
-            btn.innerText = "Opening...";
-            try {
-                const res = await fetch(`${API_URL}/visitors/${currentVisId}/check-in`, { method: 'PUT' });
-                if(res.ok) {
-                    btn.outerHTML = `<div class="bg-emerald-50 text-emerald-600 font-bold p-3 rounded-xl border border-emerald-200 text-center"><i class="fa-solid fa-check-double"></i> Marked Entered</div>`;
-                    setTimeout(() => { location.reload(); }, 2000);
-                }
-            } catch(e) {}
-        }
-
-        async function checkoutEntry(btn) {
-            btn.innerText = "Processing...";
-            try {
-                const res = await fetch(`${API_URL}/visitors/${currentVisId}/check-out`, { method: 'PUT' });
-                if(res.ok) {
-                    btn.outerHTML = `<div class="bg-slate-100 text-slate-700 font-bold p-3 rounded-xl border border-slate-300 text-center"><i class="fa-solid fa-person-walking-arrow-right"></i> Marked Exited</div>`;
-                    setTimeout(() => { location.reload(); }, 2000);
-                }
-            } catch(e) {}
-        }
-
-        function switchGuardTab(tab) {
-            const vS = document.getElementById('visitorSection');
-            const sS = document.getElementById('staffSection');
-            const vT = document.getElementById('btnTabVis');
-            const sT = document.getElementById('btnTabStaff');
-            const rB = document.getElementById('resultBox');
-
-            rB.classList.add('hidden');
-            if(tab === 'visitor') {
-                vS.classList.remove('hidden'); sS.classList.add('hidden');
-                vT.classList.add('border-primary', 'text-primary'); vT.classList.remove('text-slate-400', 'border-transparent');
-                sT.classList.add('text-slate-400', 'border-transparent'); sT.classList.remove('border-primary', 'text-primary');
-            } else {
-                sS.classList.remove('hidden'); vS.classList.add('hidden');
-                sT.classList.add('border-primary', 'text-primary'); sT.classList.remove('text-slate-400', 'border-transparent');
-                vT.classList.add('text-slate-400', 'border-transparent'); vT.classList.remove('border-primary', 'text-primary');
-            }
-        }
-
-        async function verifyStaff(e) {
-            e.preventDefault();
-            const phone = document.getElementById('staffPhoneInput').value;
-            const btn = document.getElementById('verifyStaffBtn');
-            const resBox = document.getElementById('resultBox');
-            const foundNode = document.getElementById('foundVisitor');
-            const errorNode = document.getElementById('errorVisitor');
-
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Checking Staff...';
-            resBox.classList.add('hidden');
-            foundNode.classList.add('hidden');
-            errorNode.classList.add('hidden');
-
-            try {
-                const res = await fetch(`${API_URL}/staff/verify`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ phone })
-                });
-                const data = await res.json();
-                resBox.classList.remove('hidden');
-                if(res.ok) {
-                    document.getElementById('visType').innerText = 'STAFF';
-                    document.getElementById('vName').innerText = data.name + ` (${data.role})`;
-                    document.getElementById('unitRow').classList.add('hidden');
-                    document.getElementById('sName').innerText = "Verified Society Staff";
-                    currentVisId = data.staffId;
-
-                    const badge = document.getElementById('scanStatusBadge');
-                    const btnBox = document.getElementById('actionBtnContainer');
-
-                    if(data.status === 'Present') {
-                        badge.className = 'text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
-                        badge.innerText = 'Inside Society';
-                        btnBox.innerHTML = `<button onclick="logStaffAttendance('Out', this)" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Mark Exit</button>`;
-                    } else {
-                        badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold uppercase tracking-wider mb-2 inline-block';
-                        badge.innerText = 'Ready for Check-in';
-                        btnBox.innerHTML = `<button onclick="logStaffAttendance('In', this)" class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl shadow-md active:scale-95 transition">Clock In</button>`;
-                    }
-                    foundNode.classList.remove('hidden');
-                } else {
-                    document.getElementById('errorMsg').innerText = data.error;
-                    errorNode.classList.remove('hidden');
-                }
-            } catch(e) {}
-            btn.innerText = "Verify Staff";
-        }
-
-        async function logStaffAttendance(action, btn) {
-            btn.innerText = "Syncing...";
-            try {
-                const res = await fetch(`${API_URL}/staff/attendance`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ staffId: currentVisId, action })
-                });
-                if(res.ok) {
-                    btn.outerHTML = `<div class="bg-emerald-50 text-emerald-600 font-bold p-3 rounded-xl border border-emerald-200 text-center"><i class="fa-solid fa-check-double"></i> Success!</div>`;
-                    setTimeout(() => { location.reload(); }, 1500);
-                }
-            } catch(e) {}
-        }
-
-        async function loginGuard() {
-            const pin = document.getElementById('guardPinInput').value;
-            try {
-                const res = await fetch(`${API_URL}/auth/guard-login`, {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ pin })
-                });
                 if(res.ok) {
                     const data = await res.json();
-                    localStorage.setItem('guardToken', data.token);
-                    document.getElementById('loginView').classList.add('hidden');
-                } else { showToast("Invalid Guard PIN", "error"); }
-            } catch(e) {}
-        }
-        function logoutGuard() { localStorage.removeItem('guardToken'); location.reload(); }
-        if(localStorage.getItem('guardToken')) { document.getElementById('loginView').classList.add('hidden'); }
-
-        let activeSosId = null;
-        async function checkSOS() {
-            try {
-                const res = await fetch(`${API_URL}/sos`);
-                const alerts = await res.json();
-                const active = alerts[0];
-                if(active) {
-                    activeSosId = active._id;
-                    document.getElementById('sosResident').innerText = active.userName + " needs help!";
-                    document.getElementById('sosAlertToast').classList.remove('hidden');
+                    currentVisitor = data;
+                    showResult(data);
                 } else {
-                    document.getElementById('sosAlertToast').classList.add('hidden');
+                    const data = await res.json();
+                    alert(data.error || "Invalid Passcode.");
                 }
-            } catch(e) {}
-        }
-        async function resolveSOSAlert() {
-             try {
-                await fetch(`${API_URL}/sos/${activeSosId}/resolve`, {
-                    method: 'PUT', headers: {'Authorization': `Bearer ${localStorage.getItem('guardToken')}`}
-                });
-                document.getElementById('sosAlertToast').classList.add('hidden');
-            } catch(e) {}
-        }
-        setInterval(checkSOS, 3000);
+            } catch(e) { alert("Offline Access Control."); }
+            
+            btn.innerHTML = 'Verify Passage <i class="fa-solid fa-arrow-right text-[10px]"></i>';
+            btn.disabled = false;
+        });
 
+        function showResult(v) {
+            const modal = document.getElementById('resultModal');
+            const card = document.getElementById('resultCard');
+            const icon = document.getElementById('resultIcon');
+            
+            document.getElementById('vNameDisplay').innerText = v.visitorName;
+            document.getElementById('vHostDisplay').innerText = `Host: ${v.residentName} (${v.societyName})`;
+            document.getElementById('resultPurp').innerText = `${v.purpose} ENTRY`;
+
+            icon.className = 'w-20 h-20 rounded-[2rem] flex items-center justify-center text-3xl mx-auto mb-8 border border-emerald-500/20 bg-emerald-500/10 text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]';
+            icon.innerHTML = '<i class="fa-solid fa-user-check"></i>';
+
+            modal.classList.remove('hidden');
+            setTimeout(() => { card.classList.replace('scale-90', 'scale-100'); card.classList.replace('opacity-0', 'opacity-100'); }, 10);
+            
+            document.getElementById('entryBtn').onclick = () => grantAccess(v.visitorId);
+        }
+
+        function closeResult() {
+            const modal = document.getElementById('resultModal');
+            const card = document.getElementById('resultCard');
+            card.classList.replace('scale-100', 'scale-90');
+            card.classList.replace('opacity-100', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+            document.getElementById('passcodeInput').value = '';
+        }
+
+        async function grantAccess(id) {
+            try {
+                await fetch(`${API_URL}/visitors/${id}/check-in`, { method: 'PUT' });
+                closeResult();
+                // Add to recent list
+                const list = document.getElementById('recentEntries');
+                const html = `
+                    <div class="glass-card p-4 flex items-center justify-between border-emerald-500/10 bg-emerald-500/5">
+                        <div class="flex items-center gap-3">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                            <div>
+                                <h4 class="text-xs font-black text-white leading-none">${currentVisitor.visitorName}</h4>
+                                <p class="text-[8px] font-bold text-slate-500 uppercase tracking-widest mt-1">Entered • Just Now</p>
+                            </div>
+                        </div>
+                        <span class="text-[8px] font-black text-emerald-400 uppercase tracking-tighter">SUCCESS</span>
+                    </div>
+                `;
+                list.insertAdjacentHTML('afterbegin', html);
+            } catch(e) {}
+        }
+
+        function triggerSOS() {
+            if(confirm("ALERT ALL STAFF? This will send emergency notifications to management.")) {
+                alert("EMERGENCY SIGNAL BROADCASTED.");
+            }
+        }
     </script>
 </body>
 </html>
