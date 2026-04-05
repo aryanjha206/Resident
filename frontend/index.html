@@ -232,6 +232,10 @@
                                     Resident details</span></div>
                             <input type="text" id="nameInput" placeholder="Your Official Name"
                                 class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
+                            <input type="tel" id="signupPhoneInput" placeholder="Mobile Number (+91)"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
+                            <input type="text" id="flatNumberInput" placeholder="Flat / Villa Number (e.g. A-102)"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
                             <input type="text" id="societyCodeInput" placeholder="Society Code (SOC-XXXX)"
                                 class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition uppercase">
                         </div>
@@ -1253,6 +1257,8 @@
                     email: document.getElementById('emailInput').value,
                     otp: document.getElementById('otpInput').value,
                     name: document.getElementById('nameInput').value,
+                    phone: document.getElementById('signupPhoneInput').value,
+                    flatNumber: document.getElementById('flatNumberInput').value,
                     societyCode: document.getElementById('societyCodeInput').value
                 };
 

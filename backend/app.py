@@ -124,7 +124,9 @@ def verify_otp():
     otp = data.get('otp')
     name = data.get('name') 
     society_code = data.get('societyCode')
-    
+    flat_number = data.get('flatNumber')
+    phone = data.get('phone')
+
     record = otps_col.find_one({"email": email, "otp": otp})
     if not record: return jsonify({"error": "Invalid or expired OTP"}), 401
     
@@ -142,6 +144,8 @@ def verify_otp():
         new_user = {
             "email": email,
             "name": name,
+            "phone": phone,
+            "flatNumber": flat_number,
             "role": "resident",
             "societyId": str(society["_id"]),
             "societyName": society["name"],
