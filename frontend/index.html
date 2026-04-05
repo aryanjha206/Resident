@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -20,52 +21,176 @@
         }
     </script>
     <style>
-        body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; padding-bottom: 80px; }
-        .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.3); position: sticky; top: 0; z-index: 50; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border-radius: 16px; }
-        .bottom-nav { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-top: 1px solid #E2E8F0; position: fixed; bottom: 0; width: 100%; z-index: 50; display:flex;}
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: #64748B; transition: all 0.3s ease; }
-        .nav-item.active { color: #4F46E5; }
-        .nav-item i { font-size: 1.25rem; margin-bottom: 2px; }
-        .nav-item span { font-size: 0.65rem; font-weight: 500; }
-        
-        .carousel-hide-scrollbar::-webkit-scrollbar { display: none; }
-        .carousel-hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; scroll-behavior: smooth; scroll-snap-type: x mandatory; }
-        .carousel-item { scroll-snap-align: start; }
-        
-        .floating-add { background: linear-gradient(135deg, #4F46E5, #6366F1); color: white; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; transform: translateY(-20px); border: 4px solid #F8FAFC; box-shadow: 0 8px 15px rgba(79,70,229,0.3); }
-        .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-        .modal-overlay.active { opacity: 1; visibility: visible; }
-        .modal-content { transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .modal-overlay.active .modal-content { transform: translateY(0); }
-        
-        #authOverlay { background: #F8FAFC; z-index: 100; opacity: 1; visibility: visible; }
-        #appContent { display: none; }
-        
+        body {
+            background-color: #F8FAFC;
+            -webkit-tap-highlight-color: transparent;
+            padding-bottom: 80px;
+        }
+
+        .glass-header {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+        }
+
+        .bottom-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid #E2E8F0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 50;
+            display: flex;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item.active {
+            color: #4F46E5;
+        }
+
+        .nav-item i {
+            font-size: 1.25rem;
+            margin-bottom: 2px;
+        }
+
+        .nav-item span {
+            font-size: 0.65rem;
+            font-weight: 500;
+        }
+
+        .carousel-hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .carousel-hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+        }
+
+        .carousel-item {
+            scroll-snap-align: start;
+        }
+
+        .floating-add {
+            background: linear-gradient(135deg, #4F46E5, #6366F1);
+            color: white;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: translateY(-20px);
+            border: 4px solid #F8FAFC;
+            box-shadow: 0 8px 15px rgba(79, 70, 229, 0.3);
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        #authOverlay {
+            background: #F8FAFC;
+            z-index: 100;
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #appContent {
+            display: none;
+        }
+
         /* Tab Views */
-        .tab-view { display: none; }
-        .tab-view.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .tab-view {
+            display: none;
+        }
+
+        .tab-view.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
+
 <body class="text-slate-800 antialiased min-h-screen overflow-x-hidden">
 
     <!-- Auth / Login / Signup Screen -->
-    <div id="authOverlay" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#020617] overflow-hidden z-[200]">
+    <div id="authOverlay"
+        class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#020617] overflow-hidden z-[200]">
         <!-- Unified Premium Background -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
-            <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
-            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+            <div
+                class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse">
+            </div>
+            <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse"
+                style="animation-delay: 2s;"></div>
+            <div
+                class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]">
+            </div>
         </div>
 
         <div class="w-full max-w-sm relative group">
             <!-- Decorative Glow -->
-            <div class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-            
-            <div class="glass-card relative bg-white/95 backdrop-blur-2xl border border-white/20 p-8 pt-12 flex flex-col items-center shadow-2xl rounded-[2.5rem]">
+            <div
+                class="absolute -inset-1 bg-gradient-to-r from-primary to-purple-600 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200">
+            </div>
+
+            <div
+                class="glass-card relative bg-white/95 backdrop-blur-2xl border border-white/20 p-8 pt-12 flex flex-col items-center shadow-2xl rounded-[2.5rem]">
                 <!-- Floating Icon -->
-                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-indigo-700 shadow-2xl flex items-center justify-center text-white text-4xl transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">
+                <div
+                    class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-indigo-700 shadow-2xl flex items-center justify-center text-white text-4xl transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">
                     <i class="fa-solid fa-hotel"></i>
                 </div>
 
@@ -73,36 +198,51 @@
                     <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">Society Hub</h2>
                 </div>
 
-                <p class="text-[11px] text-slate-500 text-center leading-relaxed mb-8 px-4 font-medium">Elevate your living experience. Securely access your community dashboard with authorized Email OTP.</p>
+                <p class="text-[11px] text-slate-500 text-center leading-relaxed mb-8 px-4 font-medium">Elevate your
+                    living experience. Securely access your community dashboard with authorized Email OTP.</p>
 
 
-                
+
                 <form id="authForm" class="w-full space-y-5">
                     <div id="emailStep" class="w-full">
                         <div class="relative group/input">
-                            <i class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
-                            <input type="email" id="emailInput" placeholder="Enter residential email" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
+                            <i
+                                class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
+                            <input type="email" id="emailInput" placeholder="Enter residential email" required
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
                         </div>
-                        <button type="submit" id="sendOtpBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-2 group/btn">
-                            Get Access Key <i class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition"></i>
+                        <button type="submit" id="sendOtpBtn"
+                            class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98] mt-4 flex items-center justify-center gap-2 group/btn">
+                            Get Access Key <i
+                                class="fa-solid fa-arrow-right text-xs group-hover/btn:translate-x-1 transition"></i>
                         </button>
-                        <p id="authMsg" class="text-[10px] text-center mt-4 text-red-500 font-bold hidden px-2 bg-red-50 py-2 rounded-lg border border-red-100"></p>
+                        <p id="authMsg"
+                            class="text-[10px] text-center mt-4 text-red-500 font-bold hidden px-2 bg-red-50 py-2 rounded-lg border border-red-100">
+                        </p>
                     </div>
-                    
+
                     <div id="otpStep" class="hidden text-center w-full">
-                        <p class="text-[10px] text-slate-400 mb-4 flex items-center justify-center gap-1.5"><i class="fa-solid fa-key text-[8px] text-primary"></i> 6-Digit code sent to your inbox</p>
-                        <input type="text" id="otpInput" placeholder="000000" maxlength="6" class="w-full text-center tracking-[1em] text-2xl font-black bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition mb-6 text-slate-800 placeholder:opacity-30">
-                        
+                        <p class="text-[10px] text-slate-400 mb-4 flex items-center justify-center gap-1.5"><i
+                                class="fa-solid fa-key text-[8px] text-primary"></i> 6-Digit code sent to your inbox</p>
+                        <input type="text" id="otpInput" placeholder="000000" maxlength="6"
+                            class="w-full text-center tracking-[1em] text-2xl font-black bg-slate-50 border border-slate-200 rounded-2xl py-4 focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition mb-6 text-slate-800 placeholder:opacity-30">
+
                         <div id="registrationFields" class="hidden mb-6 space-y-4">
-                            <div class="text-left"><span class="text-[10px] font-bold text-primary uppercase ml-2">New Resident details</span></div>
-                            <input type="text" id="nameInput" placeholder="Your Official Name" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
-                            <input type="text" id="societyCodeInput" placeholder="Society Code (SOC-XXXX)" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition uppercase">
+                            <div class="text-left"><span class="text-[10px] font-bold text-primary uppercase ml-2">New
+                                    Resident details</span></div>
+                            <input type="text" id="nameInput" placeholder="Your Official Name"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition">
+                            <input type="text" id="societyCodeInput" placeholder="Society Code (SOC-XXXX)"
+                                class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition uppercase">
                         </div>
 
-                        <button type="button" id="verifyOtpBtn" onclick="verifyOtp()" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-emerald-100 hover:bg-emerald-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
-                           Verify & Authenticate <i class="fa-solid fa-unlock text-xs opacity-50"></i>
+                        <button type="button" id="verifyOtpBtn" onclick="verifyOtp()"
+                            class="w-full bg-emerald-500 text-white font-bold py-4 rounded-2xl shadow-xl shadow-emerald-100 hover:bg-emerald-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
+                            Verify & Authenticate <i class="fa-solid fa-unlock text-xs opacity-50"></i>
                         </button>
-                        <button type="button" onclick="cancelOtp()" class="w-full mt-4 text-[10px] font-bold text-slate-400 hover:text-slate-600 transition flex items-center justify-center gap-1.5"><i class="fa-solid fa-rotate-left"></i> Wrong email? Try again</button>
+                        <button type="button" onclick="cancelOtp()"
+                            class="w-full mt-4 text-[10px] font-bold text-slate-400 hover:text-slate-600 transition flex items-center justify-center gap-1.5"><i
+                                class="fa-solid fa-rotate-left"></i> Wrong email? Try again</button>
                     </div>
                 </form>
             </div>
@@ -110,9 +250,18 @@
 
         <!-- External Access Links -->
         <div class="mt-12 flex gap-8">
-            <a href="guard.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-camera p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Security Dashboard</a>
-            <a href="admin.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shield-halved p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Management Board</a>
-            <a href="seller.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shop p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Seller Portal</a>
+            <a href="guard.html"
+                class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i
+                    class="fa-solid fa-camera p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i>
+                Security Dashboard</a>
+            <a href="admin.html"
+                class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i
+                    class="fa-solid fa-shield-halved p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i>
+                Management Board</a>
+            <a href="seller.html"
+                class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i
+                    class="fa-solid fa-shop p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Seller
+                Portal</a>
         </div>
     </div>
 
@@ -121,55 +270,77 @@
 
 
     <!-- Order Status & Buy Modals etc -->
-    <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'addProductModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl" onclick="event.stopPropagation()">
+    <div id="addProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center"
+        onclick="closeModal(event, 'addProductModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl"
+            onclick="event.stopPropagation()">
             <h3 class="text-lg font-bold mb-4">List New Product</h3>
             <form id="productForm" class="space-y-4">
-                <input id="pName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
-                <input id="pPrice" type="number" placeholder="Price (₹)" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <input id="pName" type="text" placeholder="Product Name" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
+                <input id="pPrice" type="number" placeholder="Price (₹)" required
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Product Photo</label>
-                    <div id="imagePreviewContainer" class="hidden mb-2"><img id="imagePreview" class="w-full h-32 object-contain rounded-xl bg-slate-50 border border-dashed border-slate-200"></div>
-                    <label class="flex items-center justify-center gap-2 w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl py-4 px-4 text-sm cursor-pointer hover:bg-slate-100 hover:border-primary/30 transition">
+                    <div id="imagePreviewContainer" class="hidden mb-2"><img id="imagePreview"
+                            class="w-full h-32 object-contain rounded-xl bg-slate-50 border border-dashed border-slate-200">
+                    </div>
+                    <label
+                        class="flex items-center justify-center gap-2 w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl py-4 px-4 text-sm cursor-pointer hover:bg-slate-100 hover:border-primary/30 transition">
                         <i class="fa-solid fa-cloud-arrow-up text-primary"></i>
                         <span id="uploadLabel" class="text-slate-500 font-medium">Upload image</span>
-                        <input id="pImage" type="file" accept="image/*" class="hidden" onchange="previewProductImage(this)">
+                        <input id="pImage" type="file" accept="image/*" class="hidden"
+                            onchange="previewProductImage(this)">
                     </label>
                 </div>
-                <textarea id="pDesc" placeholder="Brief description..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm resize-none" rows="3"></textarea>
-                <select id="pCategory" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700">
+                <textarea id="pDesc" placeholder="Brief description..."
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm resize-none"
+                    rows="3"></textarea>
+                <select id="pCategory"
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-sm font-bold text-slate-700">
                     <option value="General">Category: General</option>
                     <option value="Fresh & Grocery">Fresh & Grocery</option>
                     <option value="Electronics">Electronics</option>
                     <option value="Home & Kitchen">Home & Kitchen</option>
                     <option value="Services">Services</option>
                 </select>
-                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Publish Listing</button>
+                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl shadow-lg">Publish
+                    Listing</button>
             </form>
         </div>
     </div>
 
     <!-- Edit Product Modal -->
-    <div id="editProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'editProductModal')">
-        <div class="modal-content bg-white w-full sm:w-[500px] sm:rounded-[2.5rem] rounded-t-[2.5rem] p-8 shadow-2xl relative" onclick="event.stopPropagation()">
+    <div id="editProductModal" class="fixed inset-0 z-[310] modal-overlay flex items-end justify-center sm:items-center"
+        onclick="closeModal(event, 'editProductModal')">
+        <div class="modal-content bg-white w-full sm:w-[500px] sm:rounded-[2.5rem] rounded-t-[2.5rem] p-8 shadow-2xl relative"
+            onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-black tracking-tight text-slate-900 leading-none">Update Listing</h3>
-                <button onclick="closeModal(null, 'editProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition shadow-sm"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeModal(null, 'editProductModal')"
+                    class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition shadow-sm"><i
+                        class="fa-solid fa-xmark"></i></button>
             </div>
             <form id="editProductForm" class="space-y-5">
                 <input id="editPId" type="hidden">
                 <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title & Identity</label>
-                    <input id="editPName" type="text" placeholder="Product Name" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/5 transition">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title &
+                        Identity</label>
+                    <input id="editPName" type="text" placeholder="Product Name" required
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/5 transition">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
-                        <input id="editPPrice" type="number" placeholder="Price" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/5 transition">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price
+                            (₹)</label>
+                        <input id="editPPrice" type="number" placeholder="Price" required
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/5 transition">
                     </div>
                     <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                        <select id="editPCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-700 appearance-none">
+                        <label
+                            class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
+                        <select id="editPCategory"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-700 appearance-none">
                             <option value="General">General</option>
                             <option value="Fresh & Grocery">Fresh & Grocery</option>
                             <option value="Electronics">Electronics</option>
@@ -179,21 +350,31 @@
                     </div>
                 </div>
                 <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Context</label>
-                    <textarea id="editPDesc" placeholder="Describe your product..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600" rows="3"></textarea>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product
+                        Context</label>
+                    <textarea id="editPDesc" placeholder="Describe your product..." required
+                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600"
+                        rows="3"></textarea>
                 </div>
                 <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Change Product Photo</label>
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Change Product
+                        Photo</label>
                     <div id="editImagePreviewContainer" class="mb-3 hidden">
-                        <img id="editImagePreview" class="w-full h-32 object-contain rounded-2xl bg-white border border-slate-100 shadow-sm shadow-black/5">
+                        <img id="editImagePreview"
+                            class="w-full h-32 object-contain rounded-2xl bg-white border border-slate-100 shadow-sm shadow-black/5">
                     </div>
-                    <label class="flex items-center justify-center gap-3 w-full bg-slate-50 border-2 border-dashed border-slate-100 rounded-2xl py-4 px-5 text-sm cursor-pointer hover:bg-slate-100 transition shadow-inner">
+                    <label
+                        class="flex items-center justify-center gap-3 w-full bg-slate-50 border-2 border-dashed border-slate-100 rounded-2xl py-4 px-5 text-sm cursor-pointer hover:bg-slate-100 transition shadow-inner">
                         <i class="fa-solid fa-camera text-primary opacity-50"></i>
-                        <span id="editUploadLabel" class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Tap to change image</span>
-                        <input id="editPImage" type="file" accept="image/*" class="hidden" onchange="previewEditProductImage(this)">
+                        <span id="editUploadLabel"
+                            class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Tap to change
+                            image</span>
+                        <input id="editPImage" type="file" accept="image/*" class="hidden"
+                            onchange="previewEditProductImage(this)">
                     </label>
                 </div>
-                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-primary active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4">
+                <button type="submit"
+                    class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-primary active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4">
                     Save Product Changes <i class="fa-solid fa-cloud-arrow-up opacity-40"></i>
                 </button>
             </form>
@@ -201,13 +382,15 @@
     </div>
 
     <!-- In-App Notification (Toast) -->
-    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-[150] flex items-center gap-3 transition-all duration-300 translate-y-[-150%] opacity-0 w-[90%] max-w-sm pointer-events-none">
+    <div id="toastNotification"
+        class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-[150] flex items-center gap-3 transition-all duration-300 translate-y-[-150%] opacity-0 w-[90%] max-w-sm pointer-events-none">
         <i id="toastIcon" class="fa-solid fa-bell text-2xl text-primary drop-shadow-lg"></i>
         <div class="flex-1">
             <h4 id="toastTitle" class="text-[14px] font-bold tracking-wide">Alert</h4>
             <p id="toastMessage" class="text-[12px] text-slate-300 leading-tight mt-0.5"></p>
         </div>
-        <button onclick="hideToast()" class="text-slate-400 hover:text-white transition pointer-events-auto"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white transition pointer-events-auto"><i
+                class="fa-solid fa-xmark text-lg"></i></button>
     </div>
 
     <!-- MAIN APP CONTENT -->
@@ -215,36 +398,45 @@
         <!-- Header -->
         <header class="glass-header px-5 py-4 flex justify-between items-center relative">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white shadow-soft">
+                <div
+                    class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-purple-500 flex items-center justify-center text-white shadow-soft">
                     <i class="fa-solid fa-building"></i>
                 </div>
                 <div>
-                    <h1 id="societyNameDisplay" class="text-sm font-bold text-dark flex items-center gap-1">Society Hub</h1>
-                    <p id="userNameDisplay" class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full mt-1">Welcome</p>
+                    <h1 id="societyNameDisplay" class="text-sm font-bold text-dark flex items-center gap-1">Society Hub
+                    </h1>
+                    <p id="userNameDisplay"
+                        class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full mt-1">Welcome</p>
                 </div>
             </div>
             <div class="flex items-center gap-4 text-slate-600 relative">
-                <button onclick="triggerSOS()" class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center animate-pulse border-2 border-red-200">
+                <button onclick="triggerSOS()"
+                    class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center animate-pulse border-2 border-red-200">
                     <i class="fa-solid fa-truck-medical text-lg"></i>
                 </button>
-                <button onclick="openProfile()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:text-primary transition border border-slate-200">
+                <button onclick="openProfile()"
+                    class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:text-primary transition border border-slate-200">
                     <i class="fa-solid fa-user-gear"></i>
                 </button>
                 <button onclick="toggleNotifications()" class="relative hover:text-primary transition">
                     <i class="fa-solid fa-bell text-xl"></i>
                     <span id="notifBadge" class="hidden absolute -top-1 -right-1 flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                        <span
+                            class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 border-2 border-white"></span>
                     </span>
                 </button>
-                <button onclick="logout()" class="hover:text-red-500 transition"><i class="fa-solid fa-arrow-right-from-bracket text-lg"></i></button>
+                <button onclick="logout()" class="hover:text-red-500 transition"><i
+                        class="fa-solid fa-arrow-right-from-bracket text-lg"></i></button>
             </div>
-            
+
             <!-- Notifications Dropdown -->
-            <div id="notifDropdown" class="hidden absolute top-[70px] right-4 left-4 sm:left-auto sm:right-5 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] origin-top-right transform transition-all">
+            <div id="notifDropdown"
+                class="hidden absolute top-[70px] right-4 left-4 sm:left-auto sm:right-5 sm:w-80 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] origin-top-right transform transition-all">
                 <div class="bg-slate-50 border-b border-slate-100 px-4 py-3 flex justify-between items-center">
                     <h3 class="text-xs font-bold text-dark uppercase tracking-wider">Alerts & Notifications</h3>
-                    <span id="notifCount" class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold">0</span>
+                    <span id="notifCount"
+                        class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold">0</span>
                 </div>
                 <div id="notifList" class="max-h-64 overflow-y-auto p-2 space-y-1">
                     <p class="text-[10px] text-slate-500 text-center py-4">No new alerts right now.</p>
@@ -253,44 +445,56 @@
         </header>
 
         <main class="px-5 py-4">
-            
+
             <!-- HOME TAB -->
             <div id="tab-home" class="tab-view active space-y-6">
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="glass-card p-4 flex flex-col gap-2.5 relative overflow-hidden">
                         <div class="flex items-center gap-2 text-primary">
-                            <i class="fa-solid fa-users text-[15px] bg-indigo-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Residents</span>
+                            <i class="fa-solid fa-users text-[15px] bg-indigo-50 p-1.5 rounded-lg"></i><span
+                                class="text-[10px] font-bold tracking-wider uppercase">Residents</span>
                         </div>
-                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="totalResidents"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none"
+                            id="totalResidents"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
                     </div>
-                    
+
                     <div class="glass-card p-4 flex flex-col gap-2.5 relative overflow-hidden">
                         <div class="flex items-center gap-2 text-red-500">
-                            <i class="fa-solid fa-sack-dollar text-[15px] bg-red-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Society Dues</span>
+                            <i class="fa-solid fa-sack-dollar text-[15px] bg-red-50 p-1.5 rounded-lg"></i><span
+                                class="text-[10px] font-bold tracking-wider uppercase">Society Dues</span>
                         </div>
-                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="pendingDues"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="pendingDues"><i
+                                class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
                     </div>
 
                     <div class="glass-card p-4 flex flex-col gap-2.5 relative overflow-hidden">
                         <div class="flex items-center gap-2 text-orange-500">
-                            <i class="fa-solid fa-indian-rupee-sign text-[15px] bg-orange-50 p-1.5 rounded-lg px-2"></i><span class="text-[10px] font-bold tracking-wider uppercase">Your Dues</span>
+                            <i
+                                class="fa-solid fa-indian-rupee-sign text-[15px] bg-orange-50 p-1.5 rounded-lg px-2"></i><span
+                                class="text-[10px] font-bold tracking-wider uppercase">Your Dues</span>
                         </div>
-                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="myPendingDues"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="myPendingDues">
+                            <i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
                     </div>
 
                     <div class="glass-card p-4 flex flex-col gap-2.5 relative overflow-hidden">
                         <div class="flex items-center gap-2 text-accent">
-                            <i class="fa-solid fa-triangle-exclamation text-[15px] bg-amber-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Complaints</span>
+                            <i
+                                class="fa-solid fa-triangle-exclamation text-[15px] bg-amber-50 p-1.5 rounded-lg"></i><span
+                                class="text-[10px] font-bold tracking-wider uppercase">Complaints</span>
                         </div>
-                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="openComplaints"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none"
+                            id="openComplaints"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
                     </div>
 
                     <div class="glass-card p-4 flex flex-col gap-2.5 relative overflow-hidden col-span-2">
                         <div class="flex items-center gap-2 text-secondary">
-                            <i class="fa-solid fa-bullhorn text-[15px] bg-emerald-50 p-1.5 rounded-lg"></i><span class="text-[10px] font-bold tracking-wider uppercase">Alerts / Notices</span>
+                            <i class="fa-solid fa-bullhorn text-[15px] bg-emerald-50 p-1.5 rounded-lg"></i><span
+                                class="text-[10px] font-bold tracking-wider uppercase">Alerts / Notices</span>
                         </div>
-                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="totalNotices"><i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
+                        <h3 class="text-[26px] font-bold text-slate-700 drop-shadow-sm leading-none" id="totalNotices">
+                            <i class="fa-solid fa-circle-notch fa-spin text-sm"></i></h3>
                     </div>
                 </div>
 
@@ -298,101 +502,160 @@
                 <div>
                     <h2 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Quick Actions</h2>
                     <div class="grid grid-cols-4 gap-3.5">
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="switchTab('money')">
-                            <div class="w-[42px] h-[42px] rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-money-bill-wave"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95"
+                            onclick="switchTab('money')">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-blue-50 text-blue-500 flex items-center justify-center text-lg shadow-sm">
+                                <i class="fa-solid fa-money-bill-wave"></i></div>
                             <span class="text-[10px] font-bold text-slate-600">Pay Dues</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="openModal('complaintModal')">
-                            <div class="w-[42px] h-[42px] rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-shield-halved"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95"
+                            onclick="openModal('complaintModal')">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-red-50 text-red-500 flex items-center justify-center text-lg shadow-sm">
+                                <i class="fa-solid fa-shield-halved"></i></div>
                             <span class="text-[10px] font-bold text-slate-600">Complaint</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="openModal('visitorModal')">
-                            <div class="w-[42px] h-[42px] rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg shadow-glow"><i class="fa-solid fa-id-badge"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95"
+                            onclick="openModal('visitorModal')">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg shadow-glow">
+                                <i class="fa-solid fa-id-badge"></i></div>
                             <span class="text-[10px] font-bold text-primary">Gate Pass</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="openModal('bookingModal')">
-                            <div class="w-[42px] h-[42px] rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-calendar-check"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95"
+                            onclick="openModal('bookingModal')">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center text-lg shadow-sm">
+                                <i class="fa-solid fa-calendar-check"></i></div>
                             <span class="text-[10px] font-bold text-emerald-600">Amenities</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="window.location.href='market.html'">
-                            <div class="w-[42px] h-[42px] rounded-full bg-pink-50 text-pink-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95"
+                            onclick="window.location.href='market.html'">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-pink-50 text-pink-500 flex items-center justify-center text-lg shadow-sm">
+                                <i class="fa-solid fa-cart-shopping"></i></div>
                             <span class="text-[10px] font-bold text-pink-600">Market</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="toggleChat()">
-                            <div class="w-[42px] h-[42px] rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-comments"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95"
+                            onclick="toggleChat()">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-purple-50 text-purple-500 flex items-center justify-center text-lg shadow-sm">
+                                <i class="fa-solid fa-comments"></i></div>
                             <span class="text-[10px] font-bold text-purple-600">Live Chat</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95" onclick="openModal('vehicleModal')">
-                            <div class="w-[42px] h-[42px] rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-lg shadow-sm"><i class="fa-solid fa-car"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 hover:bg-slate-50 transition active:scale-95"
+                            onclick="openModal('vehicleModal')">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-lg shadow-sm">
+                                <i class="fa-solid fa-car"></i></div>
                             <span class="text-[10px] font-bold text-slate-600">Vehicles</span>
                         </button>
-                        <button class="glass-card p-3.5 flex flex-col items-center gap-2 border-2 border-indigo-100/50 hover:bg-indigo-50/30 transition active:scale-95" onclick="window.location.href='vault.html'">
-                            <div class="w-[42px] h-[42px] rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg shadow-glow"><i class="fa-solid fa-vault"></i></div>
+                        <button
+                            class="glass-card p-3.5 flex flex-col items-center gap-2 border-2 border-indigo-100/50 hover:bg-indigo-50/30 transition active:scale-95"
+                            onclick="window.location.href='vault.html'">
+                            <div
+                                class="w-[42px] h-[42px] rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg shadow-glow">
+                                <i class="fa-solid fa-vault"></i></div>
                             <span class="text-[10px] font-bold text-primary">Vault</span>
                         </button>
                     </div>
                 </div>
 
-                <div id="noticeBoard" class="glass-card p-4">
-                    <h3 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Notice Board</h3>
+
+                <!-- New Features Carousel -->
+                <div>
+                    <h2 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Highlight Features</h2>
+                    <div class="flex gap-4 overflow-x-auto carousel-hide-scrollbar pb-3 snap-x" id="featureCarousel">
+                        <div
+                            class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-primary to-indigo-800 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
+                            <div class="relative z-10 flex justify-between items-center">
+                                <div>
+                                    <span
+                                        class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">New</span>
+                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Rent Autopay Feature</h3>
+                                    <p class="text-[11px] text-indigo-100 mt-1 mb-4 w-5/6 leading-relaxed">Never miss a
+                                        due date again. Enable automated payments with ease.</p>
+                                    <button
+                                        class="bg-white text-primary text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95"
+                                        onclick="switchTab('money')">Activate Now</button>
+                                </div>
+                                <i
+                                    class="fa-solid fa-wallet text-5xl opacity-70 rotate-12 drop-shadow-2xl text-indigo-200"></i>
+                            </div>
+                            <!-- Background Decor -->
+                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl">
+                            </div>
+                        </div>
+
+                        <div
+                            class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-emerald-500 to-teal-700 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
+                            <div class="relative z-10 flex justify-between items-center">
+                                <div>
+                                    <span
+                                        class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">Security</span>
+                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Pre-Approve Visitors</h3>
+                                    <p class="text-[11px] text-emerald-100 mt-1 mb-4 w-5/6 leading-relaxed">Generate
+                                        secure 6-digit access codes for super quick gate entries.</p>
+                                    <button
+                                        class="bg-white text-emerald-600 text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95"
+                                        onclick="openModal('visitorModal')">Generate Pass</button>
+                                </div>
+                                <i
+                                    class="fa-solid fa-shield-halved text-5xl opacity-70 -rotate-12 drop-shadow-2xl text-emerald-200"></i>
+                            </div>
+                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl">
+                            </div>
+                        </div>
+
+                        <div
+                            class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-amber-500 to-orange-600 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
+                            <div class="relative z-10 flex justify-between items-center">
+                                <div>
+                                    <span
+                                        class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">Trending</span>
+                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Book Amenities</h3>
+                                    <p class="text-[11px] text-orange-100 mt-1 mb-4 w-5/6 leading-relaxed">Reserve the
+                                        premium clubhouse or pool instantly.</p>
+                                    <button
+                                        class="bg-white text-orange-600 text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95"
+                                        onclick="openModal('bookingModal')">Book Now</button>
+                                </div>
+                                <i
+                                    class="fa-solid fa-swimming-pool text-5xl opacity-70 rotate-12 drop-shadow-2xl text-orange-200"></i>
+                            </div>
+                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notice Board -->
+                <div id="noticeBoard" class="glass-card p-4 space-y-4">
+                    <h3 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list text-primary"></i> 📋 Notice Board
+                    </h3>
                     <div id="noticesList" class="space-y-3">
-                        <p class="text-[11px] text-slate-500 text-center"><i class="fa-solid fa-spinner fa-spin"></i> Checking notices...</p>
+                        <p class="text-[11px] text-slate-500 text-center"><i class="fa-solid fa-spinner fa-spin"></i>
+                            Checking notices...</p>
                     </div>
                 </div>
 
                 <!-- POLLS SECTION -->
                 <div id="pollsBoard" class="glass-card p-4 bg-gradient-to-br from-white to-slate-50">
                     <h3 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm flex items-center gap-2">
-                        <i class="fa-solid fa-square-poll-vertical text-primary"></i> Society Polls
+                        <i class="fa-solid fa-square-poll-vertical text-primary"></i> 📊 Society Polls
                     </h3>
                     <div id="pollsList" class="space-y-4">
-                        <p class="text-[11px] text-slate-500 text-center"><i class="fa-solid fa-spinner fa-spin"></i> Fetching polls...</p>
-                    </div>
-                </div>
-
-                <!-- New Features Carousel -->
-                <div>
-                    <h2 class="text-[14px] font-bold text-dark mb-3 drop-shadow-sm">Highlight Features</h2>
-                    <div class="flex gap-4 overflow-x-auto carousel-hide-scrollbar pb-3 snap-x" id="featureCarousel">
-                        <div class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-primary to-indigo-800 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
-                            <div class="relative z-10 flex justify-between items-center">
-                                <div>
-                                    <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">New</span>
-                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Rent Autopay Feature</h3>
-                                    <p class="text-[11px] text-indigo-100 mt-1 mb-4 w-5/6 leading-relaxed">Never miss a due date again. Enable automated payments with ease.</p>
-                                    <button class="bg-white text-primary text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95" onclick="switchTab('money')">Activate Now</button>
-                                </div>
-                                <i class="fa-solid fa-wallet text-5xl opacity-70 rotate-12 drop-shadow-2xl text-indigo-200"></i>
-                            </div>
-                            <!-- Background Decor -->
-                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl"></div>
-                        </div>
-
-                        <div class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-emerald-500 to-teal-700 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
-                            <div class="relative z-10 flex justify-between items-center">
-                                <div>
-                                    <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">Security</span>
-                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Pre-Approve Visitors</h3>
-                                    <p class="text-[11px] text-emerald-100 mt-1 mb-4 w-5/6 leading-relaxed">Generate secure 6-digit access codes for super quick gate entries.</p>
-                                    <button class="bg-white text-emerald-600 text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95" onclick="openModal('visitorModal')">Generate Pass</button>
-                                </div>
-                                <i class="fa-solid fa-shield-halved text-5xl opacity-70 -rotate-12 drop-shadow-2xl text-emerald-200"></i>
-                            </div>
-                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl"></div>
-                        </div>
-
-                        <div class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-amber-500 to-orange-600 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0">
-                            <div class="relative z-10 flex justify-between items-center">
-                                <div>
-                                    <span class="bg-white/20 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase backdrop-blur-sm shadow-sm">Trending</span>
-                                    <h3 class="text-[17px] font-bold mt-2.5 leading-tight">Book Amenities</h3>
-                                    <p class="text-[11px] text-orange-100 mt-1 mb-4 w-5/6 leading-relaxed">Reserve the premium clubhouse or pool instantly.</p>
-                                    <button class="bg-white text-orange-600 text-[11px] font-bold py-2 px-5 rounded-full shadow-lg hover:bg-slate-50 transition active:scale-95" onclick="openModal('bookingModal')">Book Now</button>
-                                </div>
-                                <i class="fa-solid fa-swimming-pool text-5xl opacity-70 rotate-12 drop-shadow-2xl text-orange-200"></i>
-                            </div>
-                            <div class="absolute -top-8 -right-8 w-32 h-32 bg-white opacity-5 rounded-full blur-xl"></div>
-                        </div>
+                        <p class="text-[11px] text-slate-500 text-center"><i class="fa-solid fa-spinner fa-spin"></i>
+                            Fetching polls...</p>
                     </div>
                 </div>
             </div>
@@ -409,10 +672,14 @@
             <div id="tab-people" class="tab-view space-y-6">
                 <div class="flex justify-between items-center">
                     <h2 class="text-lg font-bold text-dark">Society Directory</h2>
-                    <button onclick="toggleChat()" class="text-[10px] font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-1.5"><i class="fa-solid fa-comments"></i> Society Chat</button>
+                    <button onclick="toggleChat()"
+                        class="text-[10px] font-bold text-purple-600 bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100 flex items-center gap-1.5"><i
+                            class="fa-solid fa-comments"></i> Society Chat</button>
                 </div>
                 <div class="glass-card p-4">
-                    <input type="text" id="residentSearchInput" placeholder="Search residents..." oninput="filterResidents()" class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
+                    <input type="text" id="residentSearchInput" placeholder="Search residents..."
+                        oninput="filterResidents()"
+                        class="w-full text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary mb-4">
                     <div id="mySocietyUsersList" class="space-y-3">
                         <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
                     </div>
@@ -421,27 +688,39 @@
 
             <!-- MARKETPLACE TAB -->
             <div id="tab-marketplace" class="tab-view space-y-6">
-                <div class="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all transform hover:-rotate-1" onclick="window.location.href='market.html'">
+                <div class="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-2xl relative overflow-hidden group cursor-pointer active:scale-[0.98] transition-all transform hover:-rotate-1"
+                    onclick="window.location.href='market.html'">
                     <div class="relative z-10 flex flex-col items-center text-center">
-                        <div class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl mb-6 border border-white/30 animate-pulse">
+                        <div
+                            class="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-3xl mb-6 border border-white/30 animate-pulse">
                             <i class="fa-solid fa-shop"></i>
                         </div>
                         <h3 class="text-3xl font-black mb-2 tracking-tighter leading-tight">Explore the Full Market</h3>
-                        <p class="text-sm text-indigo-100 opacity-80 max-w-[280px] mb-8">Categories, basket shopping, and exclusive society discounts waiting for you.</p>
-                        <div class="flex items-center gap-3 bg-white text-indigo-600 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl group-hover:scale-105 transition-transform">
+                        <p class="text-sm text-indigo-100 opacity-80 max-w-[280px] mb-8">Categories, basket shopping,
+                            and exclusive society discounts waiting for you.</p>
+                        <div
+                            class="flex items-center gap-3 bg-white text-indigo-600 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl group-hover:scale-105 transition-transform">
                             Enter Storefront <i class="fa-solid fa-arrow-right"></i>
                         </div>
                     </div>
                     <!-- Decorative patterns -->
-                    <div class="absolute top-0 right-0 w-48 h-48 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400 opacity-5 rounded-full blur-3xl -ml-20 -mb-20"></div>
-                    <i class="fa-solid fa-basket-shopping absolute -bottom-10 -right-10 text-[12rem] opacity-10 group-hover:rotate-12 transition-transform duration-1000"></i>
+                    <div
+                        class="absolute top-0 right-0 w-48 h-48 bg-white opacity-5 rounded-full blur-3xl -mr-20 -mt-20">
+                    </div>
+                    <div
+                        class="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400 opacity-5 rounded-full blur-3xl -ml-20 -mb-20">
+                    </div>
+                    <i
+                        class="fa-solid fa-basket-shopping absolute -bottom-10 -right-10 text-[12rem] opacity-10 group-hover:rotate-12 transition-transform duration-1000"></i>
                 </div>
-                
+
                 <div class="pt-2">
                     <div class="flex justify-between items-center mb-3">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase flex items-center gap-2"><i class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
-                        <a href="seller.html" class="text-[9px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase flex items-center gap-1.5 hover:bg-primary hover:text-white transition-all"><i class="fa-solid fa-store"></i> Seller Mode</a>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase flex items-center gap-2"><i
+                                class="fa-solid fa-receipt"></i> My Orders & Tracking</h3>
+                        <a href="seller.html"
+                            class="text-[9px] font-black text-primary bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 uppercase flex items-center gap-1.5 hover:bg-primary hover:text-white transition-all"><i
+                                class="fa-solid fa-store"></i> Seller Mode</a>
                     </div>
                     <div id="myOrdersList" class="space-y-4"></div>
                 </div>
@@ -458,7 +737,7 @@
                         <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div>
                     </div>
                 </div>
-                
+
                 <!-- GATE PASSES -->
                 <div>
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Active Gate Passes</h3>
@@ -472,7 +751,9 @@
                     <div id="myVehiclesList" class="space-y-3 mb-6">
                         <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
                     </div>
-                    <button onclick="openModal('vehicleModal')" class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-100 transition shadow-sm mb-6">+ Register New Vehicle</button>
+                    <button onclick="openModal('vehicleModal')"
+                        class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-100 transition shadow-sm mb-6">+
+                        Register New Vehicle</button>
                 </div>
 
                 <!-- COMPLAINTS -->
@@ -480,7 +761,9 @@
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">My Complaints</h3>
                     </div>
-                    <button onclick="openModal('complaintModal')" class="w-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-[11px] font-bold py-3 rounded-xl hover:bg-indigo-100 transition shadow-sm mb-4">+ Raise New Complaint</button>
+                    <button onclick="openModal('complaintModal')"
+                        class="w-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-[11px] font-bold py-3 rounded-xl hover:bg-indigo-100 transition shadow-sm mb-4">+
+                        Raise New Complaint</button>
                     <div id="myComplaintsList" class="space-y-3">
                         <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
                     </div>
@@ -491,18 +774,25 @@
 
         <!-- Bottom Navigation -->
         <nav class="bottom-nav pb-safe flex justify-between px-6 pt-3 h-[70px]">
-            <a href="#" class="nav-item active" onclick="switchTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></a>
-            <a href="#" class="nav-item relative" onclick="switchTab('money')"><i class="fa-solid fa-wallet"></i><span>Money</span></a>
+            <a href="#" class="nav-item active" onclick="switchTab('home')"><i
+                    class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="#" class="nav-item relative" onclick="switchTab('money')"><i
+                    class="fa-solid fa-wallet"></i><span>Money</span></a>
             <div class="relative flex justify-center w-16 px-2">
-                <button class="absolute -top-7 floating-add active:scale-95 transition" onclick="openModal('complaintModal')"><i class="fa-solid fa-plus text-xl"></i></button>
+                <button class="absolute -top-7 floating-add active:scale-95 transition"
+                    onclick="openModal('complaintModal')"><i class="fa-solid fa-plus text-xl"></i></button>
             </div>
-            <a href="#" class="nav-item" onclick="switchTab('people')"><i class="fa-solid fa-user-group"></i><span>People</span></a>
-            <a href="#" class="nav-item" onclick="switchTab('property')"><i class="fa-solid fa-building"></i><span>Property</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('people')"><i
+                    class="fa-solid fa-user-group"></i><span>People</span></a>
+            <a href="#" class="nav-item" onclick="switchTab('property')"><i
+                    class="fa-solid fa-building"></i><span>Property</span></a>
         </nav>
     </div>
 
     <!-- Invoice Modal -->
-    <div id="invoiceModal" class="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden" onclick="document.getElementById('invoiceModal').classList.add('hidden')">
+    <div id="invoiceModal"
+        class="fixed inset-0 z-[500] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden"
+        onclick="document.getElementById('invoiceModal').classList.add('hidden')">
         <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden" onclick="event.stopPropagation()">
             <div class="bg-gradient-to-r from-primary to-indigo-800 p-6 text-white text-center">
                 <i class="fa-solid fa-file-invoice text-3xl mb-2"></i>
@@ -513,8 +803,11 @@
                 <!-- Filled by JS -->
             </div>
             <div class="px-6 pb-6 flex gap-2">
-                <button onclick="window.print()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl text-xs"><i class="fa-solid fa-print mr-1"></i> Print</button>
-                <button onclick="document.getElementById('invoiceModal').classList.add('hidden')" class="flex-1 bg-primary text-white font-bold py-3 rounded-xl text-xs">Close</button>
+                <button onclick="window.print()"
+                    class="flex-1 bg-slate-100 text-slate-700 font-bold py-3 rounded-xl text-xs"><i
+                        class="fa-solid fa-print mr-1"></i> Print</button>
+                <button onclick="document.getElementById('invoiceModal').classList.add('hidden')"
+                    class="flex-1 bg-primary text-white font-bold py-3 rounded-xl text-xs">Close</button>
             </div>
         </div>
     </div>
@@ -523,67 +816,96 @@
     <div id="chatModal" class="fixed inset-0 z-[400] bg-white flex flex-col hidden slide-up">
         <header class="glass-header px-5 py-4 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs shadow-md"><i class="fa-solid fa-comments"></i></div>
+                <div
+                    class="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs shadow-md">
+                    <i class="fa-solid fa-comments"></i></div>
                 <div>
                     <h3 class="text-sm font-bold">Society Hub Chat</h3>
                     <span class="text-[9px] text-emerald-500 font-bold uppercase tracking-wider">Live & Direct</span>
                 </div>
             </div>
-            <button onclick="toggleChat()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="toggleChat()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center"><i
+                    class="fa-solid fa-xmark"></i></button>
         </header>
         <div id="chatMessages" class="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50">
             <!-- Messages load here -->
         </div>
         <div class="p-4 bg-white border-top border-slate-100 flex gap-2 shrink-0">
-            <input type="text" id="chatInput" placeholder="Type community message..." class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none">
-            <button onclick="sendMessage()" class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg active:scale-95 transition"><i class="fa-solid fa-paper-plane"></i></button>
+            <input type="text" id="chatInput" placeholder="Type community message..."
+                class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none">
+            <button onclick="sendMessage()"
+                class="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg active:scale-95 transition"><i
+                    class="fa-solid fa-paper-plane"></i></button>
         </div>
     </div>
 
     <!-- Complaint Modal -->
-    <div id="complaintModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'complaintModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+    <div id="complaintModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center"
+        onclick="closeModal(event, 'complaintModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative"
+            onclick="event.stopPropagation()">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-md font-bold text-dark">Raise Complaint</h3>
-                <button onclick="closeModal(null, 'complaintModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal(null, 'complaintModal')" class="text-slate-400"><i
+                        class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="complaintForm" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Category</label>
-                    <select id="compCategory" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
-                        <option>Plumbing</option><option>Electrical</option><option>Security</option><option>Cleanliness</option><option>Other</option>
+                    <select id="compCategory"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                        <option>Plumbing</option>
+                        <option>Electrical</option>
+                        <option>Security</option>
+                        <option>Cleanliness</option>
+                        <option>Other</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">Description</label>
-                    <textarea id="compDesc" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none resize-none" placeholder="Describe the issue..."></textarea>
+                    <textarea id="compDesc" rows="3"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none resize-none"
+                        placeholder="Describe the issue..."></textarea>
                 </div>
-                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Submit Incident</button>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Submit
+                    Incident</button>
             </form>
         </div>
     </div>
 
     <!-- Visitor Modal -->
-    <div id="visitorModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'visitorModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+    <div id="visitorModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center"
+        onclick="closeModal(event, 'visitorModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative"
+            onclick="event.stopPropagation()">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-md font-bold text-dark">Pre-Approve Visitor</h3>
-                <button onclick="closeModal(null, 'visitorModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal(null, 'visitorModal')" class="text-slate-400"><i
+                        class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <div id="visitorFormContainer">
                 <form id="visitorForm" class="space-y-4">
-                    <input id="vName" type="text" placeholder="Visitor Name" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
-                    <input id="vPurpose" type="text" placeholder="Purpose (e.g. Delivery, Guest)" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
-                    <input id="vDate" type="datetime-local" required class="w-full text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
-                    <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Generate Security Code</button>
+                    <input id="vName" type="text" placeholder="Visitor Name" required
+                        class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                    <input id="vPurpose" type="text" placeholder="Purpose (e.g. Delivery, Guest)" required
+                        class="w-full text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                    <input id="vDate" type="datetime-local" required
+                        class="w-full text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 focus:outline-none">
+                    <button type="submit"
+                        class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95">Generate
+                        Security Code</button>
                 </form>
             </div>
             <div id="visitorSuccess" class="hidden text-center py-4">
-                <div class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl mb-4"><i class="fa-solid fa-check"></i></div>
+                <div
+                    class="w-16 h-16 bg-emerald-100 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl mb-4">
+                    <i class="fa-solid fa-check"></i></div>
                 <h3 class="text-lg font-bold text-dark mb-1">Gate Pass Ready</h3>
-                <p class="text-xs text-slate-500 mb-4">Share this completely unique code with your visitor or delivery agent.</p>
+                <p class="text-xs text-slate-500 mb-4">Share this completely unique code with your visitor or delivery
+                    agent.</p>
                 <div class="bg-indigo-50 border-2 border-dashed border-indigo-200 p-4 rounded-xl">
                     <h2 id="generatedPasscode" class="text-3xl font-bold tracking-[0.2em] text-primary">000000</h2>
                 </div>
@@ -592,41 +914,56 @@
     </div>
 
     <!-- Confirmation Modal -->
-    <div id="confirmModal" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-3xl w-[85%] max-w-xs p-6 shadow-2xl mx-auto flex flex-col items-center text-center transform scale-95 transition-transform duration-300" id="confirmContent">
-            <div class="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center text-3xl mb-4 border border-red-100">
+    <div id="confirmModal"
+        class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl w-[85%] max-w-xs p-6 shadow-2xl mx-auto flex flex-col items-center text-center transform scale-95 transition-transform duration-300"
+            id="confirmContent">
+            <div
+                class="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center text-3xl mb-4 border border-red-100">
                 <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
             <h3 class="text-xl font-bold text-dark tracking-tight mb-2" id="cModalTitle">Confirm Action</h3>
-            <p class="text-[13px] font-medium text-slate-500 mb-6 w-full leading-relaxed" id="cModalText">Are you sure you want to proceed?</p>
+            <p class="text-[13px] font-medium text-slate-500 mb-6 w-full leading-relaxed" id="cModalText">Are you sure
+                you want to proceed?</p>
             <div class="flex gap-3 w-full">
-                <button onclick="closeConfirmModal()" class="w-full bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl shadow-sm hover:bg-slate-200 transition text-sm">Review</button>
-                <button id="cModalBtn" class="w-full bg-red-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95 transition text-sm flex items-center justify-center gap-2">Confirm</button>
+                <button onclick="closeConfirmModal()"
+                    class="w-full bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl shadow-sm hover:bg-slate-200 transition text-sm">Review</button>
+                <button id="cModalBtn"
+                    class="w-full bg-red-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95 transition text-sm flex items-center justify-center gap-2">Confirm</button>
             </div>
         </div>
     </div>
 
     <!-- Booking Modal -->
-    <div id="bookingModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'bookingModal')">
-        <div class="modal-content bg-white w-full sm:w-[500px] sm:rounded-3xl rounded-t-3xl p-8 shadow-2xl relative flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+    <div id="bookingModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center"
+        onclick="closeModal(event, 'bookingModal')">
+        <div class="modal-content bg-white w-full sm:w-[500px] sm:rounded-3xl rounded-t-3xl p-8 shadow-2xl relative flex flex-col max-h-[90vh]"
+            onclick="event.stopPropagation()">
             <div class="w-14 h-1.5 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden shrink-0"></div>
             <div class="flex justify-between items-center mb-6 shrink-0">
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 text-xl shadow-sm"><i class="fa-solid fa-calendar-check"></i></div>
+                    <div
+                        class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center text-emerald-500 text-xl shadow-sm">
+                        <i class="fa-solid fa-calendar-check"></i></div>
                     <div>
                         <h3 class="text-xl font-bold text-dark">Reserve Amenity</h3>
-                        <p class="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">Society Facilities</p>
+                        <p class="text-[10px] text-slate-500 font-semibold uppercase tracking-widest mt-0.5">Society
+                            Facilities</p>
                     </div>
                 </div>
-                <button onclick="closeModal(null, 'bookingModal')" class="text-slate-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl bg-slate-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center"></i></button>
+                <button onclick="closeModal(null, 'bookingModal')"
+                    class="text-slate-400 hover:text-red-500 transition"><i
+                        class="fa-solid fa-xmark text-xl bg-slate-50 hover:bg-red-50 w-8 h-8 rounded-full flex items-center justify-center"></i></button>
             </div>
-            
+
             <div class="overflow-y-auto carousel-hide-scrollbar pb-4 flex-1">
                 <form id="bookingForm" class="space-y-5">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Facility</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select
+                            Facility</label>
                         <div class="relative">
-                            <select id="bFacility" required class="w-full text-base font-semibold text-dark bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none">
+                            <select id="bFacility" required
+                                class="w-full text-base font-semibold text-dark bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none">
                                 <option value="" disabled selected>Tap to select a facility...</option>
                                 <option value="Club House">🏠 Premium Club House</option>
                                 <option value="Swimming Pool">🏊‍♂️ Infinity Swimming Pool</option>
@@ -634,53 +971,69 @@
                                 <option value="Banquet Hall">🎊 Grand Banquet Hall</option>
                                 <option value="Meeting Room">💼 Meeting Room</option>
                             </select>
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i
+                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date</label>
-                            <input id="bDate" type="date" required class="w-full text-base font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                            <label
+                                class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date</label>
+                            <input id="bDate" type="date" required
+                                class="w-full text-base font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Total Guests</label>
-                            <input id="bGuests" type="number" min="1" max="50" value="1" required class="w-full text-base font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-center">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Total
+                                Guests</label>
+                            <input id="bGuests" type="number" min="1" max="50" value="1" required
+                                class="w-full text-base font-semibold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-center">
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Time Slot</label>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Time
+                            Slot</label>
                         <div class="relative">
-                            <select id="bSlot" required class="w-full text-base font-semibold text-dark bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none">
+                            <select id="bSlot" required
+                                class="w-full text-base font-semibold text-dark bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none">
                                 <option value="" disabled selected>Tap to select time slot...</option>
                                 <option value="Morning (6AM - 11AM)">☀️ Morning (6AM - 11AM)</option>
                                 <option value="Afternoon (12PM - 4PM)">🌤️ Afternoon (12PM - 4PM)</option>
                                 <option value="Evening (5PM - 10PM)">🌙 Evening (5PM - 10PM)</option>
                             </select>
-                            <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                            <i
+                                class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
                     </div>
-                    <button type="submit" class="w-full bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-200 active:scale-95 mt-4 flex justify-center items-center gap-2"><i class="fa-solid fa-check-circle"></i> Confirm Reservation</button>
+                    <button type="submit"
+                        class="w-full bg-emerald-500 text-white font-bold text-lg py-4 rounded-xl hover:bg-emerald-600 transition shadow-lg shadow-emerald-200 active:scale-95 mt-4 flex justify-center items-center gap-2"><i
+                            class="fa-solid fa-check-circle"></i> Confirm Reservation</button>
                 </form>
             </div>
         </div>
     </div>
 
     <!-- Vehicle Modal -->
-    <div id="vehicleModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center" onclick="closeModal(event, 'vehicleModal')">
-        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative" onclick="event.stopPropagation()">
+    <div id="vehicleModal" class="fixed inset-0 z-[60] modal-overlay flex items-end justify-center sm:items-center"
+        onclick="closeModal(event, 'vehicleModal')">
+        <div class="modal-content bg-white w-full sm:w-[450px] sm:rounded-2xl rounded-t-3xl p-6 shadow-2xl relative"
+            onclick="event.stopPropagation()">
             <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-4 sm:hidden"></div>
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-primary text-xl"><i class="fa-solid fa-car"></i></div>
+                    <div
+                        class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-primary text-xl">
+                        <i class="fa-solid fa-car"></i></div>
                     <h3 class="text-md font-bold text-dark">Vehicle Registry</h3>
                 </div>
-                <button onclick="closeModal(null, 'vehicleModal')" class="text-slate-400"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button onclick="closeModal(null, 'vehicleModal')" class="text-slate-400"><i
+                        class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form id="vehicleForm" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Vehicle Type</label>
-                        <select id="vType" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                        <select id="vType" required
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
                             <option value="Car">Car</option>
                             <option value="Bike">Bike</option>
                             <option value="Other">Other</option>
@@ -688,18 +1041,23 @@
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Number Plate</label>
-                        <input id="vNumber" type="text" placeholder="MH-12-XX-0000" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none uppercase">
+                        <input id="vNumber" type="text" placeholder="MH-12-XX-0000" required
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none uppercase">
                     </div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Model / Make</label>
-                    <input id="vModel" type="text" placeholder="e.g. White Tesla Model 3" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
+                    <input id="vModel" type="text" placeholder="e.g. White Tesla Model 3" required
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Parking Slot</label>
-                    <input id="vParking" type="text" placeholder="e.g. SLT-204" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none uppercase">
+                    <input id="vParking" type="text" placeholder="e.g. SLT-204"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none uppercase">
                 </div>
-                <button type="submit" class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95 mt-2">Complete Registration</button>
+                <button type="submit"
+                    class="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition shadow-lg active:scale-95 mt-2">Complete
+                    Registration</button>
             </form>
         </div>
     </div>
@@ -708,9 +1066,9 @@
     <script>
         const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.)/.test(window.location.hostname) || window.location.hostname === "";
         const API_URL = isLocal ? `http://${window.location.hostname || 'localhost'}:5000/api` : '/api';
-        
+
         window.localNotifications = [];
-        
+
         function showToast(message, title = 'Notification') {
             const toast = document.getElementById('toastNotification');
             document.getElementById('toastMessage').innerText = message;
@@ -749,26 +1107,26 @@
         });
 
         function pushNotif(title, msg, icon, color, bg) {
-            window.localNotifications.unshift({title, msg, icon, color, bg});
+            window.localNotifications.unshift({ title, msg, icon, color, bg });
             showToast(msg, title);
         }
-        
-        function getAuthHeaders() { 
+
+        function getAuthHeaders() {
             const token = localStorage.getItem('userToken') || localStorage.getItem('sellerToken');
-            return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }; 
+            return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
         }
 
         function checkAuth() {
             const token = localStorage.getItem('userToken');
             const userName = localStorage.getItem('userName');
             const socName = localStorage.getItem('userSocietyName');
-            
-            if(token) {
+
+            if (token) {
                 document.getElementById('authOverlay').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
-                if(userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
-                if(socName) document.getElementById('societyNameDisplay').innerText = socName;
-                
+                if (userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
+                if (socName) document.getElementById('societyNameDisplay').innerText = socName;
+
                 fetchDashboardData();
             }
         }
@@ -781,8 +1139,8 @@
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
             msg.classList.add('hidden');
             try {
-                const res = await fetch(`${API_URL}/auth/send-otp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email: document.getElementById('emailInput').value }) });
-                if(res.ok) {
+                const res = await fetch(`${API_URL}/auth/send-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('emailInput').value }) });
+                if (res.ok) {
                     document.getElementById('emailStep').classList.add('hidden');
                     document.getElementById('otpStep').classList.remove('hidden');
                 } else {
@@ -790,14 +1148,14 @@
                     msg.innerText = data.error || "Error dispatching OTP email.";
                     msg.classList.remove('hidden');
                 }
-            } catch(e) {}
+            } catch (e) { }
             btn.innerText = 'Send OTP';
         });
 
         async function verifyOtp() {
             const btn = document.getElementById('verifyOtpBtn');
             btn.innerText = "Authenticating...";
-            
+
             try {
                 const payload = {
                     email: document.getElementById('emailInput').value,
@@ -806,17 +1164,17 @@
                     societyCode: document.getElementById('societyCodeInput').value
                 };
 
-                const res = await fetch(`${API_URL}/auth/verify-otp`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                const res = await fetch(`${API_URL}/auth/verify-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 const data = await res.json();
-                
-                if(res.ok) {
+
+                if (res.ok) {
                     localStorage.setItem('userToken', data.token);
                     localStorage.setItem('userId', data.user._id);
                     localStorage.setItem('userName', data.user.name);
                     localStorage.setItem('userSocietyName', data.user.societyName || 'Society Hub');
                     checkAuth();
                 } else {
-                    if(data.error === "Society Code is required for new signup") {
+                    if (data.error === "Society Code is required for new signup") {
                         document.getElementById('registrationFields').classList.remove('hidden');
                         btn.innerText = "Complete Signup";
                         return;
@@ -825,7 +1183,7 @@
                         cancelOtp();
                     }
                 }
-            } catch(e) {}
+            } catch (e) { }
             btn.innerText = "Verify & Access";
         }
 
@@ -846,37 +1204,37 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-view').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            
+
             document.getElementById(`tab-${tabId}`).classList.add('active');
             event.currentTarget.classList.add('active');
-            
-            if(tabId === 'money') loadUserDues();
-            if(tabId === 'people') loadSocietyUsers();
-            if(tabId === 'marketplace') loadMarketplace();
-            if(tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); loadUserVehicles(); }
+
+            if (tabId === 'money') loadUserDues();
+            if (tabId === 'people') loadSocietyUsers();
+            if (tabId === 'marketplace') loadMarketplace();
+            if (tabId === 'property') { loadUserComplaints(); loadUserVisitors(); loadUserBookings(); loadUserVehicles(); }
         }
 
 
         // --- MARKETPLACE LOGIC ---
         window._allProducts = [];
         window._allOrders = [];
-        
+
         async function loadMarketplace() {
             try {
                 const [pRes, oRes] = await Promise.all([
-                    fetch(`${API_URL}/marketplace/products`, {headers: getAuthHeaders()}),
-                    fetch(`${API_URL}/marketplace/orders`, {headers: getAuthHeaders()})
+                    fetch(`${API_URL}/marketplace/products`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/marketplace/orders`, { headers: getAuthHeaders() })
                 ]);
                 const pData = await pRes.json();
                 const oData = await oRes.json();
                 window._allProducts = Array.isArray(pData) ? pData : [];
                 window._allOrders = Array.isArray(oData) ? oData : [];
                 renderMarketplace(window._allProducts, window._allOrders);
-            } catch(e) {
+            } catch (e) {
                 renderMarketplace([], []);
             }
         }
-        
+
         function filterMarketplace() {
             const query = document.getElementById('marketSearchInput').value.toLowerCase();
             const filtered = window._allProducts.filter(p => p.name.toLowerCase().includes(query) || (p.description && p.description.toLowerCase().includes(query)));
@@ -884,10 +1242,10 @@
         }
 
         function renderMarketplace(products, orders) {
-                let p_html = '';
-                products.forEach((p, idx) => {
-                    const imgSrc = p.image || 'https://img.icons8.com/color/96/box--v1.png';
-                    p_html += `
+            let p_html = '';
+            products.forEach((p, idx) => {
+                const imgSrc = p.image || 'https://img.icons8.com/color/96/box--v1.png';
+                p_html += `
                         <div class="glass-card p-0 overflow-hidden flex flex-col">
                             <img src="${imgSrc}" class="w-full h-28 object-cover bg-slate-50">
                             <div class="p-3 flex flex-col gap-2 flex-1">
@@ -899,24 +1257,24 @@
                                 </div>
                             </div>
                         </div>`;
+            });
+            document.getElementById('marketplaceList').innerHTML = p_html || '<p class="col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">Vendors are stocking up. Check back soon!</p>';
+
+            let o_html = '';
+            const steps = ['Placed', 'Processing', 'Shipped', 'Delivered'];
+            orders.forEach(o => {
+                const currentIdx = steps.indexOf(o.status);
+                const isPaid = o.paymentStatus === 'Paid';
+                let stepperHtml = '<div class="flex items-center justify-between w-full mt-3">';
+                steps.forEach((s, i) => {
+                    const done = i <= currentIdx;
+                    const isCurrent = i === currentIdx;
+                    stepperHtml += `<div class="flex flex-col items-center flex-1"><div class="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold shadow-sm ${done ? (isCurrent ? 'bg-primary text-white ring-4 ring-primary/20' : 'bg-emerald-500 text-white') : 'bg-slate-100 text-slate-400'}">${done ? '<i class="fa-solid fa-check"></i>' : i + 1}</div><span class="text-[7px] font-bold mt-1 ${done ? 'text-slate-700' : 'text-slate-300'}">${s}</span></div>`;
+                    if (i < steps.length - 1) stepperHtml += `<div class="h-0.5 flex-1 mx-1 rounded ${i < currentIdx ? 'bg-emerald-400' : 'bg-slate-100'}"></div>`;
                 });
-                document.getElementById('marketplaceList').innerHTML = p_html || '<p class="col-span-2 text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">Vendors are stocking up. Check back soon!</p>';
+                stepperHtml += '</div>';
 
-                let o_html = '';
-                const steps = ['Placed', 'Processing', 'Shipped', 'Delivered'];
-                orders.forEach(o => {
-                    const currentIdx = steps.indexOf(o.status);
-                    const isPaid = o.paymentStatus === 'Paid';
-                    let stepperHtml = '<div class="flex items-center justify-between w-full mt-3">';
-                    steps.forEach((s, i) => {
-                        const done = i <= currentIdx;
-                        const isCurrent = i === currentIdx;
-                        stepperHtml += `<div class="flex flex-col items-center flex-1"><div class="w-6 h-6 rounded-full flex items-center justify-center text-[8px] font-bold shadow-sm ${done ? (isCurrent ? 'bg-primary text-white ring-4 ring-primary/20' : 'bg-emerald-500 text-white') : 'bg-slate-100 text-slate-400'}">${done ? '<i class="fa-solid fa-check"></i>' : i + 1}</div><span class="text-[7px] font-bold mt-1 ${done ? 'text-slate-700' : 'text-slate-300'}">${s}</span></div>`;
-                        if(i < steps.length - 1) stepperHtml += `<div class="h-0.5 flex-1 mx-1 rounded ${i < currentIdx ? 'bg-emerald-400' : 'bg-slate-100'}"></div>`;
-                    });
-                    stepperHtml += '</div>';
-
-                    o_html += `
+                o_html += `
                         <div class="glass-card p-4 space-y-3 border-l-4 ${o.status === 'Delivered' ? 'border-l-emerald-500' : 'border-l-primary'}">
                             <div class="flex gap-3">
                                 <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-14 h-14 rounded-xl object-cover bg-slate-50 shadow-sm">
@@ -924,7 +1282,7 @@
                                     <div class="flex justify-between items-start">
                                         <div>
                                             <h4 class="text-[13px] font-bold text-dark">${o.productName}</h4>
-                                            <p class="text-[10px] text-slate-500">Ordered ${new Date(o.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</p>
+                                            <p class="text-[10px] text-slate-500">Ordered ${new Date(o.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                                         </div>
                                         <span class="text-sm font-bold text-primary">\u20b9${o.price}</span>
                                     </div>
@@ -937,8 +1295,8 @@
                                 ${o.status !== 'Delivered' ? `<span class="flex-1 text-center text-[10px] font-bold text-primary bg-indigo-50 py-2.5 rounded-xl border border-indigo-100"><i class="fa-solid fa-truck-fast mr-1"></i>In Transit</span>` : ''}
                             </div>
                         </div>`;
-                });
-                document.getElementById('myOrdersList').innerHTML = o_html || '<p class="text-xs text-slate-400 text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Your orders will appear here.</p>';
+            });
+            document.getElementById('myOrdersList').innerHTML = o_html || '<p class="text-xs text-slate-400 text-center py-8 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">Your orders will appear here.</p>';
         }
         function buyProductIndex(idx) {
             const p = window._allProducts[idx];
@@ -949,23 +1307,23 @@
                 try {
                     const res = await fetch(`${API_URL}/marketplace/orders`, {
                         method: 'POST', headers: getAuthHeaders(),
-                        body: JSON.stringify({productId, productName, price, productImage: productImage || ''})
+                        body: JSON.stringify({ productId, productName, price, productImage: productImage || '' })
                     });
-                    if(res.ok) { 
-                        pushNotif("Order Placed", "Track your delivery in the orders tab.", "fa-cart-shopping", "text-pink-500", "bg-pink-50"); 
-                        loadMarketplace(); 
+                    if (res.ok) {
+                        pushNotif("Order Placed", "Track your delivery in the orders tab.", "fa-cart-shopping", "text-pink-500", "bg-pink-50");
+                        loadMarketplace();
                     } else {
                         const data = await res.json();
                         showToast(data.error || "Failed to place order. Vendor may have removed this item.", "Order Error");
                     }
-                } catch(e) {
+                } catch (e) {
                     showToast("Network error placing order.", "Connection Failed");
                 }
             });
         }
         async function viewInvoice(orderId) {
             try {
-                const res = await fetch(`${API_URL}/marketplace/orders/${orderId}/invoice`, {headers: getAuthHeaders()});
+                const res = await fetch(`${API_URL}/marketplace/orders/${orderId}/invoice`, { headers: getAuthHeaders() });
                 const inv = await res.json();
                 document.getElementById('invIdDisplay').textContent = inv.invoiceId;
                 document.getElementById('invoiceBody').innerHTML = `
@@ -973,20 +1331,20 @@
                         <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Product</span><span class="text-xs font-bold text-dark">${inv.productName}</span></div>
                         <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Amount</span><span class="text-xs font-bold text-dark">\u20b9${inv.price}</span></div>
                         <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Buyer</span><span class="text-xs font-bold text-dark">${inv.buyerName}</span></div>
-                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Ordered</span><span class="text-xs font-bold text-dark">${new Date(inv.orderedOn).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'})}</span></div>
-                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Delivered</span><span class="text-xs font-bold text-dark">${inv.deliveredOn ? new Date(inv.deliveredOn).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '-'}</span></div>
+                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Ordered</span><span class="text-xs font-bold text-dark">${new Date(inv.orderedOn).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span></div>
+                        <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Delivered</span><span class="text-xs font-bold text-dark">${inv.deliveredOn ? new Date(inv.deliveredOn).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</span></div>
                         <div class="flex justify-between py-2"><span class="text-xs text-slate-500">Payment</span><span class="text-xs font-bold ${inv.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-red-500'}">${inv.paymentStatus === 'Paid' ? '\u2713 Paid' : 'Pending'}</span></div>
                     </div>
                     <div class="bg-slate-50 rounded-xl p-3 text-center mt-4"><p class="text-[9px] text-slate-400">Auto-generated invoice from Society Hub Marketplace.</p></div>`;
                 document.getElementById('invoiceModal').classList.remove('hidden');
-            } catch(e) {}
+            } catch (e) { }
         }
 
         // --- CHAT LOGIC ---
-        function toggleChat() { document.getElementById('chatModal').classList.toggle('hidden'); if(!document.getElementById('chatModal').classList.contains('hidden')) loadMessages(); }
+        function toggleChat() { document.getElementById('chatModal').classList.toggle('hidden'); if (!document.getElementById('chatModal').classList.contains('hidden')) loadMessages(); }
         async function loadMessages() {
             try {
-                const res = await fetch(`${API_URL}/chat/messages`, {headers: getAuthHeaders()});
+                const res = await fetch(`${API_URL}/chat/messages`, { headers: getAuthHeaders() });
                 const msgs = await res.json();
                 const myId = localStorage.getItem('userId');
                 let html = '';
@@ -997,30 +1355,30 @@
                             <div class="${isMe ? 'bg-primary text-white ml-12 rounded-t-2xl rounded-bl-2xl' : 'bg-white text-slate-700 mr-12 rounded-t-2xl rounded-br-2xl border border-slate-100 shadow-sm'} p-3 px-4 relative">
                                 ${!isMe ? `<span class="text-[8px] font-black text-slate-400 block mb-1 uppercase tracking-widest">${m.userName}</span>` : ''}
                                 <p class="text-xs leading-relaxed font-medium">${m.text}</p>
-                                <span class="text-[7px] ${isMe ? 'text-indigo-200' : 'text-slate-300'} block mt-1 text-right">${new Date(m.createdAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>
+                                <span class="text-[7px] ${isMe ? 'text-indigo-200' : 'text-slate-300'} block mt-1 text-right">${new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                             </div>
                         </div>`;
                 });
                 document.getElementById('chatMessages').innerHTML = html || '<p class="text-[10px] text-slate-400 text-center py-10">Start the community conversation.</p>';
                 document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-            } catch(e) {}
+            } catch (e) { }
         }
         async function sendMessage() {
             const txt = document.getElementById('chatInput').value;
-            if(!txt.trim()) return;
-            await fetch(`${API_URL}/chat/messages`, {method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({text: txt})});
+            if (!txt.trim()) return;
+            await fetch(`${API_URL}/chat/messages`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify({ text: txt }) });
             document.getElementById('chatInput').value = '';
             loadMessages();
         }
-        setInterval(() => { if(!document.getElementById('chatModal').classList.contains('hidden')) loadMessages(); }, 5000);
-        document.getElementById('chatInput').addEventListener('keydown', (e) => { if(e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
+        setInterval(() => { if (!document.getElementById('chatModal').classList.contains('hidden')) loadMessages(); }, 5000);
+        document.getElementById('chatInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
 
         // --- PROFILE / OWNERSHIP LOGIC ---
         function openProfile() {
             showConfirm("Update Status", "Would you like to transfer ownership or list as Tenant?", async () => {
                 const newRole = prompt("Enter new role: 'resident' or 'tenant'");
-                if(newRole) {
-                    await fetch(`${API_URL}/users/profile`, {method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({role: newRole})});
+                if (newRole) {
+                    await fetch(`${API_URL}/users/profile`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({ role: newRole }) });
                     showToast("Status Updated. Role is now: " + newRole, "Success");
                     location.reload();
                 }
@@ -1028,25 +1386,25 @@
         }
 
         function openModal(id) { document.getElementById(id).classList.add('active'); }
-        function closeModal(event, id) { 
-            if(event && event.target !== event.currentTarget) return;
-            document.getElementById(id).classList.remove('active'); 
+        function closeModal(event, id) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById(id).classList.remove('active');
         }
 
         async function fetchDashboardData() {
             try {
                 let notifications = [...(window.localNotifications || [])];
                 const res = await fetch(`${API_URL}/analytics`, { headers: getAuthHeaders() });
-                if(res.ok) {
+                if (res.ok) {
                     const data = await res.json();
                     document.getElementById('totalResidents').innerText = data.total_users || 0;
                     document.getElementById('pendingDues').innerText = '₹' + (data.dues_pending || 0).toLocaleString();
-                    if(document.getElementById('myPendingDues')) {
+                    if (document.getElementById('myPendingDues')) {
                         document.getElementById('myPendingDues').innerText = '₹' + (data.my_dues_pending || 0).toLocaleString();
                     }
                     document.getElementById('openComplaints').innerText = data.my_pending_complaints || 0;
-                    
-                    if(data.my_dues_pending > 0) {
+
+                    if (data.my_dues_pending > 0) {
                         notifications.push({
                             title: 'Outstanding Maintenance Due',
                             msg: `You have ₹${data.my_dues_pending} in unpaid society dues.`,
@@ -1058,17 +1416,17 @@
                 }
 
                 const noticeRes = await fetch(`${API_URL}/notices`, { headers: getAuthHeaders() });
-                if(noticeRes.ok) {
+                if (noticeRes.ok) {
                     const noticesData = await noticeRes.json();
                     document.getElementById('totalNotices').innerText = noticesData.length;
-                    
+
                     let html = '';
-                    if(noticesData.length === 0) {
+                    if (noticesData.length === 0) {
                         html = '<p class="text-xs text-slate-500 text-center py-4">No active notices broadcasted.</p>';
                     } else {
                         // Push newest notice to alerts if it exists
                         const latest = noticesData[0];
-                        if(latest) {
+                        if (latest) {
                             notifications.push({
                                 title: latest.category + ' Alert',
                                 msg: latest.title,
@@ -1088,13 +1446,13 @@
                     }
                     document.getElementById('noticesList').innerHTML = html;
                 }
-                
+
                 // Update Notifications UI
                 const badge = document.getElementById('notifBadge');
                 const count = document.getElementById('notifCount');
                 const list = document.getElementById('notifList');
-                
-                if(notifications.length > 0) {
+
+                if (notifications.length > 0) {
                     badge.classList.remove('hidden');
                     count.innerText = notifications.length;
                     let notifHtml = '';
@@ -1116,9 +1474,9 @@
                     count.innerText = "0";
                     list.innerHTML = `<p class="text-[10px] text-slate-500 text-center py-4">You are all caught up!</p>`;
                 }
-                
+
                 loadPolls();
-            } catch (err) {}
+            } catch (err) { }
         }
 
         // Section Loading
@@ -1127,8 +1485,8 @@
                 const res = await fetch(`${API_URL}/dues`, { headers: getAuthHeaders() });
                 const dues = await res.json();
                 let html = '';
-                if(dues.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">Hooray! No pending dues.</p>`;
-                
+                if (dues.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">Hooray! No pending dues.</p>`;
+
                 dues.forEach(d => {
                     html += `
                         <div class="glass-card p-4 flex justify-between items-center border-l-4 ${d.status === 'Paid' ? 'border-l-emerald-500' : 'border-l-amber-500'}">
@@ -1145,28 +1503,28 @@
                     `;
                 });
                 document.getElementById('myDuesList').innerHTML = html;
-            } catch(e) {}
+            } catch (e) { }
         }
-        
+
         async function mockPay(id, btn) {
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             btn.classList.replace('bg-primary', 'bg-slate-400');
             try {
-                const res = await fetch(`${API_URL}/dues/${id}/pay`, {method: 'PUT', headers: getAuthHeaders()});
-                if(res.ok) {
+                const res = await fetch(`${API_URL}/dues/${id}/pay`, { method: 'PUT', headers: getAuthHeaders() });
+                if (res.ok) {
                     pushNotif('Payment Successful', 'Your society dues payment was processed.', 'fa-circle-check', 'text-emerald-500', 'bg-emerald-50');
                     setTimeout(() => {
                         fetchDashboardData();
                         loadUserDues();
                     }, 800);
                 }
-            } catch(e) { btn.innerText = "Pay Now"; btn.classList.replace('bg-slate-400', 'bg-primary'); }
+            } catch (e) { btn.innerText = "Pay Now"; btn.classList.replace('bg-slate-400', 'bg-primary'); }
         }
 
         function downloadReceipt(id, type, amount, date) {
             const socName = localStorage.getItem('userSocietyName') || 'Society Community';
             const userName = localStorage.getItem('userName') || 'Resident';
-            
+
             const receipt = `
 =========================================
           ${socName.toUpperCase()}
@@ -1174,7 +1532,7 @@
 
 PAYMENT RECEIPT ACKNOWLEDGEMENT
 -----------------------------------------
-Receipt No:  RC-${id.substring(0,8).toUpperCase()}
+Receipt No:  RC-${id.substring(0, 8).toUpperCase()}
 Generation:  ${new Date().toLocaleString()}
 Billed To:   ${userName}
 
@@ -1189,21 +1547,21 @@ Thank you for your timely payment!
 This is a computer generated document.
 =========================================
             `;
-            
+
             const blob = new Blob([receipt], { type: 'text/plain' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Receipt_${type}_${date.replace(/-/g,'')}.txt`;
+            a.download = `Receipt_${type}_${date.replace(/-/g, '')}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
         }
-        
+
         window._allUsers = [];
         window._allServices = [];
-        
+
         async function loadSocietyUsers() {
             document.getElementById('mySocietyUsersList').innerHTML = '<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>';
             try {
@@ -1214,9 +1572,9 @@ This is a computer generated document.
                 window._allUsers = await usersRes.json();
                 window._allServices = servRes.ok ? await servRes.json() : [];
                 renderSocietyDirectory(window._allUsers, window._allServices);
-            } catch(e) {}
+            } catch (e) { }
         }
-        
+
         function filterResidents() {
             const query = document.getElementById('residentSearchInput').value.toLowerCase();
             const filteredUsers = window._allUsers.filter(u => u.name.toLowerCase().includes(query) || (u.role && u.role.toLowerCase().includes(query)));
@@ -1225,10 +1583,10 @@ This is a computer generated document.
         }
 
         function renderSocietyDirectory(users, services) {
-                let html = '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Essential Staff & Services</h3>';
-                if(services.length === 0) html += `<p class="text-[10px] text-slate-400 mb-4">No staff matching results.</p>`;
-                services.forEach(s => {
-                    html += `
+            let html = '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">Essential Staff & Services</h3>';
+            if (services.length === 0) html += `<p class="text-[10px] text-slate-400 mb-4">No staff matching results.</p>`;
+            services.forEach(s => {
+                html += `
                         <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-xl flex items-center justify-between mb-2 shadow-sm">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-500 font-bold"><i class="fa-solid fa-hard-hat"></i></div>
@@ -1243,12 +1601,12 @@ This is a computer generated document.
                             </div>
                         </div>
                     `;
-                });
-                
-                html += '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-4">Society Residents</h3>';
-                if(users.length === 0) html += `<p class="text-[10px] text-slate-400 py-4 text-center">No residents match your search.</p>`;
-                users.forEach(u => {
-                    html += `
+            });
+
+            html += '<h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-4">Society Residents</h3>';
+            if (users.length === 0) html += `<p class="text-[10px] text-slate-400 py-4 text-center">No residents match your search.</p>`;
+            users.forEach(u => {
+                html += `
                         <div class="bg-white border border-slate-100 p-3 rounded-xl flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold"><i class="fa-solid fa-user"></i></div>
                             <div>
@@ -1257,8 +1615,8 @@ This is a computer generated document.
                             </div>
                         </div>
                     `;
-                });
-                document.getElementById('mySocietyUsersList').innerHTML = html;
+            });
+            document.getElementById('mySocietyUsersList').innerHTML = html;
         }
 
         async function loadUserComplaints() {
@@ -1269,8 +1627,8 @@ This is a computer generated document.
                 // Since GET /api/complaints restricts to societyId but we want user specific, 
                 // we can filter here locally for the resident, or backend restricts to user_id.
                 // Our backend actually restricts to userId for Resident automatically!
-                if(complaints.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No active complaints submitted.</p>`;
-                
+                if (complaints.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No active complaints submitted.</p>`;
+
                 complaints.forEach(c => {
                     const style = c.status === 'Resolved' ? 'text-emerald-500' : 'text-amber-500';
                     html += `
@@ -1285,7 +1643,7 @@ This is a computer generated document.
                     `;
                 });
                 document.getElementById('myComplaintsList').innerHTML = html;
-            } catch(e) {}
+            } catch (e) { }
         }
 
         async function loadUserVisitors() {
@@ -1293,21 +1651,21 @@ This is a computer generated document.
                 const res = await fetch(`${API_URL}/visitors`, { headers: getAuthHeaders() });
                 const visitors = await res.json();
                 let html = '';
-                if(visitors.length === 0) html = `<p class="text-[10px] text-slate-400 py-3 text-center">No visitors expected or logged.</p>`;
-                
+                if (visitors.length === 0) html = `<p class="text-[10px] text-slate-400 py-3 text-center">No visitors expected or logged.</p>`;
+
                 visitors.forEach(v => {
                     let style = 'bg-slate-100 text-slate-700';
                     let borderStyle = 'border-slate-200';
-                    if(v.status === 'Entered') { style = 'bg-emerald-100 text-emerald-700'; borderStyle = 'border-emerald-200'; }
-                    else if(v.status === 'Expected') { style = 'bg-amber-100 text-amber-600'; borderStyle = 'border-indigo-200'; }
-                    
+                    if (v.status === 'Entered') { style = 'bg-emerald-100 text-emerald-700'; borderStyle = 'border-emerald-200'; }
+                    else if (v.status === 'Expected') { style = 'bg-amber-100 text-amber-600'; borderStyle = 'border-indigo-200'; }
+
                     html += `
                         <div class="bg-white border-2 border-dashed ${borderStyle} p-3 rounded-xl relative overflow-hidden flex justify-between items-center shadow-sm">
                             <div class="flex-1">
                                 <h4 class="text-sm font-bold text-dark">${v.visitorName}</h4>
                                 <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Purpose: ${v.purpose}</p>
                                 <div class="mt-2 text-[10px] bg-slate-50 px-2 py-1 rounded inline-block text-slate-500">
-                                    <i class="fa-solid fa-clock"></i> ${new Date(v.expectedDate).toLocaleString([], {month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit'})}
+                                    <i class="fa-solid fa-clock"></i> ${new Date(v.expectedDate).toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                 </div>
                             </div>
                             <div class="text-right flex flex-col items-end justify-center">
@@ -1318,7 +1676,7 @@ This is a computer generated document.
                     `;
                 });
                 document.getElementById('myVisitorsList').innerHTML = html;
-            } catch(e) { }
+            } catch (e) { }
         }
 
         document.getElementById('complaintForm').addEventListener('submit', async (e) => {
@@ -1334,9 +1692,9 @@ This is a computer generated document.
                 closeModal(null, 'complaintModal');
                 pushNotif('Complaint Registered', 'Your issue has been submitted to the administration.', 'fa-clipboard-list', 'text-sky-500', 'bg-sky-50');
                 fetchDashboardData();
-                if(document.getElementById('tab-property').classList.contains('active')) loadUserComplaints();
+                if (document.getElementById('tab-property').classList.contains('active')) loadUserComplaints();
                 e.target.reset();
-            } catch(e) {}
+            } catch (e) { }
             btn.innerText = ogTxt;
         });
 
@@ -1348,23 +1706,23 @@ This is a computer generated document.
             try {
                 const res = await fetch(`${API_URL}/visitors`, {
                     method: 'POST', headers: getAuthHeaders(),
-                    body: JSON.stringify({ 
-                        visitorName: document.getElementById('vName').value, 
+                    body: JSON.stringify({
+                        visitorName: document.getElementById('vName').value,
                         purpose: document.getElementById('vPurpose').value,
                         expectedDate: document.getElementById('vDate').value
                     })
                 });
                 const data = await res.json();
-                if(res.ok) {
+                if (res.ok) {
                     pushNotif('Gate Pass Generated', 'Your visitor has been approved for entry.', 'fa-id-badge', 'text-indigo-500', 'bg-indigo-50');
                     fetchDashboardData();
                     document.getElementById('visitorFormContainer').classList.add('hidden');
                     document.getElementById('generatedPasscode').innerText = data.passCode;
                     document.getElementById('visitorSuccess').classList.remove('hidden');
                     e.target.reset();
-                    if(document.getElementById('tab-property').classList.contains('active')) loadUserVisitors();
+                    if (document.getElementById('tab-property').classList.contains('active')) loadUserVisitors();
                 } else { showToast("Failed to generate pass", "Error"); }
-            } catch(e) {}
+            } catch (e) { }
             btn.innerText = ogTxt;
         });
 
@@ -1376,22 +1734,22 @@ This is a computer generated document.
             try {
                 const res = await fetch(`${API_URL}/bookings`, {
                     method: 'POST', headers: getAuthHeaders(),
-                    body: JSON.stringify({ 
-                        facility: document.getElementById('bFacility').value, 
+                    body: JSON.stringify({
+                        facility: document.getElementById('bFacility').value,
                         date: document.getElementById('bDate').value,
                         guests: parseInt(document.getElementById('bGuests').value),
                         slot: document.getElementById('bSlot').value
                     })
                 });
                 const data = await res.json();
-                if(res.ok) {
+                if (res.ok) {
                     pushNotif('Facility Booked', 'Your amenity reservation request is confirmed.', 'fa-calendar-check', 'text-teal-500', 'bg-teal-50');
                     fetchDashboardData();
                     closeModal(null, 'bookingModal');
                     e.target.reset();
-                    if(document.getElementById('tab-property').classList.contains('active')) loadUserBookings();
+                    if (document.getElementById('tab-property').classList.contains('active')) loadUserBookings();
                 } else { showToast(data.error || "Slot already booked by someone else!", "Error"); }
-            } catch(e) {}
+            } catch (e) { }
             btn.innerHTML = ogTxt;
         });
 
@@ -1400,8 +1758,8 @@ This is a computer generated document.
                 const res = await fetch(`${API_URL}/bookings`, { headers: getAuthHeaders() });
                 const bookings = await res.json();
                 let html = '';
-                if(bookings.length === 0) html = `<p class="text-[10px] text-slate-400 py-3 text-center">No active facility reservations.</p>`;
-                
+                if (bookings.length === 0) html = `<p class="text-[10px] text-slate-400 py-3 text-center">No active facility reservations.</p>`;
+
                 bookings.forEach(b => {
                     html += `
                         <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 p-4 rounded-xl relative flex items-center gap-4 shadow-sm mb-3">
@@ -1411,7 +1769,7 @@ This is a computer generated document.
                             </div>
                             <div class="flex-1">
                                 <h4 class="text-base font-bold text-dark">${b.facility}</h4>
-                                <p class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mt-1"><i class="fa-regular fa-clock"></i> ${new Date(b.date).toLocaleDateString([], {month:'short', day:'numeric'})} • ${b.slot.split('(')[0].trim()}</p>
+                                <p class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mt-1"><i class="fa-regular fa-clock"></i> ${new Date(b.date).toLocaleDateString([], { month: 'short', day: 'numeric' })} • ${b.slot.split('(')[0].trim()}</p>
                             </div>
                             <div class="flex flex-col items-end gap-2 shrink-0">
                                 <span class="text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-emerald-500 text-white shadow-sm leading-none"><i class="fa-solid fa-check"></i> ${b.status}</span>
@@ -1421,7 +1779,7 @@ This is a computer generated document.
                     `;
                 });
                 document.getElementById('myBookingsList').innerHTML = html;
-            } catch(e) { }
+            } catch (e) { }
         }
 
         async function cancelBooking(id, btn) {
@@ -1430,7 +1788,7 @@ This is a computer generated document.
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
                 try {
                     const res = await fetch(`${API_URL}/bookings/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
-                    if(res.ok) {
+                    if (res.ok) {
                         showToast("Reservation successfully cancelled.", "success", "Cancelled");
                         fetchDashboardData();
                         loadUserBookings();
@@ -1439,7 +1797,7 @@ This is a computer generated document.
                         showToast(data.error || "Failed to cancel.", "Error");
                         btn.innerHTML = ogHTML;
                     }
-                } catch(e) {
+                } catch (e) {
                     showToast("Network error.", "Error");
                     btn.innerHTML = ogHTML;
                 }
@@ -1448,8 +1806,8 @@ This is a computer generated document.
 
         // Reset Visitor Modal explicitly when reopening so you don't stare at the old PASSCODE
         const ogOpenModal = openModal;
-        openModal = function(id) {
-            if(id === 'visitorModal') {
+        openModal = function (id) {
+            if (id === 'visitorModal') {
                 document.getElementById('visitorFormContainer').classList.remove('hidden');
                 document.getElementById('visitorSuccess').classList.add('hidden');
             }
@@ -1461,7 +1819,7 @@ This is a computer generated document.
                 const res = await fetch(`${API_URL}/vehicles`, { headers: getAuthHeaders() });
                 const vehicles = await res.json();
                 let html = '';
-                if(vehicles.length === 0) {
+                if (vehicles.length === 0) {
                     html = '<p class="text-[10px] text-slate-400 py-4 text-center border-2 border-dashed border-slate-100 rounded-xl">Register your car or bike for easier identification.</p>';
                 } else {
                     window._myVehicles = vehicles;
@@ -1488,7 +1846,7 @@ This is a computer generated document.
                     });
                 }
                 document.getElementById('myVehiclesList').innerHTML = html;
-            } catch(e) {}
+            } catch (e) { }
         }
 
         document.getElementById('vehicleForm').addEventListener('submit', async (e) => {
@@ -1510,14 +1868,14 @@ This is a computer generated document.
                     method: method, headers: getAuthHeaders(),
                     body: JSON.stringify(payload)
                 });
-                if(res.ok) {
+                if (res.ok) {
                     pushNotif('Success', vId ? 'Details updated.' : 'Vehicle Registered!', 'fa-car', 'text-indigo-500', 'bg-indigo-50');
                     closeModal(null, 'vehicleModal');
                     loadUserVehicles();
                     e.target.reset();
                     delete e.target.dataset.id;
                 }
-            } catch(e) {}
+            } catch (e) { }
             btn.innerText = ogTxt;
         });
 
@@ -1546,10 +1904,10 @@ This is a computer generated document.
                         headers: getAuthHeaders(),
                         body: JSON.stringify({ location: 'Current Resident Unit' })
                     });
-                    if(res.ok) {
+                    if (res.ok) {
                         pushNotif('SOS BROADCASTED', 'Help is being dispatched to your location.', 'fa-truck-medical', 'text-red-600', 'bg-red-50');
                     }
-                } catch(e) {
+                } catch (e) {
                     showToast("Failed to trigger SOS. Check connection.", "Error");
                 }
             });
@@ -1561,25 +1919,24 @@ This is a computer generated document.
                 const polls = await res.json();
                 const userId = localStorage.getItem('userId');
                 let html = '';
-                
-                if(polls.length === 0) {
+
+                if (polls.length === 0) {
                     html = '<p class="text-[11px] text-slate-400 text-center py-6 italic">No community polls at the moment.</p>';
                 } else {
                     polls.forEach(p => {
                         const hasVoted = (p.voters || []).includes(userId) || (p.voters_v2 || []).some(v => v.uid === userId);
                         const totalVotes = p.options.reduce((acc, opt) => acc + opt.votes, 0);
-                        
+
                         html += `
                             <div class="glass-card p-5 border border-slate-100 shadow-sm">
                                 <div class="flex justify-between items-start mb-4">
                                     <h4 class="text-sm font-bold text-dark leading-snug">${p.question}</h4>
-                                    ${hasVoted ? `<button onclick="retractVote('${p._id}')" class="text-[9px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded-full border border-red-100 active:scale-95 transition">Retract Vote</button>` : ''}
                                 </div>
                                 <div class="space-y-3">
                                     ${p.options.map((opt, idx) => {
-                                        if(hasVoted) {
-                                            const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
-                                            return `
+                            if (hasVoted) {
+                                const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+                                return `
                                                 <div class="relative w-full h-8 bg-slate-50 rounded-lg overflow-hidden border border-slate-100">
                                                     <div class="absolute top-0 left-0 h-full bg-primary/10 transition-all duration-1000" style="width: ${percent}%"></div>
                                                     <div class="relative z-10 h-full flex justify-between items-center px-3 text-[10px] font-bold">
@@ -1588,14 +1945,14 @@ This is a computer generated document.
                                                     </div>
                                                 </div>
                                             `;
-                                        } else {
-                                            return `
+                            } else {
+                                return `
                                                 <button onclick="votePoll('${p._id}', ${idx})" class="w-full text-left p-3 text-[11px] font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:border-primary hover:text-primary active:scale-[0.98] transition">
                                                     ${opt.text}
                                                 </button>
                                             `;
-                                        }
-                                    }).join('')}
+                            }
+                        }).join('')}
                                 </div>
                                 <p class="text-[9px] text-slate-400 mt-4 font-bold uppercase tracking-widest text-center">${totalVotes} total responses</p>
                             </div>
@@ -1603,15 +1960,9 @@ This is a computer generated document.
                     });
                 }
                 document.getElementById('pollsList').innerHTML = html;
-            } catch (err) {}
+            } catch (err) { }
         }
 
-        async function retractVote(pollId) {
-            showConfirm("Retract Vote?", "Your previous vote will be removed. You can then cast a new vote.", async () => {
-                await fetch(`${API_URL}/polls/${pollId}/vote`, { method: 'DELETE', headers: getAuthHeaders() });
-                loadPolls();
-            });
-        }
 
         async function votePoll(pollId, optionIndex) {
             try {
@@ -1620,42 +1971,42 @@ This is a computer generated document.
                     headers: getAuthHeaders(),
                     body: JSON.stringify({ optionIndex })
                 });
-                if(res.ok) {
+                if (res.ok) {
                     showToast("Your vote has been recorded.", "Poll Update");
                     loadPolls();
                 }
-            } catch(e) {}
+            } catch (e) { }
         }
 
         function switchSellerTab(tab) {
             const views = ['sellerViewOrders', 'sellerViewAnalytics', 'sellerViewInventory'];
             const buttons = ['btnSellerOrders', 'btnSellerStats', 'btnSellerInv'];
-            
+
             views.forEach(v => {
                 const el = document.getElementById(v);
-                if(el) el.classList.add('hidden');
+                if (el) el.classList.add('hidden');
             });
-            
+
             buttons.forEach(id => {
                 const b = document.getElementById(id);
-                if(b) {
+                if (b) {
                     b.classList.remove('border-primary', 'text-primary');
                     b.classList.add('border-transparent', 'text-slate-400');
                 }
             });
-            
+
             let activeView = '';
             let activeBtn = '';
-            
-            if(tab === 'orders') { activeView = 'sellerViewOrders'; activeBtn = 'btnSellerOrders'; }
-            else if(tab === 'analytics') { activeView = 'sellerViewAnalytics'; activeBtn = 'btnSellerStats'; }
-            else if(tab === 'inventory') { activeView = 'sellerViewInventory'; activeBtn = 'btnSellerInv'; }
-            
+
+            if (tab === 'orders') { activeView = 'sellerViewOrders'; activeBtn = 'btnSellerOrders'; }
+            else if (tab === 'analytics') { activeView = 'sellerViewAnalytics'; activeBtn = 'btnSellerStats'; }
+            else if (tab === 'inventory') { activeView = 'sellerViewInventory'; activeBtn = 'btnSellerInv'; }
+
             const vEl = document.getElementById(activeView);
-            if(vEl) vEl.classList.remove('hidden');
-            
+            if (vEl) vEl.classList.remove('hidden');
+
             const bEl = document.getElementById(activeBtn);
-            if(bEl) {
+            if (bEl) {
                 bEl.classList.remove('border-transparent', 'text-slate-400');
                 bEl.classList.add('border-primary', 'text-primary');
             }
@@ -1692,7 +2043,7 @@ This is a computer generated document.
                     headers: getAuthHeaders(),
                     body: JSON.stringify(payload)
                 });
-                if(res.ok) {
+                if (res.ok) {
                     showToast("Product listing updated", "Marketplace");
                     closeModal(null, 'editProductModal');
                     loadSellerDashboard();
@@ -1700,7 +2051,7 @@ This is a computer generated document.
                     const err = await res.json();
                     showToast(err.error || "Update failed", "Error");
                 }
-            } catch(e) {
+            } catch (e) {
                 showToast("Connection error during update", "Error");
             } finally {
                 btn.innerHTML = originalText;
@@ -1711,4 +2062,5 @@ This is a computer generated document.
         checkAuth();
     </script>
 </body>
+
 </html>
