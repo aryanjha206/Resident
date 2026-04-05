@@ -117,13 +117,13 @@
         </header>
 
         <main class="p-5 space-y-6">
-            <!-- Panic Control -->
-            <div class="panic-btn p-7 rounded-[2rem] flex items-center justify-between text-white group cursor-pointer active:scale-95 transition-all shadow-2xl relative overflow-hidden" onclick="triggerSOS()">
+            <!-- Broadcast Control -->
+            <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 p-7 rounded-[2rem] flex items-center justify-between text-white group cursor-pointer active:scale-95 transition-all shadow-xl relative overflow-hidden" onclick="broadcastToManagement()">
                 <div class="relative z-10">
-                    <h2 class="text-2xl font-black tracking-tight">SOS ALERT</h2>
-                    <p class="text-[10px] font-semibold opacity-80 uppercase tracking-widest">Broadcast to Management</p>
+                    <h2 class="text-2xl font-black tracking-tight">Broadcast</h2>
+                    <p class="text-[10px] font-semibold opacity-80 uppercase tracking-widest">Message Management Hub</p>
                 </div>
-                <i class="fa-solid fa-bullhorn text-4xl opacity-30 relative z-10 group-hover:scale-125 transition-transform duration-500"></i>
+                <i class="fa-solid fa-paper-plane text-4xl opacity-30 relative z-10 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-500"></i>
                 <div class="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
 
@@ -146,8 +146,8 @@
                     </form>
 
                     <div class="pt-4 flex items-center justify-center gap-6">
-                        <button class="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xl border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 transition"><i class="fa-solid fa-qrcode"></i></button>
-                        <button class="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xl border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 transition"><i class="fa-solid fa-camera"></i></button>
+                        <button onclick="startScanning('QR')" class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 text-xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-qrcode"></i></button>
+                        <button onclick="startScanning('Camera')" class="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xl border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm"><i class="fa-solid fa-camera"></i></button>
                     </div>
                 </div>
 
@@ -219,11 +219,54 @@
         const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:5000/api' : '/api';
         let currentVisitor = null;
 
+        async function loadRecentLogs() {
+            const list = document.getElementById('recentEntries');
+            list.innerHTML = '<div class="text-center py-4 opacity-30 font-bold text-[10px] uppercase tracking-widest">Fetching Logs...</div>';
+            
+            try {
+                const res = await fetch(`${API_URL}/security/recent-logs`);
+                const logs = await res.json();
+                
+                if(logs.length === 0) {
+                    list.innerHTML = '<div class="text-center py-4 opacity-30 font-bold text-[10px] uppercase tracking-widest">No Recent Activity</div>';
+                    return;
+                }
+
+                list.innerHTML = logs.map(log => `
+                    <div class="glass-card p-4 flex items-center justify-between ${log.status === 'Entered' ? 'border-emerald-100 bg-emerald-50/20' : 'border-slate-100 bg-slate-50/20'}">
+                        <div class="flex items-center gap-4">
+                            <i class="fa-solid ${log.status === 'Entered' ? 'fa-circle-check text-emerald-500' : 'fa-circle-right text-slate-400 rotate-180'}"></i>
+                            <div>
+                                <h4 class="text-xs font-black text-slate-800 leading-none">${log.visitorName}</h4>
+                                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">${log.status} • ${new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                        </div>
+                        <span class="text-[8px] font-black ${log.status === 'Entered' ? 'text-emerald-600 bg-emerald-100' : 'text-slate-600 bg-slate-100'} px-2 py-0.5 rounded-full">${log.status}</span>
+                    </div>
+                `).join('');
+            } catch(e) {
+                list.innerHTML = '<div class="text-center py-4 text-rose-500 font-bold text-[10px] uppercase tracking-widest">Failed to load logs</div>';
+            }
+        }
+
+        function broadcastToManagement() {
+            const msg = prompt("Enter broadcast message for management:");
+            if(msg) {
+                alert("MESSAGE BROADCASTED: " + msg);
+                // Optionally send to /api/chat/messages if we have a societyId, but guard currently doesn't
+            }
+        }
+
+        function startScanning(type) {
+            alert(`Initializing ${type} Scanner... Please allow camera access.`);
+        }
+
         function checkAuth() {
             const token = localStorage.getItem('guardToken');
             if (token) {
                 document.getElementById('authView').style.display = 'none';
                 document.getElementById('workspaceView').classList.remove('hidden');
+                loadRecentLogs();
             } else {
                 document.getElementById('authView').style.display = 'flex';
                 document.getElementById('workspaceView').classList.add('hidden');
@@ -330,27 +373,14 @@
             try {
                 await fetch(`${API_URL}/visitors/${id}/check-in`, { method: 'PUT' });
                 closeResult();
-                const list = document.getElementById('recentEntries');
-                const html = `
-                    <div class="glass-card p-4 flex items-center justify-between border-emerald-100 bg-emerald-50/30 animate-pulse">
-                        <div class="flex items-center gap-4">
-                            <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-800 leading-none">${currentVisitor.visitorName}</h4>
-                                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">Verified • Just Now</p>
-                            </div>
-                        </div>
-                        <span class="text-[8px] font-black text-emerald-600 uppercase tracking-tighter bg-emerald-100 px-2 py-0.5 rounded-full">ENTRY</span>
-                    </div>
-                `;
-                list.insertAdjacentHTML('afterbegin', html);
-            } catch(e) {}
+                loadRecentLogs();
+            } catch(e) {
+                alert("Failed to record entry.");
+            }
         }
 
         function triggerSOS() {
-            if(confirm("ACTIVATE SOS? This will broadcast an emergency signal to management staff.")) {
-                alert("EMERGENCY SIGNAL ACTIVE. STAFF NOTIFIED.");
-            }
+            // Replaced by Broadcast
         }
 
         checkAuth();

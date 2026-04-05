@@ -543,6 +543,12 @@ def verify_pass():
         "status": visitor["status"]
     })
 
+@app.route('/api/security/recent-logs', methods=['GET'])
+def get_recent_logs():
+    # Fetch last 10 entries/exits
+    logs = list(visitors_col.find({"status": {"$in": ["Entered", "Exited"]}}).sort("date", -1).limit(10))
+    return jsonify([format_doc(l) for l in logs])
+
 @app.route('/api/bookings', methods=['GET', 'POST'])
 @token_required
 def manage_bookings():
