@@ -136,20 +136,24 @@
                     <h3 class="text-2xl font-bold text-dark" id="statCollected">₹0</h3>
                 </div>
                 <div class="glass-card p-4 relative overflow-hidden group">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pending Complaints</p>
-                    <h3 class="text-2xl font-bold text-dark" id="statComplaints">0</h3>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pending Collection</p>
+                    <h3 class="text-2xl font-bold text-dark" id="statPendingCollection">₹0</h3>
                 </div>
-                <div class="glass-card p-4 relative overflow-hidden group">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Today's Visitors</p>
-                    <h3 class="text-2xl font-bold text-dark" id="statVisitors">0</h3>
+                <div class="glass-card p-4 relative overflow-hidden group border-red-50">
+                    <p class="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1">Pending Complaints</p>
+                    <h3 class="text-2xl font-bold text-red-600" id="statComplaints">0</h3>
                 </div>
-                <div class="glass-card p-4 relative overflow-hidden group">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Bookings</p>
-                    <h3 class="text-2xl font-bold text-dark" id="statBookings">0</h3>
+                <div class="glass-card p-4 relative overflow-hidden group border-indigo-50">
+                    <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-1">Today's Visitors</p>
+                    <h3 class="text-2xl font-bold text-indigo-600" id="statVisitors">0</h3>
                 </div>
-                <div class="glass-card p-4 relative overflow-hidden group">
-                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Market Revenue</p>
-                    <h3 class="text-2xl font-bold text-dark" id="statMarketRevenue">₹0</h3>
+                <div class="glass-card p-4 relative overflow-hidden group border-teal-50">
+                    <p class="text-[10px] font-bold text-teal-400 uppercase tracking-wider mb-1">Total Bookings</p>
+                    <h3 class="text-2xl font-bold text-teal-600" id="statBookings">0</h3>
+                </div>
+                <div class="glass-card p-4 relative overflow-hidden group border-fuchsia-50">
+                    <p class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider mb-1">Market Revenue</p>
+                    <h3 class="text-2xl font-bold text-fuchsia-600" id="statMarketRevenue">₹0</h3>
                 </div>
             </div>
 
@@ -431,6 +435,7 @@
                 if(res.ok){
                     const data = await res.json();
                     document.getElementById('statCollected').innerText = '₹' + (data.dues_collected || 0).toLocaleString();
+                    document.getElementById('statPendingCollection').innerText = '₹' + (data.dues_pending || 0).toLocaleString();
                     document.getElementById('statComplaints').innerText = data.pending_complaints || 0;
                     document.getElementById('statVisitors').innerText = data.today_visitors || 0;
                     document.getElementById('statBookings').innerText = data.total_bookings || 0;
