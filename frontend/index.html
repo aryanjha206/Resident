@@ -758,46 +758,111 @@
                 </div>
             </div>
 
-            <!-- PROPERTY TAB -->
-            <div id="tab-property" class="tab-view space-y-6">
-                <h2 class="text-lg font-bold text-dark">Facilities, Security & Logs</h2>
-
-                <!-- BOOKINGS -->
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">My Bookings</h3>
-                    <div id="myBookingsList" class="space-y-3 mb-6">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div>
+            <!-- PROPERTY HUB -->
+            <div id="tab-property" class="tab-view space-y-7">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-xl font-bold text-dark">Property Hub</h2>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Manage Your Residence</p>
                     </div>
                 </div>
 
-                <!-- GATE PASSES -->
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Active Gate Passes</h3>
-                    <div id="myVisitorsList" class="space-y-3 mb-6">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
-                    </div>
+                <!-- Management Control Panel (Quick Actions) -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="openModal('visitorModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-indigo-50/50">
+                        <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center text-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-id-badge"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="text-xs font-bold text-dark mb-0.5">Guest Entry</h4>
+                            <p class="text-[9px] text-slate-400 font-medium">Generate gate pass</p>
+                        </div>
+                    </button>
+                    <button onclick="openModal('bookingModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-emerald-50/50">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-calendar-check"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="text-xs font-bold text-dark mb-0.5">Amenities</h4>
+                            <p class="text-[9px] text-slate-400 font-medium">Book facilities</p>
+                        </div>
+                    </button>
+                    <button onclick="openModal('complaintModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-rose-50/50">
+                        <div class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="text-xs font-bold text-dark mb-0.5">Maintenance</h4>
+                            <p class="text-[9px] text-slate-400 font-medium">Raise incident</p>
+                        </div>
+                    </button>
+                    <button onclick="openModal('vehicleModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-amber-50/50">
+                        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                            <i class="fa-solid fa-car"></i>
+                        </div>
+                        <div class="text-left">
+                            <h4 class="text-xs font-bold text-dark mb-0.5">My Vehicles</h4>
+                            <p class="text-[9px] text-slate-400 font-medium">Registry & parking</p>
+                        </div>
+                    </button>
                 </div>
 
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">My Vehicle Registry</h3>
-                    <div id="myVehiclesList" class="space-y-3 mb-6">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                <!-- Active Status Lists -->
+                <div class="space-y-8">
+                    <!-- BOOKINGS SECTION -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 px-1">
+                           <div class="w-1 h-3 bg-emerald-500 rounded-full"></div>
+                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Upcoming Bookings</h3>
+                        </div>
+                        <div id="myBookingsList" class="space-y-3">
+                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                <i class="fa-solid fa-calendar-days text-2xl text-slate-200 mb-2 block"></i>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active reservations</span>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="openModal('vehicleModal')"
-                        class="w-full bg-slate-50 border border-slate-200 text-slate-600 text-[11px] font-bold py-3 rounded-xl hover:bg-slate-100 transition shadow-sm mb-6">+
-                        Register New Vehicle</button>
-                </div>
 
-                <!-- COMPLAINTS -->
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">My Complaints</h3>
+                    <!-- PASSES SECTION -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 px-1">
+                           <div class="w-1 h-3 bg-indigo-500 rounded-full"></div>
+                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Security Passes</h3>
+                        </div>
+                        <div id="myVisitorsList" class="space-y-3">
+                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                <i class="fa-solid fa-id-card text-2xl text-slate-200 mb-2 block"></i>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active gate passes</span>
+                            </div>
+                        </div>
                     </div>
-                    <button onclick="openModal('complaintModal')"
-                        class="w-full bg-indigo-50 border border-indigo-200 text-indigo-600 text-[11px] font-bold py-3 rounded-xl hover:bg-indigo-100 transition shadow-sm mb-4">+
-                        Raise New Complaint</button>
-                    <div id="myComplaintsList" class="space-y-3">
-                        <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+
+                    <!-- VEHICLES SECTION -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 px-1">
+                           <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
+                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Vehicle Registry</h3>
+                        </div>
+                        <div id="myVehiclesList" class="space-y-3">
+                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                <i class="fa-solid fa-car-side text-2xl text-slate-200 mb-2 block"></i>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No registered vehicles</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- COMPLAINTS SECTION -->
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-2 px-1">
+                           <div class="w-1 h-3 bg-rose-500 rounded-full"></div>
+                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Grievance Log</h3>
+                        </div>
+                        <div id="myComplaintsList" class="space-y-3">
+                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                                <i class="fa-solid fa-clipboard-check text-2xl text-slate-200 mb-2 block"></i>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Everything looks good!</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1663,21 +1728,28 @@ This is a computer generated document.
                 // Since GET /api/complaints restricts to societyId but we want user specific, 
                 // we can filter here locally for the resident, or backend restricts to user_id.
                 // Our backend actually restricts to userId for Resident automatically!
-                if (complaints.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No active complaints submitted.</p>`;
-
-                complaints.forEach(c => {
-                    const style = c.status === 'Resolved' ? 'text-emerald-500' : 'text-amber-500';
-                    html += `
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-600 font-bold">${c.category}</span>
-                                <span class="text-[10px] font-bold ${style}">${c.status}</span>
+                if (complaints.length === 0) {
+                    html = '<div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200"><i class="fa-solid fa-clipboard-check text-2xl text-slate-200 mb-2 block"></i><span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Everything looks good!</span></div>';
+                } else {
+                    complaints.forEach(c => {
+                        const style = c.status === 'Resolved' ? 'text-emerald-500 bg-emerald-50' : 'text-amber-500 bg-amber-50';
+                        html += `
+                            <div class="glass-card p-4 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                <div class="flex justify-between items-start mb-2.5">
+                                    <div class="flex flex-col">
+                                        <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest border border-slate-100 w-fit px-1.5 py-0.5 rounded-md mb-1.5">${c.category}</span>
+                                        <h4 class="text-[13px] font-bold text-dark leading-snug">${c.description}</h4>
+                                    </div>
+                                    <span class="text-[9px] font-black uppercase tracking-tighter px-2 py-1 rounded-lg ${style}">${c.status}</span>
+                                </div>
+                                <div class="flex justify-between items-center pt-2.5 border-t border-slate-50">
+                                    <span class="text-[9px] text-slate-400 font-medium leading-none flex items-center gap-1.5"><i class="fa-regular fa-calendar text-[10px]"></i> ${new Date(c.createdAt || c.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'})}</span>
+                                    ${c.status !== 'Resolved' ? `<span class="text-[8px] text-primary font-bold uppercase tracking-widest animate-pulse">In Review</span>` : ''}
+                                </div>
                             </div>
-                            <p class="text-xs text-slate-700 leading-relaxed">${c.description}</p>
-                            <p class="text-[9px] text-slate-400 mt-2">${new Date(c.date).toLocaleDateString()}</p>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                }
                 document.getElementById('myComplaintsList').innerHTML = html;
             } catch (e) { }
         }
@@ -1687,30 +1759,34 @@ This is a computer generated document.
                 const res = await fetch(`${API_URL}/visitors`, { headers: getAuthHeaders() });
                 const visitors = await res.json();
                 let html = '';
-                if (visitors.length === 0) html = `<p class="text-[10px] text-slate-400 py-3 text-center">No visitors expected or logged.</p>`;
+                if (visitors.length === 0) {
+                    html = '<div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200"><i class="fa-solid fa-id-card text-2xl text-slate-200 mb-2 block"></i><span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active gate passes</span></div>';
+                } else {
+                    visitors.forEach(v => {
+                        let style = 'bg-slate-50 text-slate-500 border-slate-100';
+                        if(v.status === 'Entered') style = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                        else if(v.status === 'Expected') style = 'bg-indigo-50 text-primary border-indigo-100';
 
-                visitors.forEach(v => {
-                    let style = 'bg-slate-100 text-slate-700';
-                    let borderStyle = 'border-slate-200';
-                    if (v.status === 'Entered') { style = 'bg-emerald-100 text-emerald-700'; borderStyle = 'border-emerald-200'; }
-                    else if (v.status === 'Expected') { style = 'bg-amber-100 text-amber-600'; borderStyle = 'border-indigo-200'; }
-
-                    html += `
-                        <div class="bg-white border-2 border-dashed ${borderStyle} p-3 rounded-xl relative overflow-hidden flex justify-between items-center shadow-sm">
-                            <div class="flex-1">
-                                <h4 class="text-sm font-bold text-dark">${v.visitorName}</h4>
-                                <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Purpose: ${v.purpose}</p>
-                                <div class="mt-2 text-[10px] bg-slate-50 px-2 py-1 rounded inline-block text-slate-500">
-                                    <i class="fa-solid fa-clock"></i> ${new Date(v.expectedDate).toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        html += `
+                            <div class="bg-white border ${v.status === 'Expected' ? 'border-primary shadow-sm ring-2 ring-primary/5' : 'border-slate-100'} p-3.5 rounded-2xl flex justify-between items-center hover:shadow-md transition-shadow">
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-11 h-11 rounded-xl flex flex-col items-center justify-center border ${style} shadow-sm overflow-hidden bg-opacity-30">
+                                        <span class="text-[8px] font-black uppercase leading-none mb-1 opacity-60">${new Date(v.expectedDate).toLocaleDateString([], {month:'short'})}</span>
+                                        <span class="text-sm font-black leading-none">${new Date(v.expectedDate).toLocaleDateString([], {day:'2-digit'})}</span>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[13px] font-bold text-dark mb-0.5">${v.visitorName}</h4>
+                                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1.5"><i class="fa-solid fa-location-arrow text-[8px]"></i> ${v.purpose}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right flex flex-col items-end gap-1.5">
+                                    <span class="text-[9px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-md border ${v.status === 'Entered' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-slate-400 bg-slate-50 border-slate-100'}">${v.status}</span>
+                                    ${v.status === 'Expected' ? `<h3 class="text-sm font-black text-primary tracking-[0.15em] font-mono">${v.passCode}</h3>` : ''}
                                 </div>
                             </div>
-                            <div class="text-right flex flex-col items-end justify-center">
-                                <span class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider mb-2 block ${style}">${v.status}</span>
-                                <span class="font-bold text-primary tracking-widest text-lg bg-indigo-50 px-2 py-1 rounded border border-indigo-100">${v.status === 'Expected' ? v.passCode : 'XXXXXX'}</span>
-                            </div>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                }
                 document.getElementById('myVisitorsList').innerHTML = html;
             } catch (e) { }
         }
@@ -1794,26 +1870,30 @@ This is a computer generated document.
                 const res = await fetch(`${API_URL}/bookings`, { headers: getAuthHeaders() });
                 const bookings = await res.json();
                 let html = '';
-                if (bookings.length === 0) html = `<p class="text-[10px] text-slate-400 py-3 text-center">No active facility reservations.</p>`;
-
-                bookings.forEach(b => {
-                    html += `
-                        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 p-4 rounded-xl relative flex items-center gap-4 shadow-sm mb-3">
-                            <div class="w-14 h-14 rounded-2xl bg-white shadow-sm flex flex-col items-center justify-center text-emerald-500 shrink-0">
-                                <i class="fa-solid fa-calendar-check text-xl mb-0.5"></i>
-                                <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest leading-none">${b.guests || 1} Guests</span>
+                if (bookings.length === 0) {
+                    html = '<div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200"><i class="fa-solid fa-calendar-days text-2xl text-slate-200 mb-2 block"></i><span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active reservations</span></div>';
+                } else {
+                    bookings.forEach(b => {
+                        html += `
+                            <div class="glass-card p-4 flex items-center justify-between shadow-sm bg-gradient-to-r from-white to-emerald-50/30 overflow-hidden relative">
+                                <div class="flex items-center gap-4 relative z-10">
+                                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl shadow-inner border border-emerald-100/50"><i class="fa-solid fa-hotel"></i></div>
+                                    <div>
+                                        <h4 class="text-[14px] font-bold text-dark mb-0.5">${b.facility}</h4>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[9px] font-black text-emerald-600 bg-emerald-100/50 px-1.5 py-0.5 rounded uppercase tracking-wider">${new Date(b.date).toLocaleDateString([], {day:'numeric', month:'short'})}</span>
+                                            <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">• ${b.slot.split('(')[0].trim()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col items-end gap-2 relative z-10">
+                                    <button onclick="cancelBooking('${b._id}', this)" class="text-[8px] font-black text-rose-400 bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-100/50 hover:bg-rose-500 hover:text-white transition-all uppercase tracking-widest">Cancel</button>
+                                </div>
+                                <i class="fa-solid fa-calendar-check absolute -bottom-4 -right-4 text-5xl opacity-[0.03] rotate-12"></i>
                             </div>
-                            <div class="flex-1">
-                                <h4 class="text-base font-bold text-dark">${b.facility}</h4>
-                                <p class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mt-1"><i class="fa-regular fa-clock"></i> ${new Date(b.date).toLocaleDateString([], { month: 'short', day: 'numeric' })} • ${b.slot.split('(')[0].trim()}</p>
-                            </div>
-                            <div class="flex flex-col items-end gap-2 shrink-0">
-                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-emerald-500 text-white shadow-sm leading-none"><i class="fa-solid fa-check"></i> ${b.status}</span>
-                                <button onclick="cancelBooking('${b._id}', this)" class="text-[10px] font-bold text-red-400 hover:text-red-500 transition opacity-80 hover:opacity-100 underline decoration-red-200 hover:decoration-red-500 underline-offset-2">Cancel</button>
-                            </div>
-                        </div>
-                    `;
-                });
+                        `;
+                    });
+                }
                 document.getElementById('myBookingsList').innerHTML = html;
             } catch (e) { }
         }
@@ -1856,26 +1936,31 @@ This is a computer generated document.
                 const vehicles = await res.json();
                 let html = '';
                 if (vehicles.length === 0) {
-                    html = '<p class="text-[10px] text-slate-400 py-4 text-center border-2 border-dashed border-slate-100 rounded-xl">Register your car or bike for easier identification.</p>';
+                    html = '<div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200"><i class="fa-solid fa-car-side text-2xl text-slate-200 mb-2 block"></i><span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No registered vehicles</span></div>';
                 } else {
                     window._myVehicles = vehicles;
                     vehicles.forEach((v, idx) => {
                         const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
                         html += `
-                            <div class="glass-card p-4 border-l-4 border-l-primary flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-indigo-50 text-primary flex items-center justify-center text-lg"><i class="fa-solid ${icon}"></i></div>
-                                    <div class="flex flex-col">
-                                        <h4 class="text-sm font-bold text-dark">${v.vehicleNumber}</h4>
-                                        <p class="text-[10px] text-slate-500 font-medium">${v.model}</p>
-                                        <div class="flex gap-2 mt-1">
-                                            <button onclick="editResidentVehicle(${idx})" class="text-[9px] font-bold text-primary underline">Edit Details</button>
-                                            <button onclick="removeResidentVehicle('${v._id}')" class="text-[9px] font-bold text-red-500 underline">Remove</button>
-                                        </div>
+                            <div class="glass-card p-3.5 flex justify-between items-center shadow-sm hover:shadow-md transition-shadow group">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl border border-amber-100/50 shadow-inner group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                                        <i class="fa-solid ${icon}"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-[14px] font-black text-dark tracking-tight uppercase leading-none mb-1">${v.vehicleNumber}</h4>
+                                        <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">${v.model}</p>
                                     </div>
                                 </div>
-                                <div class="text-right">
-                                    <span class="text-[9px] bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full font-black text-slate-600 uppercase tracking-widest">${v.parkingSlot || 'N/A'}</span>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-right">
+                                        <span class="text-[8px] font-black text-slate-300 block uppercase tracking-tighter mb-0.5">Parking</span>
+                                        <span class="text-[12px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100 leading-none">${v.parkingSlot || '??'}</span>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <button onclick="editResidentVehicle(${idx})" class="w-7 h-7 rounded-lg bg-indigo-50 text-primary hover:bg-primary hover:text-white transition-all flex items-center justify-center"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                                        <button onclick="removeResidentVehicle('${v._id}')" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-400 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+                                    </div>
                                 </div>
                             </div>
                         `;
