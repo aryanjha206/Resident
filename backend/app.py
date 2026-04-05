@@ -1023,8 +1023,9 @@ def update_order_status(o_id):
     if not order:
         return jsonify({"error": "Order not found"}), 404
         
-    if role != 'admin' and str(order.get('sellerId')) != user_id:
-        return jsonify({"error": "Unauthorized"}), 403
+    order_seller_id = str(order.get('sellerId')) if order.get('sellerId') else ""
+    if role != 'admin' and order_seller_id != user_id:
+        return jsonify({"error": f"Unauthorized: {user_id} cannot manage order owned by {order_seller_id}"}), 403
 
     update_fields = {"status": new_status}
     if new_status == "Delivered":
@@ -1049,8 +1050,9 @@ def confirm_payment(o_id):
     if not order:
         return jsonify({"error": "Order not found"}), 404
         
-    if role != 'admin' and str(order.get('sellerId')) != user_id:
-        return jsonify({"error": "Unauthorized"}), 403
+    order_seller_id = str(order.get('sellerId')) if order.get('sellerId') else ""
+    if role != 'admin' and order_seller_id != user_id:
+        return jsonify({"error": f"Unauthorized: {user_id} cannot verify payment for order owned by {order_seller_id}"}), 403
 
     orders_col.update_one(
         {"_id": ObjectId(o_id)},

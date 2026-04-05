@@ -774,9 +774,10 @@
                         showToast(`Status updated to ${status}`, "Sync Success");
                         loadSellerData();
                     } else {
-                        showToast("Failed to update status", "Error", "error");
+                        const data = await res.json();
+                        showToast(data.error || "Failed to update status", "Error", "error");
                     }
-                } catch (e) { showToast("Backend sync failed.", "Error", 'error'); }
+                } catch (e) { showToast("Backend sync failed. Check connection.", "Error", 'error'); }
             }, 'safe');
         }
 
@@ -791,9 +792,10 @@
                         showToast("Income consolidated successfully.", "Payment Verified");
                         loadSellerData();
                     } else {
-                        showToast("Failed to confirm payment", "Error", "error");
+                        const data = await res.json();
+                        showToast(data.error || "Failed to confirm payment", "Error", "error");
                     }
-                } catch (e) { showToast("Verification error.", "Status Error", 'error'); }
+                } catch (e) { showToast("Verification error. Check connection.", "Status Error", 'error'); }
             }, 'safe');
         }
 
