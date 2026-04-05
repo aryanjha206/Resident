@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Dashboard - Society Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { primary: '#4F46E5', secondary: '#10B981', accent: '#F59E0B', dark: '#1E293B', light: '#F8FAFC' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); border-radius: 16px; }
+        .glass-header { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.3); position: sticky; top: 0; z-index: 50; }
+        #adminView { display: none; }
+        #loginView { display: flex; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex flex-col">
+
+    <!-- Login View -->
+    <div id="loginView" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#020617] overflow-hidden z-[200]">
+        <!-- Unified Premium Background -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
+            <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+            <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
+        </div>
+
+        <div class="w-full max-w-sm relative group">
+            <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-slate-500 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-1000"></div>
+            
+            <div class="glass-card relative bg-white/95 backdrop-blur-3xl border border-white/20 p-8 pt-12 flex flex-col items-center shadow-2xl rounded-[2.5rem]">
+                <!-- Floating Security Icon -->
+                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-slate-800 shadow-2xl flex items-center justify-center text-white text-4xl transform rotate-6 hover:rotate-0 transition-transform duration-500">
+                    <i class="fa-solid fa-user-shield"></i>
+                </div>
+                
+                <div class="text-center mb-6">
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">Admin Portal</h2>
+                    <div class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-amber-100 mt-2">
+                        <i class="fa-solid fa-lock text-[8px]"></i> Encrypted Session
+                    </div>
+                </div>
+                
+                <p class="text-[11px] text-slate-500 mb-8 text-center leading-relaxed px-4 font-medium">Authorized access specifically for Society Management. Control operations, finance, and community logs from this dashboard.</p>
+                
+                <div class="w-full space-y-4">
+                    <div class="relative group/input">
+                        <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within/input:text-primary transition"></i>
+                        <input type="password" id="pinInput" placeholder="Enter Secure PIN" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-sm font-semibold tracking-widest focus:outline-none focus:ring-4 focus:ring-primary/10 focus:bg-white transition" maxlength="5">
+                    </div>
+                    
+                    <button onclick="loginAdmin()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-primary transition-all active:scale-[0.98] flex items-center justify-center gap-2 group/btn">
+                        Authenticate <i class="fa-solid fa-shield-halved text-xs opacity-50 group-hover/btn:opacity-100 transition"></i>
+                    </button>
+                    <p id="errorMsg" class="text-[10px] text-center mt-3 text-red-500 hidden font-bold bg-red-50 py-2 rounded-lg border border-red-100">Invalid PIN. Please try again.</p>
+                </div>
+
+                <a href="index.html" class="mt-8 text-[11px] font-bold text-slate-400 hover:text-slate-600 transition flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Residential Portal</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- In-App Notification (Toast) -->
+    <div id="toastNotification" class="fixed top-5 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-[150] flex items-center gap-3 transition-all duration-300 translate-y-[-150%] opacity-0 w-[90%] max-w-sm pointer-events-none">
+        <i id="toastIcon" class="fa-solid fa-circle-exclamation text-2xl"></i>
+        <div class="flex-1">
+            <h4 id="toastTitle" class="text-[14px] font-bold tracking-wide">Alert</h4>
+            <p id="toastMessage" class="text-[12px] text-slate-300 leading-tight mt-0.5"></p>
+        </div>
+        <button onclick="hideToast()" class="text-slate-400 hover:text-white transition pointer-events-auto"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-[200] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-3xl w-[85%] max-w-xs p-6 shadow-2xl mx-auto flex flex-col items-center text-center transform scale-95 transition-transform duration-300" id="confirmContent">
+            <div class="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center text-3xl mb-4 border border-red-100">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-xl font-bold text-dark tracking-tight mb-2" id="cModalTitle">Confirm Action</h3>
+            <p class="text-[13px] font-medium text-slate-500 mb-6 w-full leading-relaxed" id="cModalText">Are you sure you want to proceed?</p>
+            <div class="flex gap-3 w-full">
+                <button onclick="closeConfirmModal()" class="w-full bg-slate-100 text-slate-600 font-bold py-3.5 rounded-xl shadow-sm hover:bg-slate-200 transition text-sm">Review</button>
+                <button id="cModalBtn" class="w-full bg-red-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-red-200 hover:bg-red-600 active:scale-95 transition text-sm flex items-center justify-center gap-2">Confirm Action</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard View -->
+    <div id="adminView" class="flex-col h-full bg-slate-50 relative overflow-hidden">
+        
+        <!-- DASHBOARD SCREEN -->
+        <div id="dashboardScreen" class="flex-col h-full flex w-full h-full overflow-y-auto">
+            <header class="glass-header px-5 py-4 flex justify-between items-center sticky top-0 z-40">
+                <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='index.html'" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 hover:text-primary transition"><i class="fa-solid fa-arrow-left text-sm"></i></button>
+                    <h1 class="text-lg font-bold text-dark">Control Panel</h1>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="guard.html" class="text-[10px] font-bold text-indigo-500 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 hidden sm:block"><i class="fa-solid fa-camera mr-1"></i> Security App</a>
+                    <button onclick="logoutAdmin()" class="w-8 h-8 rounded-full bg-red-50 text-red-500 font-bold flex items-center justify-center hover:bg-red-100"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                </div>
+            </header>
+            
+            <main class="flex-1 px-5 py-6 space-y-6 max-w-3xl mx-auto w-full">
+                
+                <!-- Global Society Selector -->
+                <div class="glass-card p-5 border border-indigo-100 shadow-sm relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -z-10"></div>
+                    <div class="flex justify-between items-end mb-3">
+                        <div>
+                            <h2 class="text-xs font-bold text-primary uppercase tracking-wider mb-1"><i class="fa-solid fa-earth-americas mr-1"></i> Society Scope</h2>
+                            <p class="text-[10px] text-slate-500">Select a society to filter all dashboard data.</p>
+                        </div>
+                    </div>
+                    <select id="adminSocietySelect" class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 font-bold text-dark focus:outline-none focus:ring-2 focus:ring-primary shadow-sm appearance-none mb-3" onchange="fetchAdminAnalytics()">
+                        <option value="">Aggregate All (Global)</option>
+                    </select>
+                    <button onclick="toggleSection('createSocietyManager')" class="w-full text-xs font-bold text-indigo-700 bg-indigo-50 py-2.5 rounded-xl hover:bg-indigo-100 transition border border-indigo-100 shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Add New Society</button>
+                </div>
+
+            <!-- Quick Stats Row (Live Data Only) -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="glass-card p-4 relative overflow-hidden group">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Collection</p>
+                    <h3 class="text-2xl font-bold text-dark" id="statCollected">₹0</h3>
+                </div>
+                <div class="glass-card p-4 relative overflow-hidden group">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Pending Complaints</p>
+                    <h3 class="text-2xl font-bold text-dark" id="statComplaints">0</h3>
+                </div>
+                <div class="glass-card p-4 relative overflow-hidden group">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Today's Visitors</p>
+                    <h3 class="text-2xl font-bold text-dark" id="statVisitors">0</h3>
+                </div>
+                <div class="glass-card p-4 relative overflow-hidden group">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Total Bookings</p>
+                    <h3 class="text-2xl font-bold text-dark" id="statBookings">0</h3>
+                </div>
+                <div class="glass-card p-4 relative overflow-hidden group">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Market Revenue</p>
+                    <h3 class="text-2xl font-bold text-dark" id="statMarketRevenue">₹0</h3>
+                </div>
+            </div>
+
+
+            <!-- Management Sections -->
+            <div>
+                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Administration</h2>
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadNotices()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center shadow-sm"><i class="fa-solid fa-bullhorn text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Notices & Alerts</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadComplaints()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-clipboard-list text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Complaints</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadFinanceAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-money-check-dollar text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Finance Module</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadPeopleAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-hard-hat text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Services & Staff</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadVisitorsAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center shadow-sm"><i class="fa-solid fa-address-book text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Visitor & Gate Log</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadBookingsAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-teal-50 text-teal-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-calendar-check text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Amenity Reservations</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadMarketplaceAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-fuchsia-50 text-fuchsia-500 flex items-center justify-center shadow-sm"><i class="fa-solid fa-store text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Marketplace Moderation</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadPollsAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm"><i class="fa-solid fa-square-poll-vertical text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Polls & Surveys</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadSOSAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center shadow-sm animate-pulse"><i class="fa-solid fa-truck-medical text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-red-600">Emergency SOS</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-red-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition active:scale-[0.98]" onclick="loadVehiclesAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-200 text-slate-800 flex items-center justify-center shadow-sm"><i class="fa-solid fa-car text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-dark">Vehicle Registry</h3>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300"></i>
+                    </div>
+
+                    <div class="glass-card p-5 flex items-center justify-between cursor-pointer border-2 border-indigo-100 hover:bg-indigo-50/50 transition active:scale-[0.98] shadow-lg shadow-indigo-100/20" onclick="loadVaultAdmin()">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-md animate-pulse"><i class="fa-solid fa-vault text-xl"></i></div>
+                            <div>
+                                <h3 class="text-base font-bold text-indigo-700">Digital Document Vault</h3>
+                                <p class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">Secure Resident Repository</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-shield-halved text-indigo-300"></i>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- FULL-SCREEN MODULE SCREEN -->
+        <div id="moduleScreen" class="hidden flex-col h-full bg-slate-50 absolute inset-0 z-50 overflow-hidden shadow-2xl">
+            <header class="glass-header px-5 py-4 flex justify-between items-center sticky top-0 z-40 bg-white">
+                <div class="flex items-center gap-3">
+                    <button onclick="closeModule()" class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 text-slate-600 transition"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h1 id="moduleTitle" class="text-md font-bold text-dark">Module</h1>
+                </div>
+            </header>
+            <main id="moduleContent" class="flex-1 overflow-y-auto px-5 py-6 space-y-4 max-w-3xl mx-auto w-full pb-20"></main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.)/.test(window.location.hostname) || window.location.hostname === "";
+        const API_URL = isLocal ? `http://${window.location.hostname || 'localhost'}:5000/api` : '/api';
+        
+        function getAuthHeaders() { return {'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('adminToken')}`} }
+
+        function showToast(message, type = 'error', title = null) {
+            const toast = document.getElementById('toastNotification');
+            const icon = document.getElementById('toastIcon');
+            
+            document.getElementById('toastMessage').innerText = message;
+            document.getElementById('toastTitle').innerText = title || (type === 'error' ? 'Action Required' : 'Success');
+            
+            if (type === 'error') {
+                icon.className = 'fa-solid fa-circle-exclamation text-2xl text-red-400 drop-shadow-lg';
+            } else if (type === 'success') {
+                icon.className = 'fa-solid fa-circle-check text-2xl text-emerald-400 drop-shadow-lg';
+            } else {
+                icon.className = 'fa-solid fa-circle-info text-2xl text-blue-400 drop-shadow-lg';
+            }
+            
+            toast.style.transform = 'translate(-50%, 0)';
+            toast.style.opacity = '1';
+            
+            setTimeout(() => { hideToast(); }, 4000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toastNotification');
+            toast.style.transform = 'translate(-50%, -150%)';
+            toast.style.opacity = '0';
+        }
+
+        let _confirmCallback = null;
+        function showConfirm(title, message, callback) {
+            document.getElementById('cModalTitle').innerText = title;
+            document.getElementById('cModalText').innerText = message;
+            const m = document.getElementById('confirmModal');
+            m.classList.remove('hidden');
+            setTimeout(() => { m.classList.remove('opacity-0'); document.getElementById('confirmContent').classList.remove('scale-95'); }, 10);
+            _confirmCallback = callback;
+        }
+
+        function closeConfirmModal() {
+            const m = document.getElementById('confirmModal');
+            m.classList.add('opacity-0');
+            document.getElementById('confirmContent').classList.add('scale-95');
+            setTimeout(() => { m.classList.add('hidden'); _confirmCallback = null; }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cBtn = document.getElementById('cModalBtn');
+            if(cBtn) {
+                cBtn.addEventListener('click', () => {
+                    if (_confirmCallback) _confirmCallback();
+                    closeConfirmModal();
+                });
+            }
+        });
+
+        function openModule(titleText) {
+            document.getElementById('dashboardScreen').style.display = 'none';
+            document.getElementById('moduleScreen').classList.remove('hidden');
+            document.getElementById('moduleScreen').style.display = 'flex';
+            document.getElementById('moduleTitle').innerText = titleText;
+            document.getElementById('moduleContent').innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-spinner fa-spin text-primary text-2xl"></i></div>`;
+        }
+
+        function closeModule() {
+            document.getElementById('moduleScreen').classList.add('hidden');
+            document.getElementById('moduleScreen').style.display = 'none';
+            document.getElementById('dashboardScreen').style.display = 'flex';
+        }
+
+        if(localStorage.getItem('adminToken')) { showAdmin(); }
+
+        async function loginAdmin() {
+            const pin = document.getElementById('pinInput').value;
+            const btn = document.querySelector('#loginView button');
+            const originalText = btn.innerText;
+            btn.innerText = "Verifying...";
+            try {
+                const res = await fetch(`${API_URL}/auth/admin-login`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ pin }) });
+                if(res.ok) {
+                    const data = await res.json();
+                    localStorage.setItem('adminToken', data.token);
+                    document.getElementById('errorMsg').classList.add('hidden');
+                    btn.innerText = "Success!";
+                    setTimeout(() => { showAdmin(); btn.innerText = originalText; }, 500);
+                } else {
+                    document.getElementById('errorMsg').classList.remove('hidden');
+                    btn.innerText = originalText;
+                }
+            } catch (err) {
+                document.getElementById('errorMsg').innerText = "Verification Failed (Server Offline)";
+                document.getElementById('errorMsg').classList.remove('hidden');
+                btn.innerText = originalText;
+            }
+        }
+
+        function logoutAdmin() {
+            localStorage.removeItem('adminToken');
+            document.getElementById('adminView').style.display = 'none';
+            document.getElementById('loginView').style.display = 'flex';
+            document.getElementById('pinInput').value = '';
+        }
+
+        async function showAdmin() {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('adminView').style.display = 'flex';
+            await loadSocieties();
+            fetchAdminAnalytics();
+        }
+        
+        async function loadSocieties() {
+            try {
+                const res = await fetch(`${API_URL}/admin/societies`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const societies = await res.json();
+                    const sel = document.getElementById('adminSocietySelect');
+                    sel.innerHTML = '<option value="">Aggregate All (Global)</option>';
+                    let htmlList = '';
+                    societies.forEach(s => {
+                        sel.innerHTML += `<option value="${s._id}">${s.name} (Code: ${s.code})</option>`;
+                        htmlList += `
+                            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center">
+                                <div><h4 class="text-sm font-bold">${s.name}</h4><p class="text-[10px] text-slate-500">${s.address || 'No Address'}</p></div>
+                                <div class="bg-indigo-100 text-primary text-xs font-bold py-1 px-2 rounded tracking-widest">${s.code}</div>
+                            </div>
+                        `;
+                    });
+                    if(societies.length > 0) {
+                        // Societies loaded into dropdown
+                    }
+                }
+            } catch(e) {}
+        }
+
+        async function fetchAdminAnalytics() {
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+            try {
+                const res = await fetch(`${API_URL}/analytics${query}`, {headers: getAuthHeaders()});
+                if(res.ok){
+                    const data = await res.json();
+                    document.getElementById('statCollected').innerText = '₹' + (data.dues_collected || 0).toLocaleString();
+                    document.getElementById('statComplaints').innerText = data.pending_complaints || 0;
+                    document.getElementById('statVisitors').innerText = data.today_visitors || 0;
+                    document.getElementById('statBookings').innerText = data.total_bookings || 0;
+                    document.getElementById('statMarketRevenue').innerText = '₹' + (data.market_revenue || 0).toLocaleString();
+                }
+            } catch(e) {}
+        }
+
+        function toggleSection(section) {
+            if (section === 'createSocietyManager') {
+                openModule("Register New Society");
+                const content = document.getElementById('moduleContent');
+                content.innerHTML = `
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm">
+                        <form onsubmit="postSociety(event)" class="space-y-3">
+                            <input id="socName" type="text" placeholder="Society Name (e.g. Gokuldham)" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
+                            <input id="socAddr" type="text" placeholder="Full Address" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
+                            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 mt-2 rounded-xl text-sm hover:bg-indigo-700 transition shadow-md">Generate Society & Access Code</button>
+                        </form>
+                    </div>`;
+            }
+        }
+        
+        async function loadNotices() {
+            openModule("Notices & Alerts");
+            const content = document.getElementById('moduleContent');
+            
+            const sid = document.getElementById('adminSocietySelect').value;
+            content.innerHTML = `<div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>`;
+
+            try {
+                const res = await fetch(`${API_URL}/notices`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const allNotices = await res.json();
+                    const data = sid ? allNotices.filter(n => n.societyId === sid) : allNotices;
+                    
+                    let html = `
+                    <button onclick="showNoticeForm()" class="w-full mb-4 bg-indigo-50 border border-indigo-200 text-indigo-600 text-xs font-bold py-2 rounded-lg hover:bg-indigo-100 transition">+ Post Notice Here</button>
+                    <div id="noticeFormContainer" class="hidden mb-4 p-4 border border-slate-200 rounded-xl bg-slate-50"></div>
+                    <div class="space-y-3">
+                    `;
+                    
+                    if(data.length === 0) html += `<p class="text-xs text-slate-500 text-center py-4">No active notices.</p>`;
+                    window._activeNotices = data;
+                    data.forEach((n, idx) => {
+                        html += `
+                        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="text-sm font-bold text-dark mb-1">${n.title}</h4>
+                                <p class="text-[11px] text-slate-500 leading-relaxed">${n.content}</p>
+                                <div class="mt-2 text-[9px] font-bold text-indigo-400 p-1 bg-white inline-block rounded border border-indigo-100">${n.category.toUpperCase()} • ${new Date(n.createdAt || n.date || Date.now()).toLocaleDateString()}</div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <button onclick="editNotice(${idx})" class="text-indigo-400 hover:text-indigo-600 transition text-sm"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="deleteNotice('${n._id}')" class="text-red-400 hover:text-red-600 transition text-sm"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        </div>`;
+                    });
+                    html += `</div>`;
+                    content.innerHTML = html;
+                } else {
+                    content.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Failed to fetch notices.</p>`;
+                }
+            } catch (err) {
+                 content.innerHTML = `<p class="text-xs text-red-500 text-center py-4">Network error.</p>`;
+            }
+        }
+        
+        function showNoticeForm(id = null, title = '', contentTxt = '', category = 'General') {
+            const sid = document.getElementById('adminSocietySelect').value;
+            if(!sid) { showToast("Please select a specific Society in the top filter to post a notice!", "error"); return; }
+            
+            const ctn = document.getElementById('noticeFormContainer');
+            ctn.classList.remove('hidden');
+            const btnText = id ? 'Update Notice' : 'Broadcast Notice';
+            
+            ctn.innerHTML = `
+                <form onsubmit="submitNotice(event, '${id || ''}')" class="space-y-3">
+                    <input id="nTitle" type="text" placeholder="Notice Title" value="${title}" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <textarea id="nContent" placeholder="Notice Description..." rows="3" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 resize-none">${contentTxt}</textarea>
+                    <select id="nCat" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                        <option ${category==='General'?'selected':''}>General</option>
+                        <option ${category==='Important'?'selected':''}>Important</option>
+                        <option ${category==='Event'?'selected':''}>Event</option>
+                    </select>
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-primary text-white font-bold py-2 rounded-lg text-sm transition">${btnText}</button>
+                        <button type="button" onclick="document.getElementById('noticeFormContainer').classList.add('hidden')" class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm">Cancel</button>
+                    </div>
+                </form>
+            `;
+        }
+
+        function editNotice(idx) {
+            const n = window._activeNotices[idx];
+            showNoticeForm(n._id, n.title, n.content, n.category);
+            const form = document.querySelector('form[onsubmit*="submitNotice"]');
+            form.querySelector('button[type="submit"]').innerText = "Save Updated Notice";
+            window.scrollTo({top: 0, behavior: 'smooth'});
+
+        }
+
+        async function deleteNotice(id) {
+            showConfirm("Remove Alert?", "This notice will be removed from all resident boards. Proceed?", async () => {
+                try {
+                    await fetch(`${API_URL}/notices/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                    loadNotices();
+                } catch(e) { showToast("Failed to delete", "error"); }
+            });
+        }
+        
+        async function submitNotice(e, id) {
+            e.preventDefault();
+            const sid = document.getElementById('adminSocietySelect').value;
+            const payload = {
+                societyId: sid,
+                title: document.getElementById('nTitle').value,
+                content: document.getElementById('nContent').value,
+                category: document.getElementById('nCat').value
+            };
+            
+            try {
+                if(id) {
+                    await fetch(`${API_URL}/notices/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+                } else {
+                    await fetch(`${API_URL}/notices`, { method: 'POST', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+                }
+                loadNotices(); // Refresh to show new set
+            } catch(e) {}
+        }
+
+        async function loadComplaints() {
+            openModule("Review Complaints");
+            const content = document.getElementById('moduleContent');
+
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            try {
+                const res = await fetch(`${API_URL}/complaints${query}`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const data = await res.json();
+                    let html = '';
+                    if(data.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No active complaints.</p>`;
+                    data.forEach(c => {
+                        const style = c.status === 'Resolved' ? 'text-emerald-500' : 'text-red-500';
+                        html += `
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600 font-bold inline-block">${c.category}</span>
+                                    <span class="text-[10px] text-primary font-bold"><i class="fa-solid fa-user"></i> ${c.userName || 'Resident'}</span>
+                                </div>
+                                <p class="text-xs text-dark mt-1">${c.description}</p>
+                            </div>
+                            <div class="text-right ml-2 flex flex-col items-end gap-2">
+                                <span class="text-[10px] font-bold ${style} block">${c.status}</span>
+                                <button onclick="updateComplaint('${c._id}')" class="text-[10px] bg-slate-200 px-2 py-1 rounded">Mark Resolved</button>
+                            </div>
+                        </div>`;
+
+                    });
+                    content.innerHTML = `<div class="space-y-2">${html}</div>`;
+                }
+            } catch (err) {}
+        }
+        
+        async function updateComplaint(id) {
+            try {
+                await fetch(`${API_URL}/complaints/${id}/status`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify({status: 'Resolved'}) });
+                loadComplaints();
+            } catch(e){}
+        }
+
+        async function loadVisitorsAdmin() {
+            openModule("Gate Pass Log");
+            const content = document.getElementById('moduleContent');
+
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            try {
+                const res = await fetch(`${API_URL}/visitors${query}`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const data = await res.json();
+                    let html = '';
+                    if(data.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No gate logs recorded.</p>`;
+                    data.forEach(v => {
+                        let style = 'bg-slate-100 text-slate-600';
+                        let borderStyle = 'border-slate-200';
+                        if(v.status === 'Entered') { style = 'bg-emerald-100 text-emerald-700'; borderStyle = 'border-emerald-200'; }
+                        else if(v.status === 'Expected') { style = 'bg-amber-100 text-amber-600'; borderStyle = 'border-indigo-200'; }
+                        
+                        html += `
+                        <div class="bg-white border-2 border-dashed ${borderStyle} p-3 rounded-xl mb-3 relative overflow-hidden">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="text-[14px] font-bold text-dark">${v.visitorName}</h4>
+                                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Purpose: ${v.purpose}</p>
+                                </div>
+                                <span class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${style}">${v.status}</span>
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded-lg mt-2 flex justify-between items-center text-xs">
+                                <span class="text-slate-500 font-semibold"><i class="fa-solid fa-house-user"></i> ${v.userName}</span>
+                                <span class="font-bold text-primary tracking-widest text-sm bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">${v.status === 'Expected' ? v.passCode : 'XXXXXX'}</span>
+                            </div>
+                        </div>`;
+                    });
+                    content.innerHTML = `<div class="space-y-1">${html}</div>`;
+                }
+            } catch (err) {}
+        }
+
+        async function loadBookingsAdmin() {
+            openModule("Amenity Reservations");
+            const content = document.getElementById('moduleContent');
+
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            try {
+                const res = await fetch(`${API_URL}/bookings${query}`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const bookings = await res.json();
+                    let html = '';
+                    if(bookings.length === 0) html = `<p class="text-xs text-slate-500 text-center py-4">No amenity reservations detected in the registry.</p>`;
+                    bookings.forEach(b => {
+                        html += `
+                        <div class="bg-white border-2 border-dashed border-emerald-200 p-3 rounded-xl mb-3 relative overflow-hidden flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-500 flex items-center justify-center text-xl"><i class="fa-solid fa-bookmark"></i></div>
+                            <div class="flex-1">
+                                <h4 class="text-[14px] font-bold text-dark">${b.facility}</h4>
+                                <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide mt-0.5">🗓️ ${b.date} • ${b.slot.split('(')[0]}</p>
+                            </div>
+                            <div class="text-right flex flex-col items-end gap-2">
+                                <span class="bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded text-[10px] block mb-1"><i class="fa-solid fa-user"></i> ${b.userName}</span>
+                                <button onclick="cancelBookingAdmin('${b._id}')" class="text-[9px] font-bold text-red-500 bg-red-50 px-2 py-1 rounded">Cancel</button>
+                            </div>
+                        </div>`;
+                    });
+                    content.innerHTML = `<div class="space-y-1">${html}</div>`;
+                }
+            } catch (err) {}
+        }
+
+        async function cancelBookingAdmin(id) {
+            showConfirm("Cancel Booking", "Are you sure you want to cancel this reservation?", async () => {
+                try {
+                    await fetch(`${API_URL}/bookings/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                    loadBookingsAdmin();
+                } catch(e) {}
+            });
+        }
+
+        async function loadFinanceAdmin() {
+            openModule("Financial Billing & History");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            let formHtml = `
+                    <div class="bg-emerald-50/50 p-4 border border-emerald-100 rounded-xl mb-4">
+                        <h4 class="text-xs font-bold text-emerald-700 mb-2 uppercase tracking-wide">Generate Invoices</h4>
+                        <form onsubmit="postBulkDues(event)" class="space-y-3">
+                            <input id="duesAmount" type="number" step="0.01" placeholder="Total Setup Amount (₹)" required class="w-full text-sm bg-white border border-emerald-200 rounded-lg px-3 py-2 font-bold">
+                            <input id="duesDate" type="date" required class="w-full text-sm bg-white border border-emerald-200 rounded-lg px-3 py-2">
+                            <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-emerald-700 transition lg cursor-pointer border border-emerald-700">Split & Issue Invoices</button>
+                        </form>
+                    </div><div id="financeList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div></div>`;
+            content.innerHTML = formHtml;
+
+            try {
+                const res = await fetch(`${API_URL}/dues${query}`, {headers: getAuthHeaders()});
+                if(res.ok) {
+                    const dues = await res.json();
+                    let html = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Resident Invoice History</h4>';
+                    if(dues.length === 0) html += `<p class="text-xs text-slate-400">No invoices issued yet.</p>`;
+                    dues.forEach(d => {
+                        const paid = d.status === 'Paid';
+                        html += `
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center mb-2">
+                            <div>
+                                <h4 class="text-sm font-bold text-dark">₹${d.amount} <span class="text-[10px] text-slate-500 font-normal ml-1">Due: ${d.dueDate}</span></h4>
+                                <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-user text-[9px] mr-0.5"></i> ${d.userName}</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-[10px] font-bold px-2 py-1 rounded bg-white text-${paid?'emerald-600':'amber-600'} border border-slate-100">${d.status}</span>
+                            </div>
+                        </div>`;
+                    });
+                    document.getElementById('financeList').innerHTML = html;
+                }
+            } catch(e) {}
+        }
+
+
+        async function loadPeopleAdmin() {
+            openModule("People & Services Directory");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            let formHtml = `
+                    <div class="bg-amber-50/50 p-4 border border-amber-100 rounded-xl mb-4">
+                        <h4 class="text-xs font-bold text-amber-600 mb-2 uppercase tracking-wide">Register New Service</h4>
+                        <form onsubmit="postService(event)" class="space-y-3">
+                            <input id="sName" type="text" placeholder="Full Name or Business Name" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
+                            <input id="sRole" type="text" placeholder="Role (Plumber, Manager)" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
+                            <input id="sPhone" type="tel" placeholder="Contact Phone Number" required class="w-full text-sm bg-white border border-amber-200 rounded-lg px-3 py-2">
+                            <button type="submit" class="w-full bg-amber-500 text-white font-bold py-2 rounded-lg text-sm hover:bg-amber-600 transition">Publish Staff Details</button>
+                        </form>
+                    </div><div id="peopleList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-amber-500"></i></div></div>`;
+            content.innerHTML = formHtml;
+
+            try {
+                const [usersRes, servRes] = await Promise.all([
+                    fetch(`${API_URL}/users${query}`, {headers: getAuthHeaders()}),
+                    fetch(`${API_URL}/services${query}`, {headers: getAuthHeaders()})
+                ]);
+                const users = await usersRes.json();
+                const services = servRes.ok ? await servRes.json() : [];
+
+                let html = '<h4 class="text-[10px] font-black text-amber-600 mb-3 uppercase tracking-widest">Active Staff & Services</h4>';
+                services.forEach(s => {
+                    html += `
+                        <div class="bg-amber-50/30 p-3 rounded-xl border border-amber-100 mb-2 flex justify-between items-center group hover:bg-amber-50/50 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-sm shadow-sm"><i class="fa-solid fa-user-gear"></i></div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-dark">${s.name}</h4>
+                                    <p class="text-[9px] text-amber-600 font-bold uppercase tracking-wider">${s.role} \u2022 ${s.phone}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editStaff('${s._id}', '${s.name}', '${s.role}', '${s.phone}')" class="w-8 h-8 rounded-full bg-white text-slate-400 flex items-center justify-center hover:text-indigo-500 transition shadow-sm"><i class="fa-solid fa-pen-to-square text-[10px]"></i></button>
+                                <button onclick="deleteStaff('${s._id}')" class="w-8 h-8 rounded-full bg-white text-slate-400 flex items-center justify-center hover:text-red-500 transition shadow-sm"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+                            </div>
+                        </div>`;
+                });
+
+                html += '<h4 class="text-[10px] font-black text-slate-400 mt-6 mb-3 uppercase tracking-widest">Resident Directory</h4>';
+                users.forEach(u => {
+                    html += `
+                        <div class="bg-white p-3 rounded-xl border border-slate-100 mb-2 flex justify-between items-center group hover:bg-slate-50 transition shadow-sm">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center text-sm"><i class="fa-solid fa-house-user"></i></div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-dark">${u.name}</h4>
+                                    <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">${u.email}</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="viewResidentDetails('${u.name}', '${u.email}', '${u.role}')" class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:text-primary transition shadow-sm border border-slate-100"><i class="fa-solid fa-circle-info text-[9px]"></i></button>
+                                <button onclick="deleteResident('${u._id}')" class="w-7 h-7 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:text-red-500 transition shadow-sm border border-slate-100"><i class="fa-solid fa-user-minus text-[9px]"></i></button>
+                            </div>
+                        </div>`;
+                });
+                if(users.length === 0 && services.length === 0) html += `<p class="text-xs text-slate-400 text-center py-6 opacity-40 italic">Society is empty. Awaiting registrations.</p>`;
+                
+                document.getElementById('peopleList').innerHTML = html;
+            } catch(e) {}
+        }
+        
+        async function deleteResident(id) {
+            showConfirm("Eject Resident?", "This will immediately remove this user from the society portal directory. Their data will be archived.", async () => {
+                await fetch(`${API_URL}/users/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                loadPeopleAdmin();
+            });
+        }
+
+        async function editStaff(id, name, role, phone) {
+            document.getElementById('sName').value = name;
+            document.getElementById('sRole').value = role;
+            document.getElementById('sPhone').value = phone;
+            const form = document.querySelector('form[onsubmit="postService(event)"]');
+            form.setAttribute('onsubmit', `updateService(event, '${id}')`);
+            form.querySelector('button').innerText = "Update Staff Member";
+            form.querySelector('button').classList.replace('bg-amber-500', 'bg-indigo-600');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function updateService(e, id) {
+            e.preventDefault();
+            const sid = document.getElementById('adminSocietySelect').value;
+            const payload = {
+                societyId: sid,
+                name: document.getElementById('sName').value,
+                role: document.getElementById('sRole').value,
+                phone: document.getElementById('sPhone').value
+            };
+            try {
+                const res = await fetch(`${API_URL}/services/${id}`, { 
+                    method: 'PUT', 
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(payload)
+                });
+                if(res.ok) {
+                    showToast("Staff updated successfully", "success", "Updated");
+                    loadPeopleAdmin();
+                }
+            } catch(e) {}
+        }
+
+        async function deleteStaff(id) {
+            showConfirm("Remove Staff", "Are you sure you want to remove this staff member?", async () => {
+                await fetch(`${API_URL}/services/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                showToast("Staff member removed", "success", "Deleted");
+                loadPeopleAdmin();
+            });
+        }
+
+        function viewResidentDetails(name, email, role) {
+            showToast(`Registered Resident`, `${name} (${email}) - ${role}`, "success", "Info");
+        }
+
+        async function loadVaultAdmin() {
+            openModule("Digital Document Vault");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            const query = sid ? `?societyId=${sid}` : '';
+
+            content.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-primary text-2xl"></i><p class="text-xs text-slate-400 mt-2 font-bold uppercase tracking-widest">Accessing Secure Vault...</p></div>';
+
+            try {
+                const res = await fetch(`${API_URL}/admin/vault/all${query}`, { headers: getAuthHeaders() });
+                const docs = await res.json();
+                
+                let html = '<div class="space-y-3">';
+                if(docs.length === 0) html += '<p class="text-xs text-slate-400 text-center py-10 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-100">No resident documents submitted yet.</p>';
+                
+                docs.forEach(d => {
+                    html += `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex justify-between items-center group hover:bg-slate-50 transition border-l-4 border-l-indigo-500">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-xl"><i class="fa-solid fa-file-shield"></i></div>
+                                <div>
+                                    <h4 class="text-[12px] font-black text-dark tracking-tight leading-none mb-1">${d.documentType}</h4>
+                                    <p class="text-[10px] text-slate-500 font-medium">Resident: <span class="font-bold text-primary">${d.userName}</span></p>
+                                    <p class="text-[8px] text-slate-400 mt-1 font-bold uppercase tracking-widest px-2 py-0.5 bg-slate-50 rounded-md inline-block border border-slate-100">${new Date(d.createdAt).toLocaleDateString()} \u2022 ${d.fileName}</p>
+                                </div>
+                            </div>
+                            <button onclick="viewVaultDoc('${d.fileData}')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-primary hover:text-white transition shadow-sm"><i class="fa-solid fa-eye"></i></button>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                content.innerHTML = html;
+            } catch(err) {
+                content.innerHTML = '<p class="text-center text-xs text-red-500 font-bold">Failed to load vault.</p>';
+            }
+        }
+
+        function viewVaultDoc(data) {
+            const win = window.open();
+            win.document.write('<iframe src="' + data + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+        }
+
+        async function postSociety(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const og = btn.innerText;
+            btn.innerText = "Generating...";
+            try {
+                const res = await fetch(`${API_URL}/admin/societies`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ name: document.getElementById('socName').value, address: document.getElementById('socAddr').value})
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    btn.innerHTML = `<i class='fa-solid fa-check'></i> Created Code: ${data.code}`;
+                    setTimeout(() => { closeModule(); loadSocieties(); }, 2000);
+                } else { btn.innerText = "Failed"; }
+            } catch(e) { btn.innerText = og; }
+        }
+
+        async function postBulkDues(e) {
+            e.preventDefault();
+            const sid = document.getElementById('adminSocietySelect').value;
+             if(!sid) { showToast("Select a specific society first to post invoices!", "error"); return; }
+            
+            const btn = e.target.querySelector('button');
+            const og = btn.innerText;
+            btn.innerText = "Splitting and Invoicing...";
+            
+            try {
+                const res = await fetch(`${API_URL}/dues/bulk`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ 
+                        societyId: sid, 
+                        totalAmount: document.getElementById('duesAmount').value,
+                        dueDate: document.getElementById('duesDate').value
+                    })
+                });
+                
+                const data = await res.json();
+                if(res.ok) {
+                    showToast(data.message, "success");
+                    loadFinanceAdmin();
+                    fetchAdminAnalytics();
+                } else {
+                    showToast(data.error || "Failed to issue dues.", "error");
+                    btn.innerText = og;
+                }
+            } catch(err) {
+                showToast("Network error processing invoices.", "error");
+                btn.innerText = og;
+            }
+        }
+
+        async function loadPollsAdmin() {
+            openModule("Polls & Community Voice");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+
+            let html = `
+                <div class="bg-indigo-50/50 p-4 border border-indigo-100 rounded-xl mb-4">
+                    <h4 class="text-xs font-bold text-indigo-700 mb-2 uppercase tracking-wide">Create New Poll</h4>
+                    <form onsubmit="postPoll(event)" class="space-y-3">
+                        <input id="pollQuestion" type="text" placeholder="Question (e.g. Next social gathering?)" required class="w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2 font-bold">
+                        <div id="pollOptionsContainer" class="space-y-2">
+                            <input type="text" placeholder="Option 1" required class="poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2">
+                            <input type="text" placeholder="Option 2" required class="poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2">
+                        </div>
+                        <button type="button" onclick="addPollOption()" class="text-[10px] font-bold text-primary underline">+ Add Option</button>
+                        <button type="submit" class="w-full bg-primary text-white font-bold py-2 rounded-lg text-sm hover:bg-indigo-700 transition">Deploy Poll to Residents</button>
+                    </form>
+                </div>
+                <div id="pollsListAdmin" class="space-y-3">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-primary"></i></div>
+                </div>
+            `;
+            content.innerHTML = html;
+
+            try {
+                const res = await fetch(`${API_URL}/polls${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const polls = await res.json();
+                window._activePolls = polls; // Store globally
+                let listHtml = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Active & Past Polls</h4>';
+                if(polls.length === 0) listHtml += `<p class="text-xs text-slate-400">No polls created yet.</p>`;
+                
+                polls.forEach((p, idx) => {
+                    const totalVotes = p.options.reduce((acc, opt) => acc + opt.votes, 0);
+                    listHtml += `
+                        <div class="bg-white border border-slate-100 p-4 rounded-xl shadow-sm">
+                            <div class="flex justify-between items-start mb-3">
+                                <h4 class="text-sm font-bold text-dark">${p.question}</h4>
+                                <div class="flex gap-2">
+                                    <button onclick="editPoll(${idx})" class="text-[10px] text-blue-500 font-bold bg-blue-50 px-2 py-1 rounded">Edit</button>
+                                    <button onclick="deletePoll('${p._id}')" class="text-[10px] text-red-500 font-bold bg-red-50 px-2 py-1 rounded">Delete</button>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                ${p.options.map(opt => {
+                                    const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+                                    return `
+                                        <div class="relative w-full h-6 bg-slate-50 rounded overflow-hidden">
+                                            <div class="absolute top-0 left-0 h-full bg-indigo-500/10" style="width: ${percent}%"></div>
+                                            <div class="relative z-10 h-full flex justify-between items-center px-2 text-[9px] font-bold">
+                                                <span class="text-slate-700">${opt.text}</span>
+                                                <span class="text-indigo-600">${opt.votes} votes (${percent}%)</span>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                document.getElementById('pollsListAdmin').innerHTML = listHtml;
+            } catch(e) {}
+        }
+
+        function addPollOption() {
+            const container = document.getElementById('pollOptionsContainer');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `Option ${container.children.length + 1}`;
+            input.required = true;
+            input.className = 'poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2';
+            container.appendChild(input);
+        }
+
+        async function postPoll(e) {
+            e.preventDefault();
+            const sid = document.getElementById('adminSocietySelect').value;
+            if(!sid) { showToast("Select a society first!", "error"); return; }
+            
+            const btn = e.target.querySelector('button[type="submit"]');
+            const og = btn.innerText;
+            btn.innerText = "Deploying...";
+            
+            const options = Array.from(document.querySelectorAll('.poll-opt')).map(i => i.value).filter(v => v.trim() !== '');
+            
+            try {
+                const url = e.target.dataset.id ? `${API_URL}/polls/${e.target.dataset.id}` : `${API_URL}/polls`;
+                const method = e.target.dataset.id ? 'PUT' : 'POST';
+                const res = await fetch(url, {
+                    method: method, headers: getAuthHeaders(),
+                    body: JSON.stringify({ 
+                        societyId: sid, 
+                        question: document.getElementById('pollQuestion').value,
+                        options: options
+                    })
+                });
+                if(res.ok) {
+                    showToast(e.target.dataset.id ? "Poll updated!" : "Community poll is now live!", "success", "Poll Deployed");
+                    loadPollsAdmin();
+                }
+            } catch(e) { btn.innerText = og; }
+        }
+
+        function editPoll(idx) {
+            const p = window._activePolls[idx];
+            const form = document.querySelector('form[onsubmit="postPoll(event)"]');
+            form.dataset.id = p._id;
+            document.getElementById('pollQuestion').value = p.question;
+            const container = document.getElementById('pollOptionsContainer');
+            container.innerHTML = '';
+            p.options.forEach((opt, idx) => {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.placeholder = `Option ${idx + 1}`;
+                input.value = opt.text;
+                input.required = true;
+                input.className = 'poll-opt w-full text-sm bg-white border border-indigo-200 rounded-lg px-3 py-2';
+                container.appendChild(input);
+            });
+            form.querySelector('button[type="submit"]').innerText = "Update Poll & Reset Votes";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deletePoll(id) {
+            showConfirm("Delete Poll", "Are you sure? This will remove all results.", async () => {
+                await fetch(`${API_URL}/polls/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                showToast("Poll removed", "success");
+                loadPollsAdmin();
+            });
+        }
+
+        async function loadSOSAdmin() {
+            openModule("Emergency SOS Monitoring");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+            
+            content.innerHTML = `
+                <div class="bg-red-50 p-4 border border-red-100 rounded-xl mb-4 flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-red-500 text-2xl animate-pulse shadow-sm"><i class="fa-solid fa-bell"></i></div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-red-700">Live SOS Feed</h4>
+                        <p class="text-[10px] text-red-600 font-medium opacity-80 uppercase tracking-widest mt-1">Real-time Emergency Monitoring</p>
+                    </div>
+                    <div class="bg-white/50 px-2.5 py-1 rounded-lg border border-red-200 text-[10px] font-black text-red-600 animate-pulse">LIVE</div>
+                </div>
+                <div id="sosListAdmin" class="space-y-3">
+                    <div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-red-500"></i></div>
+                </div>
+            `;
+
+            try {
+                const res = await fetch(`${API_URL}/sos${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const alerts = await res.json();
+                let html = '';
+                if(alerts.length === 0) {
+                    html += '<p class="text-xs text-slate-400 text-center py-10 opacity-30 italic">No active distress signals in the society.</p>';
+                } else {
+                    alerts.forEach(a => {
+                        const resolved = a.status === 'Resolved';
+                        html += `
+                            <div class="bg-white border-2 ${resolved ? 'border-slate-100 opacity-60' : 'border-red-100 animate-pulse shadow-sm shadow-red-100'} p-4 rounded-2xl mb-3 flex items-start justify-between">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-black tracking-widest uppercase">${a.type || 'SOS'}</span>
+                                        <span class="text-[10px] text-slate-400 font-bold">${new Date(a.createdAt).toLocaleTimeString()}</span>
+                                    </div>
+                                    <h4 class="text-sm font-bold text-dark mb-0.5">${a.userName} • Flat ${a.flatNumber || 'N/A'}</h4>
+                                    <p class="text-xs text-slate-500">${a.location || 'Reported from Resident App'}</p>
+                                </div>
+                                ${!resolved ? `<button onclick="resolveSOS('${a._id}')" class="text-[9px] font-black text-white bg-red-600 px-3 py-1.5 rounded-lg active:scale-95 transition shadow-sm uppercase tracking-wider">Respond Now</button>` : `<span class="text-[9px] font-bold text-emerald-500 bg-emerald-50 px-2 py-1 rounded">RESOLVED</span>`}
+                            </div>
+                        `;
+                    });
+                }
+                document.getElementById('sosListAdmin').innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function resolveSOS(id) {
+            showConfirm("SOS Incident Resolved?", "Has the emergency situation been stabilized? This will archive the alert.", async () => {
+                const res = await fetch(`${API_URL}/sos/${id}/resolve`, { method: 'PUT', headers: getAuthHeaders() });
+                if(res.ok) {
+                    showToast("Emergency signal cleared.", "success", "Resolved");
+                    loadSOSAdmin();
+                }
+            });
+        }
+
+        async function loadMarketplaceAdmin() {
+            openModule("Marketplace Performance");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+
+            try {
+                const [pRes, oRes] = await Promise.all([
+                    fetch(`${API_URL}/marketplace/seller/products${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() }),
+                    fetch(`${API_URL}/marketplace/seller/orders${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() })
+                ]);
+                const products = await pRes.json();
+                const orders = await oRes.json();
+                
+                const totalRevenue = orders.reduce((acc, o) => acc + (o.price || 0), 0);
+                const collectedRevenue = orders.filter(o => o.paymentStatus === 'Paid').reduce((acc, o) => acc + (o.price || 0), 0);
+                const pendingRevenue = orders.filter(o => o.paymentStatus !== 'Paid').reduce((acc, o) => acc + (o.price || 0), 0);
+                const totalProducts = products.length;
+
+                const catStats = {};
+                orders.forEach(o => {
+                    if(o.paymentStatus === 'Paid') {
+                        catStats[o.category || 'General'] = (catStats[o.category || 'General'] || 0) + (o.price || 0);
+                    }
+                });
+
+                let html = `
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="glass-card p-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-xl group">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 group-hover:text-primary transition-colors">Total Possible Revenue</p>
+                            <h4 class="text-2xl font-black mt-1">\u20b9${totalRevenue.toLocaleString()}</h4>
+                            <div class="mt-3 flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-slate-500 animate-pulse"></span>
+                                <span class="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Global Aggregate</span>
+                            </div>
+                        </div>
+                        <div class="glass-card p-5 bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 group">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-emerald-100/60">Revenue Collected</p>
+                            <h4 class="text-2xl font-black mt-1">\u20b9${collectedRevenue.toLocaleString()}</h4>
+                            <div class="mt-3 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check text-[10px] text-emerald-100"></i>
+                                <span class="text-[8px] font-bold text-emerald-100 uppercase tracking-widest">Finalized Cash</span>
+                            </div>
+                        </div>
+                        <div class="glass-card p-5 border-amber-100 bg-white shadow-sm flex flex-col justify-between">
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Invoiced Pending</p>
+                                <h4 class="text-2xl font-black mt-1 text-amber-500">\u20b9${pendingRevenue.toLocaleString()}</h4>
+                            </div>
+                            <p class="text-[8px] font-bold text-slate-400 mt-3 uppercase tracking-widest italic leading-tight">Waiting for seller confirmation</p>
+                        </div>
+                        <div class="glass-card p-5 border-indigo-100 bg-white shadow-sm flex flex-col justify-between">
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Unique Products</p>
+                                <h4 class="text-2xl font-black mt-1 text-indigo-600">${totalProducts}</h4>
+                            </div>
+                            <div class="flex items-center gap-2 mt-3">
+                                <span class="text-[8px] font-bold text-indigo-400 uppercase tracking-widest">Active Listings</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-[2.5rem] border border-slate-100 mb-8 shadow-sm">
+                        <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-indigo-500"></i> Category Sales Distribution</h4>
+                        <div class="space-y-5">
+                            ${Object.entries(catStats).sort((a,b) => b[1] - a[1]).map(([cat, rev]) => {
+                                const percent = collectedRevenue > 0 ? Math.round((rev / collectedRevenue) * 100) : 0;
+                                return `
+                                    <div class="group">
+                                        <div class="flex justify-between items-center mb-2 px-1 text-slate-700">
+                                            <span class="text-[10px] font-black uppercase tracking-tighter">${cat}</span>
+                                            <span class="text-[10px] font-black text-slate-900">\u20b9${rev.toLocaleString()} <span class="text-slate-300 ml-1">(${percent}%)</span></span>
+                                        </div>
+                                        <div class="w-full h-2.5 bg-slate-50 rounded-full overflow-hidden border border-slate-100">
+                                            <div class="h-full bg-slate-900 transition-all duration-1000 group-hover:bg-primary" style="width: ${percent}%"></div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('') || '<p class="text-[10px] text-slate-400 text-center py-4 italic font-bold uppercase tracking-widest opacity-40">No confirmed revenue distribution available yet.</p>'}
+                        </div>
+                    </div>
+                `;
+
+                html += '<h4 class="text-xs font-black text-slate-400 mb-3 uppercase tracking-widest flex items-center gap-2 px-1"><i class="fa-solid fa-clock-rotate-left"></i> Recent Transactions</h4>';
+                if(orders.length === 0) {
+                    html += '<p class="text-xs text-slate-400 text-center py-10 opacity-50">No marketplace traffic detected.</p>';
+                } else {
+                    html += `<div class="space-y-2 mb-8">`;
+                    orders.slice(0, 5).forEach(o => {
+                        let color = o.status === 'Delivered' ? 'text-emerald-500 bg-emerald-50 border-emerald-100' : 'text-indigo-500 bg-indigo-50 border-indigo-100';
+                        html += `
+                            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-primary/20 transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center font-bold text-[10px] text-slate-400 border border-slate-100 overflow-hidden shadow-sm">
+                                        <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-dark">${o.productName}</h4>
+                                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">${o.userName}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-xs font-black text-dark">\u20b9${o.price}</p>
+                                    <span class="text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded border ${color}">${o.status}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                html += '<h4 class="text-xs font-black text-slate-400 mb-3 mt-8 uppercase tracking-widest flex items-center gap-2 px-1"><i class="fa-solid fa-shield-halved"></i> Global Product Scrutiny</h4>';
+                if(products.length === 0) {
+                    html += '<p class="text-xs text-slate-400 text-center py-6 italic opacity-50">No active product listings in the registry.</p>';
+                } else {
+                    html += `<div class="space-y-2">`;
+                    products.forEach(p => {
+                        if(p.status === 'Deleted') return;
+                        html += `
+                            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between group hover:border-red-100 transition">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-50 overflow-hidden">
+                                        ${p.image ? `<img src="${p.image}" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center text-slate-200"><i class="fa-solid fa-image"></i></div>'}
+                                    </div>
+                                    <div>
+                                        <h4 class="text-xs font-bold text-dark">${p.name}</h4>
+                                        <p class="text-[9px] text-fuchsia-500 font-black uppercase tracking-widest">\u20b9${p.price}</p>
+                                    </div>
+                                </div>
+                                <button onclick="deleteProductAdmin('${p._id}')" class="w-8 h-8 rounded-full bg-slate-50 text-slate-300 hover:text-red-500 hover:bg-red-50 transition border border-slate-100 flex items-center justify-center"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            </div>
+                        `;
+                    });
+                    html += `</div>`;
+                }
+
+                content.innerHTML = html;
+            } catch(e) {}
+        }
+
+        async function deleteProductAdmin(id) {
+            showConfirm("Remove Listing?", "As Admin, you are removing this product from the marketplace. This will permanently delete the entry. Proceed?", async () => {
+                await fetch(`${API_URL}/marketplace/products/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                loadMarketplaceAdmin();
+            });
+        }
+
+        async function loadVehiclesAdmin() {
+            openModule("Global Vehicle Registry");
+            const content = document.getElementById('moduleContent');
+            const sid = document.getElementById('adminSocietySelect').value;
+
+            try {
+                const res = await fetch(`${API_URL}/vehicles${sid ? `?societyId=${sid}` : ''}`, { headers: getAuthHeaders() });
+                const vehicles = await res.json();
+                window._activeVehicles = vehicles;
+                let html = `
+                    <div id="vehicleFormContainer" class="hidden mb-4 p-4 border border-slate-200 rounded-xl bg-slate-50"></div>
+                    <h4 class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Registered Resident Vehicles</h4>`;
+                
+                if(vehicles.length === 0) {
+                    html += '<p class="text-xs text-slate-400 text-center py-10">No vehicles registered in the selected scope.</p>';
+                } else {
+                    vehicles.forEach((v, idx) => {
+                        const icon = v.vehicleType === 'Bike' ? 'fa-motorcycle' : 'fa-car';
+                        html += `
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-50 text-slate-400 flex items-center justify-center"><i class="fa-solid ${icon}"></i></div>
+                                    <div>
+                                        <h4 class="text-sm font-bold text-dark uppercase">${v.vehicleNumber}</h4>
+                                        <p class="text-[10px] text-primary font-bold"><i class="fa-solid fa-user"></i> ${v.userName}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right flex items-center gap-4">
+                                    <div class="flex flex-col items-end">
+                                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">${v.model}</span>
+                                        <span class="text-[10px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-bold">${v.parkingSlot || 'NO SLOT'}</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="editVehicle(${idx})" class="text-blue-500 hover:text-blue-700"><i class="fa-solid fa-pen"></i></button>
+                                        <button onclick="deleteVehicle('${v._id}')" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                content.innerHTML = `<div class="space-y-1">${html}</div>`;
+            } catch(e) {}
+        }
+
+        function editVehicle(idx) {
+            const v = window._activeVehicles[idx];
+            const ctn = document.getElementById('vehicleFormContainer');
+            ctn.classList.remove('hidden');
+            ctn.innerHTML = `
+                <h4 class="text-xs font-bold text-dark mb-3">Update Vehicle: ${v.vehicleNumber}</h4>
+                <form onsubmit="submitVehicleUpdate(event, '${v._id}')" class="space-y-3">
+                    <input id="vNum" type="text" value="${v.vehicleNumber}" placeholder="Number Plate" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <select id="vType" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                        <option value="Car" ${v.vehicleType==='Car'?'selected':''}>Car</option>
+                        <option value="Bike" ${v.vehicleType==='Bike'?'selected':''}>Bike</option>
+                    </select>
+                    <input id="vModel" type="text" value="${v.model}" placeholder="Model (e.g. BMW X5)" required class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <input id="vSlot" type="text" value="${v.parkingSlot}" placeholder="Parking Slot" class="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2">
+                    <div class="flex gap-2">
+                        <button type="submit" class="flex-1 bg-primary text-white font-bold py-2 rounded-lg text-sm">Update Registry</button>
+                        <button type="button" onclick="document.getElementById('vehicleFormContainer').classList.add('hidden')" class="bg-slate-200 text-slate-700 font-bold py-2 px-4 rounded-lg text-sm">Cancel</button>
+                    </div>
+                </form>
+            `;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function submitVehicleUpdate(e, id) {
+            e.preventDefault();
+            const payload = {
+                vehicleNumber: document.getElementById('vNum').value,
+                vehicleType: document.getElementById('vType').value,
+                model: document.getElementById('vModel').value,
+                parkingSlot: document.getElementById('vSlot').value
+            };
+            await fetch(`${API_URL}/vehicles/${id}`, { method: 'PUT', headers: getAuthHeaders(), body: JSON.stringify(payload) });
+            showToast("Vehicle updated", "success");
+            loadVehiclesAdmin();
+        }
+
+        async function deleteVehicle(id) {
+            showConfirm("Remove Vehicle", "Permanently remove this vehicle from registry?", async () => {
+                await fetch(`${API_URL}/vehicles/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+                showToast("Vehicle removed", "success");
+                loadVehiclesAdmin();
+            });
+        }
+
+
+        async function postService(e) {
+            e.preventDefault();
+            const sid = document.getElementById('adminSocietySelect').value;
+            if(!sid) { showToast("Select a specific society first to add a service!", "error"); return; }
+            
+            const btn = e.target.querySelector('button');
+            const og = btn.innerText;
+            btn.innerText = "Publishing...";
+            
+            try {
+                const res = await fetch(`${API_URL}/services`, {
+                    method: 'POST', headers: getAuthHeaders(),
+                    body: JSON.stringify({ 
+                        societyId: sid, 
+                        name: document.getElementById('sName').value,
+                        role: document.getElementById('sRole').value,
+                        phone: document.getElementById('sPhone').value
+                    })
+                });
+                
+                if(res.ok) {
+                    showToast("Service contact securely deployed to user directory!", "success", "Success");
+                    loadPeopleAdmin();
+                } else {
+                    showToast("Failed to publish contact.", "error");
+                    btn.innerText = og;
+                }
+            } catch(err) {
+                showToast("Network error publishing service.", "error");
+                btn.innerText = og;
+            }
+        }
+    </script>
+</body>
+</html>
