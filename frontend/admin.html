@@ -456,6 +456,7 @@
 
         function toggleSection(section) {
             if (section === 'createSocietyManager') {
+                openModule("Register New Society");
                 const content = document.getElementById('moduleContent');
                 content.innerHTML = `
                     <div class="bg-white p-6 rounded-[2rem] border border-indigo-100 shadow-xl space-y-6">

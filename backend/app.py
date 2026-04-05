@@ -257,6 +257,15 @@ def update_profile():
     users_col.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
     return jsonify({"message": "Profile updated successfully"})
 
+@app.route('/api/society/me', methods=['GET'])
+@token_required
+def get_my_society():
+    society_id = request.user_data.get('societyId')
+    if not society_id: return jsonify({"error": "No society associated"}), 404
+    society = societies_col.find_one({"_id": ObjectId(society_id)})
+    if not society: return jsonify({"error": "Society not found"}), 404
+    return jsonify(format_doc(society))
+
 # -------------- USERS DIRECTORY MODULE --------------
 @app.route('/api/users', methods=['GET'])
 @token_required

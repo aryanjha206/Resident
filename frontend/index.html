@@ -1215,13 +1215,28 @@
             if (token) {
                 document.getElementById('authOverlay').style.display = 'none';
                 document.getElementById('appContent').style.display = 'block';
+                
                 if (userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
                 if (socName) document.getElementById('societyNameDisplay').innerText = socName;
-
+                
                 const socIcon = localStorage.getItem('userSocietyIcon');
                 if (socIcon) {
                     document.getElementById('societyIconContainer').innerHTML = `<img src="${socIcon}" class="w-full h-full object-cover">`;
                 }
+
+                // Initial fetch to sync any changes
+                fetch(`${API_URL}/society/me`, { headers: getAuthHeaders() })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.name) {
+                            document.getElementById('societyNameDisplay').innerText = data.name;
+                            localStorage.setItem('userSocietyName', data.name);
+                        }
+                        if (data.icon) {
+                            document.getElementById('societyIconContainer').innerHTML = `<img src="${data.icon}" class="w-full h-full object-cover">`;
+                            localStorage.setItem('userSocietyIcon', data.icon);
+                        }
+                    }).catch(e => { });
 
                 fetchDashboardData();
             }
