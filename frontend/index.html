@@ -398,6 +398,9 @@
         <!-- Header -->
         <header class="glass-header px-5 py-4 flex justify-between items-center relative">
             <div class="flex items-center gap-3">
+                <div id="societyIconContainer" class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-purple-500 overflow-hidden flex items-center justify-center text-white shadow-soft shrink-0">
+                    <i class="fa-solid fa-building text-sm"></i>
+                </div>
                 <div>
                     <h1 id="societyNameDisplay" class="text-sm font-bold text-dark flex items-center gap-1">Society Hub
                     </h1>
@@ -1215,6 +1218,11 @@
                 if (userName) document.getElementById('userNameDisplay').innerText = `Welcome, ${userName.split(" ")[0]}`;
                 if (socName) document.getElementById('societyNameDisplay').innerText = socName;
 
+                const socIcon = localStorage.getItem('userSocietyIcon');
+                if (socIcon) {
+                    document.getElementById('societyIconContainer').innerHTML = `<img src="${socIcon}" class="w-full h-full object-cover">`;
+                }
+
                 fetchDashboardData();
             }
         }
@@ -1260,6 +1268,7 @@
                     localStorage.setItem('userId', data.user._id);
                     localStorage.setItem('userName', data.user.name);
                     localStorage.setItem('userSocietyName', data.user.societyName || 'Society Hub');
+                    localStorage.setItem('userSocietyIcon', data.user.societyIcon || '');
                     checkAuth();
                 } else {
                     if (data.error === "Society Code is required for new signup") {
