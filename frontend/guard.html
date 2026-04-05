@@ -136,10 +136,6 @@
                         </button>
                     </form>
 
-                    <div class="pt-4 flex items-center justify-center gap-6">
-                        <button onclick="startScanning('QR')" class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 text-xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition shadow-sm"><i class="fa-solid fa-qrcode"></i></button>
-                        <button onclick="startScanning('Camera')" class="w-14 h-14 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 text-xl border border-slate-200 hover:text-indigo-600 hover:border-indigo-200 transition shadow-sm"><i class="fa-solid fa-camera"></i></button>
-                    </div>
                 </div>
 
             </div>
@@ -216,27 +212,30 @@
                     return;
                 }
 
-                list.innerHTML = logs.map(log => `
-                    <div class="glass-card p-4 flex items-center justify-between ${log.status === 'Entered' ? 'border-emerald-100 bg-emerald-50/20' : 'border-slate-100 bg-slate-50/20'}">
-                        <div class="flex items-center gap-4">
-                            <i class="fa-solid ${log.status === 'Entered' ? 'fa-circle-check text-emerald-500' : 'fa-circle-right text-slate-400 rotate-180'}"></i>
-                            <div>
-                                <h4 class="text-xs font-black text-slate-800 leading-none">${log.visitorName}</h4>
-                                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">${log.status} • ${new Date(log.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                list.innerHTML = logs.map(log => {
+                    const timestamp = new Date(log.date);
+                    const timeStr = timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    const dateStr = timestamp.toLocaleDateString([], {day: '2-digit', month: 'short'});
+                    
+                    return `
+                        <div class="glass-card p-4 flex items-center justify-between ${log.status === 'Entered' ? 'border-emerald-100 bg-emerald-50/20' : 'border-rose-100 bg-rose-50/20'}">
+                            <div class="flex items-center gap-4">
+                                <i class="fa-solid ${log.status === 'Entered' ? 'fa-circle-check text-emerald-500' : 'fa-circle-right text-rose-400 rotate-180'}"></i>
+                                <div>
+                                    <h4 class="text-xs font-black text-slate-800 leading-none">${log.visitorName}</h4>
+                                    <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mt-1">${log.status} • ${dateStr}, ${timeStr}</p>
+                                </div>
                             </div>
+                            <span class="text-[8px] font-black ${log.status === 'Entered' ? 'text-emerald-600 bg-emerald-100' : 'text-rose-600 bg-rose-100'} px-2 py-0.5 rounded-full">${log.status}</span>
                         </div>
-                        <span class="text-[8px] font-black ${log.status === 'Entered' ? 'text-emerald-600 bg-emerald-100' : 'text-slate-600 bg-slate-100'} px-2 py-0.5 rounded-full">${log.status}</span>
-                    </div>
-                `).join('');
+                    `;
+                }).join('');
             } catch(e) {
                 list.innerHTML = '<div class="text-center py-4 text-rose-500 font-bold text-[10px] uppercase tracking-widest">Failed to load logs</div>';
             }
         }
 
 
-        function startScanning(type) {
-            alert(`Initializing ${type} Scanner... Please allow camera access.`);
-        }
 
         function checkAuth() {
             const token = localStorage.getItem('guardToken');
@@ -325,18 +324,34 @@
             const modal = document.getElementById('resultModal');
             const card = document.getElementById('resultCard');
             const icon = document.getElementById('resultIcon');
+            const btn = document.getElementById('entryBtn');
+            const title = document.getElementById('resultTitle');
             
             document.getElementById('vNameDisplay').innerText = v.visitorName;
             document.getElementById('vHostDisplay').innerText = `${v.residentName} (${v.societyName})`;
-            document.getElementById('resultPurp').innerText = `${v.purpose} Entry Granted`;
-
-            icon.className = 'w-20 h-20 rounded-[2rem] flex items-center justify-center text-3xl mx-auto mb-8 border border-emerald-100 bg-emerald-50 text-emerald-600 shadow-md transform rotate-6';
-            icon.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+            
+            if(v.status === 'Entered') {
+                title.innerText = "Check-out Verification";
+                document.getElementById('resultPurp').innerText = `${v.purpose} Exit Authorization`;
+                icon.className = 'w-20 h-20 rounded-[2rem] flex items-center justify-center text-3xl mx-auto mb-8 border border-rose-100 bg-rose-50 text-rose-600 shadow-md transform rotate-6';
+                icon.innerHTML = '<i class="fa-solid fa-door-open"></i>';
+                btn.innerText = "GRANT EXIT";
+                btn.classList.add('bg-rose-600');
+                btn.classList.remove('bg-indigo-600');
+                btn.onclick = () => grantExit(v.visitorId);
+            } else {
+                title.innerText = "Clearance Verified";
+                document.getElementById('resultPurp').innerText = `${v.purpose} Entry Authorized`;
+                icon.className = 'w-20 h-20 rounded-[2rem] flex items-center justify-center text-3xl mx-auto mb-8 border border-emerald-100 bg-emerald-50 text-emerald-600 shadow-md transform rotate-6';
+                icon.innerHTML = '<i class="fa-solid fa-check-double"></i>';
+                btn.innerText = "GRANT ENTRY";
+                btn.classList.add('bg-indigo-600');
+                btn.classList.remove('bg-rose-600');
+                btn.onclick = () => grantAccess(v.visitorId);
+            }
 
             modal.classList.remove('hidden');
             setTimeout(() => { card.classList.replace('scale-90', 'scale-100'); card.classList.replace('opacity-0', 'opacity-100'); }, 10);
-            
-            document.getElementById('entryBtn').onclick = () => grantAccess(v.visitorId);
         }
 
         function closeResult() {
@@ -355,6 +370,16 @@
                 loadRecentLogs();
             } catch(e) {
                 alert("Failed to record entry.");
+            }
+        }
+
+        async function grantExit(id) {
+            try {
+                await fetch(`${API_URL}/visitors/${id}/check-out`, { method: 'PUT' });
+                closeResult();
+                loadRecentLogs();
+            } catch(e) {
+                alert("Failed to record exit.");
             }
         }
 

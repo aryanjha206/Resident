@@ -509,14 +509,14 @@ def add_visitor():
 @app.route('/api/visitors/<v_id>/check-in', methods=['PUT'])
 def check_in_visitor(v_id):
     # Publicly accessible endpoint for the Security Guard app to update Entry status
-    res = visitors_col.update_one({"_id": ObjectId(v_id)}, {"$set": {"status": "Entered"}})
+    res = visitors_col.update_one({"_id": ObjectId(v_id)}, {"$set": {"status": "Entered", "date": datetime.utcnow().isoformat()}})
     if res.modified_count > 0:
         return jsonify({"message": "Visitor marked as ENTERED."})
     return jsonify({"error": "Failed to update visitor"}), 400
 
 @app.route('/api/visitors/<v_id>/check-out', methods=['PUT'])
 def check_out_visitor(v_id):
-    res = visitors_col.update_one({"_id": ObjectId(v_id)}, {"$set": {"status": "Exited"}})
+    res = visitors_col.update_one({"_id": ObjectId(v_id)}, {"$set": {"status": "Exited", "date": datetime.utcnow().isoformat()}})
     if res.modified_count > 0:
         return jsonify({"message": "Visitor marked as EXITED."})
     return jsonify({"error": "Failed to update visitor"}), 400
