@@ -157,12 +157,7 @@ def verify_otp():
         {'user_id': str(user['_id']), 'name': user.get('name', ''), 'role': user.get('role', 'resident'), 'societyId': str(user.get('societyId', ''))}, 
         app.config['SECRET_KEY'], algorithm='HS256'
     )
-    res_data = format_doc(user)
-    if 'societyId' in user:
-        soc = societies_col.find_one({"_id": ObjectId(user['societyId'])})
-        if soc: res_data['societyIcon'] = soc.get('icon', '')
-        
-    return jsonify({"token": token, "user": res_data})
+    return jsonify({"token": token, "user": format_doc(user)})
 
 @app.route('/api/users/<u_id>', methods=['DELETE'])
 @admin_required
@@ -220,28 +215,10 @@ def create_society():
         "name": name,
         "code": code,
         "address": data.get('address', ''),
-        "icon": data.get('icon', ''),
         "createdAt": datetime.utcnow().isoformat()
     }
     societies_col.insert_one(society)
     return jsonify({"message": "Society created", "code": code}), 201
-
-@app.route('/api/admin/societies/<soc_id>', methods=['PUT', 'PATCH'])
-@admin_required
-def update_society(soc_id):
-    data = request.json
-    update_data = {}
-    if 'name' in data: update_data['name'] = data['name']
-    if 'address' in data: update_data['address'] = data['address']
-    if 'icon' in data: update_data['icon'] = data['icon']
-    
-    societies_col.update_one({"_id": ObjectId(soc_id)}, {"$set": update_data})
-    
-    # Sync name in users collection if changed
-    if 'name' in data:
-        users_col.update_many({"societyId": soc_id}, {"$set": {"societyName": data['name']}})
-        
-    return jsonify({"message": "Society metadata updated successfully"})
 
 @app.route('/api/users/profile', methods=['PUT'])
 @token_required
@@ -256,15 +233,6 @@ def update_profile():
     
     users_col.update_one({"_id": ObjectId(user_id)}, {"$set": update_data})
     return jsonify({"message": "Profile updated successfully"})
-
-@app.route('/api/society/me', methods=['GET'])
-@token_required
-def get_my_society():
-    society_id = request.user_data.get('societyId')
-    if not society_id: return jsonify({"error": "No society associated"}), 404
-    society = societies_col.find_one({"_id": ObjectId(society_id)})
-    if not society: return jsonify({"error": "Society not found"}), 404
-    return jsonify(format_doc(society))
 
 # -------------- USERS DIRECTORY MODULE --------------
 @app.route('/api/users', methods=['GET'])

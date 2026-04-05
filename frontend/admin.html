@@ -126,10 +126,7 @@
                     <select id="adminSocietySelect" class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 font-bold text-dark focus:outline-none focus:ring-2 focus:ring-primary shadow-sm appearance-none mb-3" onchange="fetchAdminAnalytics()">
                         <option value="">Aggregate All (Global)</option>
                     </select>
-                    <div class="grid grid-cols-2 gap-3">
-                        <button onclick="toggleSection('createSocietyManager')" class="text-[10px] font-bold text-indigo-700 bg-indigo-50 py-3 rounded-xl hover:bg-indigo-100 transition border border-indigo-100 shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-plus-circle"></i> Add New</button>
-                        <button onclick="toggleSection('listSocieties')" class="text-[10px] font-bold text-slate-700 bg-slate-100 py-3 rounded-xl hover:bg-slate-200 transition border border-slate-200 shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-list-ul"></i> Manage All</button>
-                    </div>
+                    <button onclick="toggleSection('createSocietyManager')" class="w-full text-xs font-bold text-indigo-700 bg-indigo-50 py-2.5 rounded-xl hover:bg-indigo-100 transition border border-indigo-100 shadow-sm flex items-center justify-center gap-2"><i class="fa-solid fa-plus"></i> Add New Society</button>
                 </div>
 
             <!-- Quick Stats Row (Live Data Only) -->
@@ -413,24 +410,12 @@
                     societies.forEach(s => {
                         sel.innerHTML += `<option value="${s._id}">${s.name} (Code: ${s.code})</option>`;
                         htmlList += `
-                            <div class="bg-indigo-50/50 border border-indigo-100 p-4 rounded-2xl flex justify-between items-center group transition hover:bg-indigo-50">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center overflow-hidden border border-indigo-50 shrink-0">
-                                        ${s.icon ? `<img src="${s.icon}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-building text-indigo-300 text-xl"></i>`}
-                                    </div>
-                                    <div>
-                                        <h4 class="text-[14px] font-black text-dark tracking-tight leading-tight">${s.name}</h4>
-                                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">${s.code}</p>
-                                    </div>
-                                </div>
-                                <button onclick="editSocietyMetadata('${s._id}', '${s.name}', '${s.address}', '${s.icon || ''}')" class="w-10 h-10 rounded-xl bg-white text-indigo-500 flex items-center justify-center shadow-sm border border-indigo-50 hover:bg-primary hover:text-white transition group-active:scale-95">
-                                    <i class="fa-solid fa-gear text-sm"></i>
-                                </button>
+                            <div class="bg-slate-50 border border-slate-200 p-3 rounded-xl flex justify-between items-center">
+                                <div><h4 class="text-sm font-bold">${s.name}</h4><p class="text-[10px] text-slate-500">${s.address || 'No Address'}</p></div>
+                                <div class="bg-indigo-100 text-primary text-xs font-bold py-1 px-2 rounded tracking-widest">${s.code}</div>
                             </div>
                         `;
                     });
-                    window._allSocietiesList = societies;
-                    window._allSocietiesHtml = htmlList;
                     if(societies.length > 0) {
                         // Societies loaded into dropdown
                     }
@@ -459,97 +444,14 @@
                 openModule("Register New Society");
                 const content = document.getElementById('moduleContent');
                 content.innerHTML = `
-                    <div class="bg-white p-6 rounded-[2rem] border border-indigo-100 shadow-xl space-y-6">
-                        <div class="flex flex-col items-center gap-4 mb-6">
-                            <div id="createSocIconPreview" onclick="document.getElementById('socIconInput').click()" class="w-24 h-24 rounded-3xl bg-indigo-50 border-2 border-dashed border-indigo-200 flex flex-col items-center justify-center text-indigo-400 cursor-pointer hover:bg-indigo-100 transition overflow-hidden">
-                                <i class="fa-solid fa-image text-2xl mb-1"></i>
-                                <span class="text-[10px] font-bold uppercase">Logo</span>
-                            </div>
-                            <input type="file" id="socIconInput" hidden accept="image/*" onchange="previewSocImage(event, 'createSocIconPreview')">
-                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Recommended: Square PNG/JPG</p>
-                        </div>
-                        <form onsubmit="postSociety(event)" class="space-y-4">
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Society Name</label>
-                                <input id="socName" type="text" placeholder="e.g. Marvel Enclave" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 focus:ring-4 focus:ring-primary/10 focus:bg-white outline-none transition font-bold">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Street Address</label>
-                                <input id="socAddr" type="text" placeholder="Full Location Details" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 focus:ring-4 focus:ring-primary/10 focus:bg-white outline-none transition font-medium">
-                            </div>
-                            <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 mt-4 rounded-2xl text-xs uppercase tracking-widest hover:bg-primary transition shadow-xl active:scale-[0.98]">Initialize Community <i class="fa-solid fa-sparkles ml-2"></i></button>
+                    <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm">
+                        <form onsubmit="postSociety(event)" class="space-y-3">
+                            <input id="socName" type="text" placeholder="Society Name (e.g. Gokuldham)" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
+                            <input id="socAddr" type="text" placeholder="Full Address" required class="w-full text-sm bg-white border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary outline-none">
+                            <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 mt-2 rounded-xl text-sm hover:bg-indigo-700 transition shadow-md">Generate Society & Access Code</button>
                         </form>
                     </div>`;
-            } else if (section === 'listSocieties') {
-                openModule("All Communities");
-                document.getElementById('moduleContent').innerHTML = `<div class="space-y-3">${window._allSocietiesHtml || '<p class="text-center py-10 opacity-50">No societies found.</p>'}</div>`;
             }
-        }
-
-        function previewSocImage(e, previewId) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const base64 = event.target.result;
-                window._tempSocIcon = base64;
-                const preview = document.getElementById(previewId);
-                preview.innerHTML = `<img src="${base64}" class="w-full h-full object-cover">`;
-                preview.classList.remove('border-dashed');
-                preview.classList.add('border-solid', 'border-indigo-100');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function editSocietyMetadata(id, name, address, icon) {
-            openModule("Update Society Profile");
-            window._tempSocIcon = icon;
-            const content = document.getElementById('moduleContent');
-            content.innerHTML = `
-                <div class="bg-white p-6 rounded-[2rem] border border-indigo-100 shadow-xl space-y-6">
-                    <div class="flex flex-col items-center gap-4 mb-6">
-                        <div id="updateSocIconPreview" onclick="document.getElementById('socUpdateIconInput').click()" class="w-24 h-24 rounded-3xl bg-indigo-50 border-2 border-indigo-100 flex flex-col items-center justify-center text-indigo-400 cursor-pointer hover:bg-indigo-100 transition overflow-hidden">
-                            ${icon ? `<img src="${icon}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-image text-2xl mb-1"></i><span class="text-[10px] font-bold uppercase">Logo</span>`}
-                        </div>
-                        <input type="file" id="socUpdateIconInput" hidden accept="image/*" onchange="previewSocImage(event, 'updateSocIconPreview')">
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest text-center leading-tight">Touch the logo to upload <br> a newer version.</p>
-                    </div>
-                    <form onsubmit="updateSocietyMetadata(event, '${id}')" class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Society Name</label>
-                            <input id="uSocName" type="text" value="${name}" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 focus:ring-4 focus:ring-primary/10 focus:bg-white outline-none transition font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Street Address</label>
-                            <input id="uSocAddr" type="text" value="${address}" required class="w-full text-sm bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3.5 focus:ring-4 focus:ring-primary/10 focus:bg-white outline-none transition font-medium">
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 mt-4 rounded-2xl text-xs uppercase tracking-widest hover:bg-primary transition shadow-xl active:scale-[0.98]">Confirm Brand Updates <i class="fa-solid fa-check-circle ml-2"></i></button>
-                    </form>
-                </div>
-            `;
-        }
-
-        async function updateSocietyMetadata(e, id) {
-            e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const og = btn.innerText;
-            btn.innerText = "Syncing Changes...";
-            
-            try {
-                const res = await fetch(`${API_URL}/admin/societies/${id}`, {
-                    method: 'PUT', headers: getAuthHeaders(),
-                    body: JSON.stringify({ 
-                        name: document.getElementById('uSocName').value, 
-                        address: document.getElementById('uSocAddr').value,
-                        icon: window._tempSocIcon || ''
-                    })
-                });
-                if(res.ok) {
-                    showToast("Society identity updated successfully", "success", "Brand Updated");
-                    window._tempSocIcon = null;
-                    setTimeout(() => { closeModule(); loadSocieties(); }, 1000);
-                }
-            } catch(e) { btn.innerText = og; }
         }
         
         async function loadNotices() {
@@ -990,19 +892,14 @@
             e.preventDefault();
             const btn = e.target.querySelector('button');
             const og = btn.innerText;
-            btn.innerText = "Generating Space...";
+            btn.innerText = "Generating...";
             try {
                 const res = await fetch(`${API_URL}/admin/societies`, {
                     method: 'POST', headers: getAuthHeaders(),
-                    body: JSON.stringify({ 
-                        name: document.getElementById('socName').value, 
-                        address: document.getElementById('socAddr').value,
-                        icon: window._tempSocIcon || ''
-                    })
+                    body: JSON.stringify({ name: document.getElementById('socName').value, address: document.getElementById('socAddr').value})
                 });
                 if(res.ok) {
                     const data = await res.json();
-                    window._tempSocIcon = null;
                     btn.innerHTML = `<i class='fa-solid fa-check'></i> Created Code: ${data.code}`;
                     setTimeout(() => { closeModule(); loadSocieties(); }, 2000);
                 } else { btn.innerText = "Failed"; }
