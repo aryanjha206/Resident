@@ -872,10 +872,14 @@ def get_seller_products():
         query = {"status": {"$ne": "Deleted"}}
         if society_filter: query["societyId"] = society_filter
     else:
-        query = {"$or": [
-            {"userId": user_id},
-            {"userId": ObjectId(user_id) if ObjectId.is_valid(user_id) else None}
-        ]}
+        # Check for both string and ObjectId versions of the user_id
+        query = {
+            "status": {"$ne": "Deleted"},
+            "$or": [
+                {"userId": user_id},
+                {"userId": ObjectId(user_id) if ObjectId.is_valid(user_id) else None}
+            ]
+        }
         
     products = list(products_col.find(query).sort("createdAt", -1))
     return jsonify([format_doc(p) for p in products])
@@ -916,14 +920,16 @@ def update_product(p_id):
     if role != 'admin' and str(product.get('userId')) != user_id:
         return jsonify({"error": "Unauthorized"}), 403
 
-    update_fields = {
-        "name": data.get("name"),
-        "price": float(data.get("price", 0)) if data.get("price") else None,
-        "description": data.get("description"),
-        "category": data.get("category"),
-        "image": data.get("image")
-    }
-    update_fields = {k: v for k, v in update_fields.items() if v is not None}
+    update_fields = {}
+    if 'name' in data: update_fields['name'] = data['name']
+    if 'price' in data: update_fields['price'] = float(data['price'])
+    if 'description' in data: update_fields['description'] = data['description']
+    if 'category' in data: update_fields['category'] = data['category']
+    if 'image' in data: update_fields['image'] = data['image']
+    
+    if not update_fields:
+        return jsonify({"error": "No fields to update"}), 400
+        
     products_col.update_one({"_id": ObjectId(p_id)}, {"$set": update_fields})
     return jsonify({"message": "Product updated successfully"})
 

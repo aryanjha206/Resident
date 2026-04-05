@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Seller Workspace - Society Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Seller Hub - Society Marketplace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -31,322 +31,455 @@
         }
     </script>
     <style>
-        body { background-color: #F8FAFC; -webkit-tap-highlight-color: transparent; min-height: 100vh; }
+        body { 
+            background-color: #F8FAFC; 
+            -webkit-tap-highlight-color: transparent; 
+            min-height: 100vh;
+            color: #1e293b;
+        }
+        
+        /* Glassmorphism effects */
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4); 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+            border-radius: 24px; 
+        }
+
         .glass-header { 
-            background: rgba(255, 255, 255, 0.8); 
-            backdrop-filter: blur(12px); 
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3); 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2); 
             position: sticky; 
             top: 0; 
             z-index: 50; 
         }
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            border: 1px solid rgba(255, 255, 255, 0.5); 
-            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); 
-            border-radius: 24px; 
-            backdrop-filter: blur(10px);
-        }
+
         .premium-gradient {
-            background: linear-gradient(135deg, #4338CA 0%, #6366F1 50%, #818CF8 100%);
+            background: linear-gradient(135deg, #4338CA 0%, #6366F1 55%, #8B5CF6 100%);
         }
-        .tab-btn.active {
-            color: #4F46E5;
-            border-bottom-color: #4F46E5;
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+
         .tab-btn {
+            position: relative;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        .tab-btn.active {
+            color: #6366F1;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #6366F1;
+            border-radius: 10px;
+        }
+
+        /* Modal styling */
         .modal-overlay { 
-            background: rgba(15, 23, 42, 0.6); 
+            background: rgba(15, 23, 42, 0.4); 
             backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px);
             opacity: 0; 
             visibility: hidden; 
             transition: all 0.3s ease; 
         }
+        
         .modal-overlay.active { 
             opacity: 1; 
             visibility: visible; 
         }
+        
         .modal-content { 
             transform: scale(0.95) translateY(20px); 
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
+        
         .modal-overlay.active .modal-content { 
             transform: scale(1) translateY(0); 
         }
-        .view-section { display: none; }
-        .view-section.active { display: block; animation: slideIn 0.4s ease; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+
+        /* Custom scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #CBD5E1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+
+        /* Loader */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #6366F1;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .btn-hover-effect {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-hover-effect:active {
+            transform: scale(0.95);
+        }
     </style>
 </head>
-<body class="text-slate-800 antialiased">
+<body class="antialiased font-sans">
 
-    <!-- Login Screen -->
-    <div id="loginView" class="fixed inset-0 z-[1000] bg-slate-900 flex items-center justify-center p-6">
+    <!-- Login View -->
+    <div id="loginView" class="fixed inset-0 z-[1000] bg-[#020617] flex items-center justify-center p-6">
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse"></div>
-            <div class="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-emerald-600/20 rounded-full blur-[120px] animate-pulse" style="animation-delay: 2s;"></div>
+            <div class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[100px] animate-pulse"></div>
+            <div class="absolute -bottom-[10%] -right-[10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1.5s;"></div>
         </div>
 
-        <div class="w-full max-w-sm glass-card relative bg-white/95 backdrop-blur-3xl p-10 pt-14 text-center">
-            <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-indigo-700 shadow-2xl flex items-center justify-center text-white text-3xl transform -rotate-12 transition-transform hover:rotate-0">
+        <div class="w-full max-w-md glass-card bg-white/10 border-white/10 p-10 text-center relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+            
+            <div class="w-20 h-20 rounded-3xl bg-indigo-600 shadow-[0_0_30px_rgba(99,102,241,0.5)] flex items-center justify-center text-white text-3xl mx-auto mb-8 transform -rotate-6">
                 <i class="fa-solid fa-store"></i>
             </div>
             
-            <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight mb-2">Vendor Portal</h2>
-            <p class="text-xs text-slate-500 font-medium mb-8 leading-relaxed">Secure access for authorized society marketplace sellers. Managed orders & track growth.</p>
+            <h2 class="text-3xl font-black text-white tracking-tight mb-3">Merchant portal</h2>
+            <p class="text-slate-400 text-sm font-medium mb-10 leading-relaxed">Secure access for authorized society marketplace sellers. Manage listings and track your growth.</p>
             
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <div class="relative group">
-                    <i class="fa-solid fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm group-focus-within:text-primary transition"></i>
-                    <input type="password" id="sellerPinInput" placeholder="Enter Secure PIN" maxlength="5" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 pl-12 pr-4 text-center tracking-[0.8em] text-lg font-bold focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-500 group-focus-within:text-indigo-400 transition-colors">
+                        <i class="fa-solid fa-lock"></i>
+                    </span>
+                    <input type="password" id="sellerPinInput" placeholder="Enter Seller PIN" maxlength="5" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-center tracking-[0.6em] text-xl font-bold text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition">
                 </div>
                 
-                <button onclick="loginSeller()" id="loginBtn" class="w-full bg-slate-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-indigo-600 active:scale-95 transition-all flex items-center justify-center gap-2">
-                    Enter Workspace <i class="fa-solid fa-arrow-right-to-bracket text-xs opacity-50"></i>
+                <button onclick="loginSeller()" id="loginBtn" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-indigo-500 transition-all flex items-center justify-center gap-2 btn-hover-effect">
+                    Launch workspace <i class="fa-solid fa-chevron-right text-xs"></i>
                 </button>
                 
-                <a href="index.html" class="text-[11px] font-bold text-slate-400 hover:text-slate-600 transition flex items-center justify-center gap-1.5 mt-6"><i class="fa-solid fa-arrow-left"></i> Back to Residential Hub</a>
+                <a href="index.html" class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-white transition mt-4"><i class="fa-solid fa-arrow-left"></i> Return home</a>
             </div>
         </div>
     </div>
 
-    <!-- Workspace View -->
-    <div id="workspaceView" class="hidden h-screen flex flex-col overflow-hidden">
-        <header class="glass-header px-6 py-4 flex justify-between items-center bg-white/80 backdrop-blur-xl border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-sm"><i class="fa-solid fa-shop"></i></div>
+    <!-- Main Workspace -->
+    <div id="workspaceView" class="hidden min-h-screen flex flex-col">
+        <header class="glass-header px-6 py-4 flex justify-between items-center bg-white/90 shadow-sm border-b border-slate-200">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-lg shadow-indigo-100 transform -rotate-3"><i class="fa-solid fa-shop"></i></div>
                 <div>
-                    <h1 class="text-lg font-black text-slate-900 tracking-tight">Seller Hub</h1>
+                    <h1 class="text-xl font-black text-slate-800 tracking-tight">Seller Hub</h1>
                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-none mt-0.5">Marketplace Vendor Workspace</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-4">
-                <button onclick="logoutSeller()" class="w-10 h-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100 transition shadow-sm border border-rose-100"><i class="fa-solid fa-power-off"></i></button>
+            <div class="flex items-center gap-3">
+                <button onclick="loadSellerData()" class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-indigo-100 hover:text-indigo-600 transition shadow-sm border border-slate-200">
+                    <i class="fa-solid fa-rotate text-sm"></i>
+                </button>
+                <button onclick="logoutSeller()" class="w-10 h-10 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-100 hover:text-rose-600 transition shadow-sm border border-rose-100">
+                    <i class="fa-solid fa-power-off text-sm"></i>
+                </button>
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 custom-scrollbar">
-            <!-- Hero Stats -->
-            <div class="premium-gradient rounded-[2rem] p-8 text-white relative overflow-hidden shadow-2xl">
-                <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                    <div>
-                        <h2 class="text-3xl font-black mb-2 leading-tight">Welcome back, Vendor.</h2>
-                        <p class="text-indigo-100 text-sm opacity-90 font-medium">Your society marketplace is active. Check your latest orders and manage listings below.</p>
-                        
-                        <div class="flex gap-4 mt-8">
-                            <button onclick="switchTab('inventory')" class="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest border border-white/20 hover:bg-white/30 transition">Inventory Management</button>
-                        </div>
-                    </div>
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar bg-[#f8fbff]">
+            <div class="max-w-7xl mx-auto space-y-8">
+                
+                <!-- Hero Section & Stats -->
+                <div class="premium-gradient rounded-[2.5rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-indigo-200/50">
+                    <div class="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-64 h-64 bg-indigo-900/20 rounded-full -ml-32 -mb-32 blur-3xl"></div>
                     
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
-                            <p class="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Net Revenue</p>
-                            <h3 id="statRevenue" class="text-2xl font-black text-white">₹0</h3>
+                    <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                        <div class="lg:col-span-12">
+                            <h2 class="text-4xl font-black mb-3 leading-tight tracking-tight">Success metrics</h2>
+                            <p class="text-indigo-100 text-base opacity-80 font-medium max-w-xl">Monitor your shop's performance and manage your growing customer base.</p>
                         </div>
-                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
-                            <p class="text-[10px] font-black text-amber-300 uppercase tracking-widest mb-1">Pending Pay</p>
-                            <h3 id="statPending" class="text-2xl font-black text-white">₹0</h3>
-                        </div>
-                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
-                            <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-1">Total Sales</p>
-                            <h3 id="statSales" class="text-2xl font-black text-white">₹0</h3>
-                        </div>
-                        <div class="bg-white/10 backdrop-blur-md p-5 rounded-3xl border border-white/10">
-                            <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-1">Live Listings</p>
-                            <h3 id="statProducts" class="text-2xl font-black text-white">0</h3>
+                        
+                        <div class="lg:col-span-12 grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                            <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-inner">
+                                <p class="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Net earnings</p>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-sm font-bold opacity-60">₹</span>
+                                    <h3 id="statRevenue" class="text-3xl font-black text-white tabular-nums">0</h3>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-inner">
+                                <p class="text-[10px] font-black text-amber-200 uppercase tracking-widest mb-2">Awaiting payout</p>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-sm font-bold opacity-60">₹</span>
+                                    <h3 id="statPending" class="text-3xl font-black text-white tabular-nums">0</h3>
+                                </div>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-inner">
+                                <p class="text-[10px] font-black text-emerald-200 uppercase tracking-widest mb-2">Orders fulfilled</p>
+                                <h3 id="statSales" class="text-3xl font-black text-white tabular-nums">0</h3>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/20 shadow-inner">
+                                <p class="text-[10px] font-black text-blue-200 uppercase tracking-widest mb-2">Active items</p>
+                                <h3 id="statProducts" class="text-3xl font-black text-white tabular-nums">0</h3>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <i class="fa-solid fa-basket-shopping absolute -bottom-12 -right-12 text-[15rem] opacity-10 rotate-12"></i>
-            </div>
 
-            <!-- Tab Navigation -->
-            <div class="flex items-center gap-8 border-b border-slate-200 sticky top-0 bg-slate-50/50 backdrop-blur-md z-10 px-2 pb-0 mb-4">
-                <button onclick="switchTab('orders')" id="tabBtn-orders" class="tab-btn py-4 text-xs font-black uppercase tracking-widest text-slate-400 border-b-4 border-transparent hover:text-slate-600 active">Active Orders</button>
-                <button onclick="switchTab('analytics')" id="tabBtn-analytics" class="tab-btn py-4 text-xs font-black uppercase tracking-widest text-slate-400 border-b-4 border-transparent hover:text-slate-600">Analytics Log</button>
-                <button onclick="switchTab('inventory')" id="tabBtn-inventory" class="tab-btn py-4 text-xs font-black uppercase tracking-widest text-slate-400 border-b-4 border-transparent hover:text-slate-600">Inventory Hub</button>
-            </div>
-
-            <!-- Content Sections -->
-            <div id="section-orders" class="view-section active">
-                <div class="flex justify-between items-center mb-6">
-                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2"><div class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div> Processing Pipeline</h3>
-                    <button onclick="loadSellerData()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-slate-200 transition"><i class="fa-solid fa-rotate text-xs"></i></button>
-                </div>
-                <div id="orderList" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Orders Populated here -->
-                </div>
-            </div>
-
-            <div id="section-analytics" class="view-section">
-                <div class="glass-card p-8 border border-slate-100 shadow-sm mb-8">
-                    <h3 class="text-base font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-3"><i class="fa-solid fa-chart-line text-emerald-500"></i> Performance Insights</h3>
-                    <div id="analyticsList" class="space-y-4">
-                        <!-- Stats here -->
-                    </div>
-                </div>
-            </div>
-
-            <div id="section-inventory" class="view-section">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest">Marketplace Exposure</h3>
-                    <button onclick="openModal('addProductModal')" class="bg-indigo-600 text-white font-bold px-6 py-3 rounded-2xl text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95 flex items-center gap-2">
-                        <i class="fa-solid fa-plus"></i> New Product Listing
+                <!-- Navigation Tabs -->
+                <div class="flex items-center gap-10 border-b border-slate-200 sticky top-0 bg-[#f8fbff]/80 backdrop-blur-md z-20 px-2 pt-2 mb-2">
+                    <button onclick="switchTab('orders')" id="tabBtn-orders" class="tab-btn py-4 text-[11px] font-black uppercase tracking-[0.1em] text-slate-400 hover:text-slate-900 transition-all flex items-center gap-2 active">
+                        <i class="fa-solid fa-truck-fast"></i> Active Orders
+                    </button>
+                    <button onclick="switchTab('inventory')" id="tabBtn-inventory" class="tab-btn py-4 text-[11px] font-black uppercase tracking-[0.1em] text-slate-400 hover:text-slate-900 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-box-archive"></i> Listing Center
+                    </button>
+                    <button onclick="switchTab('analytics')" id="tabBtn-analytics" class="tab-btn py-4 text-[11px] font-black uppercase tracking-[0.1em] text-slate-400 hover:text-slate-900 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie"></i> Analytics
                     </button>
                 </div>
-                <div id="productList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Products here -->
+
+                <!-- Section: Orders -->
+                <div id="section-orders" class="view-section active">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800 tracking-tight">Active pipeline</h3>
+                            <p class="text-xs text-slate-500 font-medium">Fulfill orders and confirm payments</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px] font-bold text-indigo-500 bg-indigo-50 px-4 py-2 rounded-full uppercase tracking-wider border border-indigo-100">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                            </span>
+                            Live fulfillment
+                        </div>
+                    </div>
+                    <div id="orderList" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
+                        <!-- Polpulated via JS -->
+                    </div>
+                </div>
+
+                <!-- Section: Inventory -->
+                <div id="section-inventory" class="view-section">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800 tracking-tight">Inventory hub</h3>
+                            <p class="text-xs text-slate-500 font-medium">Control your active market listings</p>
+                        </div>
+                        <button onclick="openModal('addProductModal')" class="bg-indigo-600 text-white font-bold px-7 py-4 rounded-2xl text-xs uppercase tracking-widest shadow-xl shadow-indigo-200 hover:bg-slate-900 transition-all active:scale-95 flex items-center gap-3 btn-hover-effect">
+                            <i class="fa-solid fa-plus text-sm"></i> Add new product
+                        </button>
+                    </div>
+                    <div id="productList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 pb-20">
+                        <!-- Polpulated via JS -->
+                    </div>
+                </div>
+
+                <!-- Section: Analytics -->
+                <div id="section-analytics" class="view-section">
+                    <div class="max-w-3xl mx-auto space-y-6">
+                        <div class="glass-card p-10 bg-white">
+                            <div class="flex items-center gap-4 mb-8">
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl border border-emerald-100"><i class="fa-solid fa-chart-line"></i></div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-slate-800 tracking-tight">Sales Breakdown</h3>
+                                    <p class="text-xs text-slate-500 font-medium">Visualizing your top performing items</p>
+                                </div>
+                            </div>
+                            <div id="analyticsList" class="space-y-4">
+                                <!-- Polpulated via JS -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Modals -->
-    <!-- Add Product Modal -->
-    <div id="addProductModal" class="fixed inset-0 z-[2000] modal-overlay flex items-center justify-center p-4">
-        <div class="modal-content glass-card bg-white w-full max-w-lg p-8 relative">
-            <div class="flex justify-between items-center mb-8">
-                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Post New Listing</h3>
-                <button onclick="closeModal('addProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></button>
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 z-[5000] modal-overlay flex items-center justify-center p-4">
+        <div class="modal-content glass-card bg-white w-full max-w-sm p-10 text-center shadow-2xl">
+            <div id="confirmIcon" class="w-20 h-20 rounded-3xl bg-rose-50 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-8 border border-rose-100">
+                <i class="fa-solid fa-triangle-exclamation"></i>
             </div>
-            <form id="productForm" class="space-y-5">
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Product Identity</label>
-                    <input id="pName" type="text" placeholder="Title (e.g. Fresh Mangoes)" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+            <h3 id="confirmTitle" class="text-2xl font-black text-slate-800 tracking-tight mb-3">Wait a minute</h3>
+            <p id="confirmText" class="text-sm font-medium text-slate-500 mb-10 leading-relaxed px-2">Are you absolutely sure you want to perform this action? This might be irreversible.</p>
+            <div class="flex gap-4">
+                <button onclick="closeConfirmModal()" class="flex-1 bg-slate-100 text-slate-700 font-bold py-4 rounded-2xl hover:bg-slate-200 transition text-[11px] uppercase tracking-widest btn-hover-effect">Cancel</button>
+                <button id="confirmBtn" class="flex-1 bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-100 hover:bg-rose-600 transition text-[11px] uppercase tracking-widest btn-hover-effect">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals (Add/Edit Product) -->
+    <div id="addProductModal" class="fixed inset-0 z-[2000] modal-overlay flex items-center justify-center p-4 overflow-y-auto">
+        <div class="modal-content glass-card bg-white w-full max-w-2xl p-8 relative my-auto">
+            <div class="flex justify-between items-center mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100"><i class="fa-solid fa-plus"></i></div>
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">New marketplace listing</h3>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
-                        <input id="pPrice" type="number" placeholder="0.00" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                <button onclick="closeModal('addProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition border border-slate-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Internal Name</label>
+                        <input id="pName" type="text" placeholder="e.g. Organic Hill Lemons" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:outline-none transition-all">
                     </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                        <select id="pCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-700 appearance-none focus:ring-4 focus:ring-indigo-500/10 transition">
-                            <option value="General">General</option>
-                            <option value="Fresh & Grocery">Fresh & Grocery</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Home & Kitchen">Home & Kitchen</option>
-                            <option value="Services">Services</option>
-                        </select>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">List Price (₹)</label>
+                            <input id="pPrice" type="number" placeholder="499" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:outline-none transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Category</label>
+                            <select id="pCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-extrabold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 appearance-none bg-[url('https://cdn0.iconfinder.com/data/icons/lucid-generic/24/chevron-down-512.png')] bg-[length:12px] bg-[right_1.2rem_center] bg-no-repeat focus:outline-none transition-all">
+                                <option value="Fresh & Grocery">Fresh & Grocery</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Home & Kitchen">Home & Kitchen</option>
+                                <option value="Services">Services</option>
+                                <option value="Hobby & Decor">Hobby & Decor</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Description</label>
+                        <textarea id="pDesc" placeholder="Describe your product's features, quality, and specific shipping info..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-medium text-slate-600 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:outline-none transition-all resize-none" rows="4"></textarea>
                     </div>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Market Visual</label>
-                    <div id="imagePreviewContainer" class="hidden mb-3">
-                        <img id="imagePreview" class="w-full h-32 object-contain rounded-2xl bg-white border border-slate-100 shadow-sm p-2">
+                
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Product Visual</label>
+                        <div id="imagePreviewContainer" class="hidden mb-4 relative group">
+                            <img id="imagePreview" class="w-full h-48 object-cover rounded-2xl border border-slate-200">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-2xl pointer-events-none">
+                                <span class="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-4 py-2 rounded-full border border-white/30 lowercase tracking-widest">Change photo</span>
+                            </div>
+                        </div>
+                        <label class="flex flex-col items-center justify-center gap-3 w-full h-48 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl py-6 px-10 text-center cursor-pointer hover:bg-slate-100 hover:border-indigo-300 transition-all group">
+                            <div class="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-indigo-500 group-hover:scale-110 transition-transform"><i class="fa-solid fa-camera"></i></div>
+                            <span id="uploadLabel" class="text-slate-400 font-bold uppercase tracking-[0.15em] text-[10px]">Select listing photo</span>
+                            <input id="pImage" type="file" accept="image/*" class="hidden" onchange="previewProductImage(this)">
+                        </label>
                     </div>
-                    <label class="flex items-center justify-center gap-3 w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl py-4 px-5 text-sm cursor-pointer hover:bg-slate-100 transition shadow-inner">
-                        <i class="fa-solid fa-camera text-primary opacity-50"></i>
-                        <span id="uploadLabel" class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Select Display Image</span>
-                        <input id="pImage" type="file" accept="image/*" class="hidden" onchange="previewProductImage(this)">
-                    </label>
+                    
+                    <button type="submit" class="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-indigo-600 transition-all transform flex items-center justify-center gap-3 mt-4 btn-hover-effect">
+                        Deploy Listing <i class="fa-solid fa-rocket opacity-40"></i>
+                    </button>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Marketing Pitch</label>
-                    <textarea id="pDesc" placeholder="Describe quality and quantity details..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600" rows="3"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-indigo-600 active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4 shadow-indigo-200">
-                    Publish Listing <i class="fa-solid fa-rocket opacity-40"></i>
-                </button>
             </form>
         </div>
     </div>
 
     <!-- Edit Product Modal -->
-    <div id="editProductModal" class="fixed inset-0 z-[2000] modal-overlay flex items-center justify-center p-4">
-        <div class="modal-content glass-card bg-white w-full max-w-lg p-8 relative">
+    <div id="editProductModal" class="fixed inset-0 z-[2000] modal-overlay flex items-center justify-center p-4 overflow-y-auto">
+        <div class="modal-content glass-card bg-white w-full max-w-2xl p-8 relative my-auto">
             <div class="flex justify-between items-center mb-8">
-                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Update Details</h3>
-                <button onclick="closeModal('editProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-100"><i class="fa-solid fa-pen"></i></div>
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight">Refine details</h3>
+                </div>
+                <button onclick="closeModal('editProductModal')" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-rose-50 hover:text-rose-500 transition border border-slate-100"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="editProductForm" class="space-y-5">
+            <form id="editProductForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <input id="editPId" type="hidden">
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
-                    <input id="editPName" type="text" placeholder="Title" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Price (₹)</label>
-                        <input id="editPPrice" type="number" placeholder="Price" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-4 focus:ring-indigo-500/10 focus:bg-white transition">
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Title</label>
+                        <input id="editPName" type="text" placeholder="Title" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:outline-none transition-all">
                     </div>
-                    <div class="space-y-1.5">
-                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Category</label>
-                        <select id="editPCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-700 appearance-none focus:ring-4 focus:ring-indigo-500/10 transition">
-                            <option value="General">General</option>
-                            <option value="Fresh & Grocery">Fresh & Grocery</option>
-                            <option value="Electronics">Electronics</option>
-                            <option value="Home & Kitchen">Home & Kitchen</option>
-                            <option value="Services">Services</option>
-                        </select>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Price (₹)</label>
+                            <input id="editPPrice" type="number" placeholder="Price" required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:outline-none transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Category</label>
+                            <select id="editPCategory" class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-extrabold text-slate-700 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none appearance-none bg-[url('https://cdn0.iconfinder.com/data/icons/lucid-generic/24/chevron-down-512.png')] bg-[length:12px] bg-[right_1.2rem_center] bg-no-repeat">
+                                <option value="Fresh & Grocery">Fresh & Grocery</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Home & Kitchen">Home & Kitchen</option>
+                                <option value="Services">Services</option>
+                                <option value="Hobby & Decor">Hobby & Decor</option>
+                                <option value="General">General</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Description</label>
+                        <textarea id="editPDesc" placeholder="Refine your pitch..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm font-medium text-slate-600 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white focus:outline-none transition-all resize-none" rows="4"></textarea>
                     </div>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Visual Change</label>
-                    <div id="editImagePreviewContainer" class="mb-3 hidden">
-                        <img id="editImagePreview" class="w-full h-32 object-contain rounded-2xl bg-white border border-slate-100 shadow-sm p-2">
+                
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Visual Change</label>
+                        <div id="editImagePreviewContainer" class="mb-4 relative group">
+                            <img id="editImagePreview" class="w-full h-48 object-cover rounded-2xl border border-slate-200">
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center rounded-2xl pointer-events-none">
+                                <span class="bg-white/20 backdrop-blur-md text-white text-[10px] font-bold px-4 py-2 rounded-full border border-white/30 lowercase tracking-widest">Update photo</span>
+                            </div>
+                        </div>
+                        <label class="flex flex-col items-center justify-center gap-3 w-full h-24 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl py-6 px-10 text-center cursor-pointer hover:bg-slate-100 hover:border-indigo-300 transition-all group">
+                            <span id="editUploadLabel" class="text-slate-400 font-bold uppercase tracking-[0.15em] text-[10px]">Change item photo</span>
+                            <input id="editPImage" type="file" accept="image/*" class="hidden" onchange="previewEditProductImage(this)">
+                        </label>
                     </div>
-                    <label class="flex items-center justify-center gap-3 w-full bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl py-4 px-5 text-sm cursor-pointer hover:bg-slate-100 transition shadow-inner">
-                        <i class="fa-solid fa-camera text-primary opacity-50"></i>
-                        <span id="editUploadLabel" class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Update Photo</span>
-                        <input id="editPImage" type="file" accept="image/*" class="hidden" onchange="previewEditProductImage(this)">
-                    </label>
+                    
+                    <button type="submit" class="w-full bg-indigo-600 text-white font-black py-5 rounded-2xl shadow-xl hover:bg-slate-900 transition-all transform flex items-center justify-center gap-3 mt-4 btn-hover-effect">
+                        Save Changes <i class="fa-solid fa-check-double opacity-40"></i>
+                    </button>
+                    <button type="button" onclick="closeModal('editProductModal')" class="w-full py-4 text-slate-400 font-bold text-xs uppercase tracking-widest hover:text-slate-600 transition">Cancel and discard</button>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Content Update</label>
-                    <textarea id="editPDesc" placeholder="Description..." required class="w-full bg-slate-50 border border-slate-200 rounded-2xl py-4 px-5 text-sm resize-none font-medium text-slate-600" rows="3"></textarea>
-                </div>
-                <button type="submit" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl shadow-xl hover:bg-indigo-700 active:scale-[0.98] transition-all transform flex items-center justify-center gap-3 mt-4">
-                    Save Changes <i class="fa-solid fa-check-double opacity-40"></i>
-                </button>
             </form>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
-    <div id="confirmModal" class="fixed inset-0 z-[5000] modal-overlay flex items-center justify-center p-4">
-        <div class="modal-content glass-card bg-white w-full max-w-xs p-8 text-center">
-            <div id="confirmIcon" class="w-16 h-16 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-6 border border-rose-100 shadow-sm">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <h3 id="confirmTitle" class="text-2xl font-black text-slate-900 tracking-tight mb-2">Check Again</h3>
-            <p id="confirmText" class="text-xs font-medium text-slate-500 mb-8 leading-relaxed">Are you absolutely sure about this action?</p>
-            <div class="flex gap-4">
-                <button onclick="closeConfirmModal()" class="flex-1 bg-slate-100 text-slate-600 font-bold py-4 rounded-2xl hover:bg-slate-200 transition text-xs uppercase tracking-widest">Nevermind</button>
-                <button id="confirmBtn" class="flex-1 bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-100 hover:bg-rose-600 active:scale-95 transition text-xs uppercase tracking-widest">Confirm</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Toast Notification -->
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[6000] bg-slate-900 border border-slate-800 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-4 transition-all duration-300 translate-y-[200%] opacity-0 max-w-[90%] pointer-events-none">
-        <div id="toastIconBox" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0"><i id="tIcon" class="fa-solid fa-circle-check"></i></div>
-        <div>
-            <h4 id="toastTitle" class="text-[13px] font-black tracking-tight leading-none mb-1">Success</h4>
-            <p id="toastMessage" class="text-[11px] text-slate-400 font-medium leading-tight"></p>
+    <div id="toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[6000] glass-card bg-slate-900 border-white/10 text-white px-8 py-5 rounded-[2rem] shadow-2xl flex items-center gap-5 transition-all duration-500 translate-y-[200%] opacity-0 max-w-[90%] pointer-events-none">
+        <div id="toastIconBox" class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0"><i id="tIcon" class="fa-solid fa-circle-check"></i></div>
+        <div class="pr-4">
+            <h4 id="toastTitle" class="text-[14px] font-black tracking-tight leading-none mb-1.5 uppercase">Success</h4>
+            <p id="toastMessage" class="text-xs text-slate-400 font-medium leading-tight max-w-[240px]"></p>
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Logic -->
     <script>
         const isLocal = /^(localhost|127\.0\.0\.1|192\.168\.|10\.|172\.)/.test(window.location.hostname) || window.location.hostname === "";
         const API_URL = isLocal ? `http://${window.location.hostname || 'localhost'}:5000/api` : '/api';
         
-        // Auth State
-        const getAuthHeaders = () => ({
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('sellerToken')}`
-        });
+        let activeTab = 'orders';
+        window._sellerProducts = [];
+        window._sellerOrders = [];
+
+        // Auth Helpers
+        const getAuthHeaders = () => {
+            const token = localStorage.getItem('sellerToken');
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            };
+        };
 
         const checkAuth = () => {
             const token = localStorage.getItem('sellerToken');
@@ -370,19 +503,20 @@
             document.getElementById('toastMessage').innerText = msg;
             
             if (type === 'success') {
-                iconBox.className = 'w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-emerald-500/10 text-emerald-500';
+                iconBox.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20';
                 tIcon.className = 'fa-solid fa-circle-check';
             } else {
-                iconBox.className = 'w-10 h-10 rounded-2xl flex items-center justify-center text-xl shrink-0 bg-rose-500/10 text-rose-500';
-                tIcon.className = 'fa-solid fa-triangle-exclamation';
+                iconBox.className = 'w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-rose-500/10 text-rose-500 border border-rose-500/20';
+                tIcon.className = 'fa-solid fa-circle-exclamation';
             }
             
             toast.style.transform = 'translate(-50%, 0)';
             toast.style.opacity = '1';
+            
             setTimeout(() => {
                 toast.style.transform = 'translate(-50%, 200%)';
                 toast.style.opacity = '0';
-            }, 4000);
+            }, 3500);
         };
 
         let _confirmCallback = null;
@@ -393,11 +527,11 @@
             const icon = document.getElementById('confirmIcon');
             
             if (type === 'danger') {
-                btn.className = 'flex-1 bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-100 hover:bg-rose-600 active:scale-95 transition text-xs uppercase tracking-widest';
-                icon.className = 'w-16 h-16 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-6 border border-rose-100 shadow-sm';
+                btn.className = 'flex-1 bg-rose-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-rose-100 hover:bg-rose-600 transition text-[11px] uppercase tracking-widest btn-hover-effect';
+                icon.className = 'w-20 h-20 rounded-3xl bg-rose-50 text-rose-500 flex items-center justify-center text-3xl mx-auto mb-8 border border-rose-100';
             } else {
-                btn.className = 'flex-1 bg-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-600 active:scale-95 transition text-xs uppercase tracking-widest';
-                icon.className = 'w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-3xl mx-auto mb-6 border border-indigo-100 shadow-sm';
+                btn.className = 'flex-1 bg-indigo-500 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-600 transition text-[11px] uppercase tracking-widest btn-hover-effect';
+                icon.className = 'w-20 h-20 rounded-3xl bg-indigo-50 text-indigo-500 flex items-center justify-center text-3xl mx-auto mb-8 border border-indigo-100';
             }
             
             _confirmCallback = callback;
@@ -409,20 +543,22 @@
             _confirmCallback = null;
         };
 
-        document.getElementById('confirmBtn').onclick = () => {
-            if (_confirmCallback) _confirmCallback();
+        document.getElementById('confirmBtn').onclick = async () => {
+            if (_confirmCallback) await _confirmCallback();
             closeConfirmModal();
         };
 
         const openModal = (id) => document.getElementById(id).classList.add('active');
         const closeModal = (id) => document.getElementById(id).classList.remove('active');
 
-        // Logic
+        // Logic Functions
         async function loginSeller() {
             const pin = document.getElementById('sellerPinInput').value;
             const btn = document.getElementById('loginBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
+            if (pin.length < 5) return showToast("Enter full 5-digit PIN", "Credential Error", 'error');
+
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<div class="loader"></div>';
             btn.disabled = true;
 
             try {
@@ -435,32 +571,32 @@
                 if (res.ok) {
                     localStorage.setItem('sellerToken', data.token);
                     checkAuth();
-                    showToast("Workspace Unlocked. High growth awaits!", "Access Granted");
+                    showToast("Authentication successful. Welcome to your hub.", "Identity Verified");
                 } else {
-                    showToast(data.error || "Invalid Credentials", "Security Denied", 'error');
+                    showToast(data.error || "Access Denied", "Shield Blocked", 'error');
                 }
             } catch (e) {
-                showToast("Connection to backend lost.", "Server Offline", 'error');
+                showToast("Cannot reach core services. Check internet.", "Connectivity Lost", 'error');
             } finally {
-                btn.innerHTML = originalText;
+                btn.innerHTML = originalContent;
                 btn.disabled = false;
             }
         }
 
         function logoutSeller() {
-            confirmAction("Exit Workspace?", "Are you sure you want to logout from the seller portal?", () => {
+            confirmAction("Terminate session?", "Are you sure you want to lock and exit the seller hub?", () => {
                 localStorage.removeItem('sellerToken');
                 checkAuth();
             });
         }
 
         function switchTab(tab) {
+            activeTab = tab;
             document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-indigo-600', 'text-slate-900'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             
             document.getElementById(`section-${tab}`).classList.add('active');
-            const btn = document.getElementById(`tabBtn-${tab}`);
-            btn.classList.add('active', 'border-indigo-600', 'text-slate-900');
+            document.getElementById(`tabBtn-${tab}`).classList.add('active');
         }
 
         async function loadSellerData() {
@@ -469,126 +605,165 @@
                     fetch(`${API_URL}/marketplace/seller/products`, { headers: getAuthHeaders() }),
                     fetch(`${API_URL}/marketplace/seller/orders`, { headers: getAuthHeaders() })
                 ]);
+                
+                if (!pRes.ok || !oRes.ok) {
+                    if (pRes.status === 401 || oRes.status === 401) {
+                        localStorage.removeItem('sellerToken');
+                        checkAuth();
+                        return;
+                    }
+                    throw new Error("Data fetch failed");
+                }
+
                 const products = await pRes.json();
                 const orders = await oRes.json();
                 
-                window._sellerProducts = Array.isArray(products) ? products : [];
+                window._sellerProducts = Array.isArray(products) ? products.filter(p => p.status !== 'Deleted') : [];
                 window._sellerOrders = Array.isArray(orders) ? orders : [];
                 
                 renderDashboard();
             } catch (e) {
-                showToast("Failed to fetch latest market data.", "Sync Error", 'error');
+                console.error(e);
+                showToast("Synchronizing with marketplace failed.", "Refresh Error", 'error');
             }
         }
 
         function renderDashboard() {
-            const products = window._sellerProducts.filter(p => p.status !== 'Deleted');
+            const products = window._sellerProducts;
             const orders = window._sellerOrders;
             
-            // Stats
+            // Statistics
             const paidOrders = orders.filter(o => o.paymentStatus === 'Paid');
             const pendingOrders = orders.filter(o => o.paymentStatus !== 'Paid' && o.status === 'Delivered');
             
             const revenue = paidOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
             const pendingRev = pendingOrders.reduce((acc, o) => acc + Number(o.price || 0), 0);
-            const totalSales = orders.reduce((acc, o) => acc + Number(o.price || 1), 0); // Simulated total transactional volume
             
-            document.getElementById('statRevenue').innerText = '₹' + revenue.toLocaleString();
-            document.getElementById('statPending').innerText = '₹' + pendingRev.toLocaleString();
-            document.getElementById('statSales').innerText = '₹' + totalSales.toLocaleString();
+            document.getElementById('statRevenue').innerText = revenue.toLocaleString();
+            document.getElementById('statPending').innerText = pendingRev.toLocaleString();
+            document.getElementById('statSales').innerText = paidOrders.length;
             document.getElementById('statProducts').innerText = products.length;
 
-            // Orders
+            // Render Orders
             const orderList = document.getElementById('orderList');
             if (orders.length === 0) {
                 orderList.innerHTML = `
-                    <div class="col-span-full py-20 text-center opacity-40">
-                        <i class="fa-solid fa-truck-ramp-box text-6xl mb-4"></i>
-                        <p class="text-sm font-bold uppercase tracking-widest">Pipeline Empty. Ready for your first sale!</p>
+                    <div class="col-span-full py-24 text-center opacity-40">
+                        <div class="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4 text-slate-400"><i class="fa-solid fa-truck-ramp-box text-2xl"></i></div>
+                        <p class="text-[11px] font-black uppercase tracking-[0.2em] inline-block bg-slate-100 px-4 py-1.5 rounded-full">Pipeline Empty</p>
                     </div>`;
             } else {
                 orderList.innerHTML = orders.map(o => {
                     const isPaid = o.paymentStatus === 'Paid';
                     let actionBtn = '';
-                    if (o.status === 'Placed') actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-indigo-700 transition lg">Accept & Process</button>`;
-                    else if (o.status === 'Processing') actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="w-full bg-amber-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-amber-600 transition lg">Handover / Ship</button>`;
-                    else if (o.status === 'Shipped') actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="w-full bg-emerald-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-emerald-600 transition lg">Confirm Delivery</button>`;
-                    else if (o.status === 'Delivered' && !isPaid) actionBtn = `<button onclick="collectPayment('${o._id}')" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-slate-800 transition lg">Verify Cash Payment</button>`;
-                    else actionBtn = `<div class="w-full bg-slate-50 text-slate-400 font-bold py-4 rounded-2xl uppercase tracking-widest text-[10px] text-center border border-slate-100 flex items-center justify-center gap-2"><i class="fa-solid fa-circle-check text-emerald-500"></i> Transaction Finished</div>`;
+                    
+                    if (o.status === 'Placed') {
+                        actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Processing')" class="w-full bg-indigo-600 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-slate-900 transition-all btn-hover-effect">Accept & Prep Order</button>`;
+                    } else if (o.status === 'Processing') {
+                        actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Shipped')" class="w-full bg-amber-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-amber-600 transition-all btn-hover-effect">Handover to Rider</button>`;
+                    } else if (o.status === 'Shipped') {
+                        actionBtn = `<button onclick="updateOrderStatus('${o._id}', 'Delivered')" class="w-full bg-emerald-500 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-emerald-600 transition-all btn-hover-effect">Mark as Delivered</button>`;
+                    } else if (o.status === 'Delivered' && !isPaid) {
+                        actionBtn = `<button onclick="collectPayment('${o._id}')" class="w-full bg-slate-900 text-white font-black py-4 rounded-2xl uppercase tracking-widest text-[10px] hover:bg-indigo-600 transition-all btn-hover-effect">Confirm Cash Received</button>`;
+                    } else {
+                        actionBtn = `<div class="w-full bg-slate-50 text-slate-400 font-bold py-4 rounded-2xl uppercase tracking-widest text-[10px] text-center border border-slate-100 flex items-center justify-center gap-2"><i class="fa-solid fa-check-circle text-emerald-500"></i> Lifetime fulfillment</div>`;
+                    }
 
                     return `
-                        <div class="glass-card p-6 border border-slate-100 relative overflow-hidden group">
+                        <div class="glass-card p-6 border border-slate-100 relative group animate-fade-in">
                             <div class="flex justify-between items-start mb-6">
-                                <div class="flex gap-4">
-                                    <div class="w-16 h-16 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shadow-sm shrink-0">
+                                <div class="flex gap-5">
+                                    <div class="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
                                         <img src="${o.productImage || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover">
                                     </div>
                                     <div>
                                         <h4 class="text-base font-black text-slate-800 tracking-tight leading-tight">${o.productName}</h4>
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Buyer: ${o.userName}</p>
-                                        <h5 class="text-lg font-black text-indigo-600 mt-2">₹${o.price}</h5>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1.5 flex items-center gap-1.5"><i class="fa-solid fa-user-circle"></i> ${o.userName}</p>
+                                        <div class="flex items-center gap-2 mt-3">
+                                            <span class="text-xl font-black text-indigo-600">₹${o.price}</span>
+                                            <span class="text-[9px] font-black px-3 py-1 rounded-full ${isPaid ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'} uppercase tracking-[0.1em]">${isPaid ? 'PAID' : 'COD'}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="flex flex-col items-end gap-2">
-                                    <span class="text-[9px] font-black px-3 py-1.5 rounded-full border ${o.status === 'Delivered' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-indigo-50 border-indigo-100 text-indigo-600'} uppercase tracking-widest">${o.status}</span>
-                                    <span class="text-[8px] font-black ${isPaid ? 'text-emerald-500 bg-emerald-50' : 'text-rose-500 bg-rose-50'} px-2 py-0.5 rounded tracking-tighter">${isPaid ? 'FULLY PAID' : 'PENDING CASH'}</span>
-                                </div>
+                                <span class="text-[10px] font-black px-4 py-2 rounded-xl border ${o.status === 'Delivered' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-indigo-50 border-indigo-100 text-indigo-600'} uppercase tracking-widest">${o.status}</span>
                             </div>
-                            <div class="pt-2 border-t border-slate-50">
+                            <div class="pt-4 border-t border-slate-100">
                                 ${actionBtn}
                             </div>
                         </div>`;
                 }).join('');
             }
 
-            // Products
+            // Render Products
             const productList = document.getElementById('productList');
             if (products.length === 0) {
-                productList.innerHTML = `<div class="col-span-full py-10 text-center opacity-40 italic text-sm">No items listed. Press + New Item to start selling.</div>`;
+                productList.innerHTML = `
+                    <div class="col-span-full py-20 text-center opacity-30 italic font-medium text-slate-500">
+                        <i class="fa-solid fa-layer-group text-4xl mb-4 block"></i>
+                        Ready to list your first item? Press the blue button.
+                    </div>`;
             } else {
                 productList.innerHTML = products.map((p, idx) => `
-                    <div class="glass-card overflow-hidden flex flex-col group/prod transition-all hover:translate-y-[-4px]">
-                        <div class="h-40 overflow-hidden bg-slate-50 relative">
+                    <div class="glass-card overflow-hidden flex flex-col group/prod transition-all hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-100 bg-white animate-fade-in">
+                        <div class="h-48 overflow-hidden bg-slate-100 relative">
                             <img src="${p.image || 'https://img.icons8.com/color/96/box--v1.png'}" class="w-full h-full object-cover transition-transform duration-700 group-hover/prod:scale-110">
-                            <div class="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-black text-indigo-600 uppercase tracking-widest shadow-sm border border-white/50">${p.category || 'General'}</div>
+                            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black text-indigo-600 uppercase tracking-widest shadow-sm border border-white/50">${p.category || 'General'}</div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/prod:opacity-100 transition-opacity duration-300"></div>
                         </div>
-                        <div class="p-5 flex flex-col gap-4 flex-1">
+                        <div class="p-6 flex flex-col gap-5 flex-1 capitalize">
                             <div>
-                                <h4 class="text-base font-black text-slate-800 leading-tight">${p.name}</h4>
-                                <p class="text-xs text-slate-500 leading-relaxed mt-1 line-clamp-2">${p.description || 'No description provided.'}</p>
+                                <h4 class="text-lg font-black text-slate-800 leading-tight mb-1.5">${p.name}</h4>
+                                <p class="text-xs text-slate-500 leading-relaxed line-clamp-2">${p.description || 'Verified society marketplace quality product.'}</p>
                             </div>
                             <div class="flex justify-between items-center mt-auto">
-                                <h3 class="text-xl font-black text-slate-900">₹${p.price}</h3>
+                                <div class="flex items-baseline gap-0.5">
+                                    <span class="text-sm font-bold text-slate-400">₹</span>
+                                    <span class="text-2xl font-black text-slate-900">${p.price}</span>
+                                </div>
                                 <div class="flex gap-2">
-                                    <button onclick="openEditProductByIndex(${idx})" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition flex items-center justify-center border border-slate-100"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button onclick="deleteProduct('${p._id}')" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition flex items-center justify-center border border-slate-100"><i class="fa-solid fa-trash-can"></i></button>
+                                    <button onclick="openEditProductByIndex(${idx})" class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all flex items-center justify-center border border-indigo-100 btn-hover-effect" title="Edit Listing"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="deleteProduct('${p._id}', '${p.name.replace(/'/g, "\\'")}')" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all flex items-center justify-center border border-rose-100 btn-hover-effect" title="Archive Listing"><i class="fa-solid fa-trash-can"></i></button>
                                 </div>
                             </div>
                         </div>
                     </div>`).join('');
             }
 
-            // Analytics
+            // Render Analytics
             const analyticsList = document.getElementById('analyticsList');
             const performance = {};
-            orders.forEach(o => { if(o.paymentStatus === 'Paid') performance[o.productName] = (performance[o.productName] || 0) + o.price });
+            orders.forEach(o => { 
+                if(o.paymentStatus === 'Paid') {
+                    performance[o.productName] = (performance[o.productName] || 0) + Number(o.price);
+                }
+            });
             
-            if (Object.keys(performance).length === 0) {
-                analyticsList.innerHTML = `<p class="text-xs text-slate-400 text-center py-6 italic font-medium uppercase tracking-widest">Your sales trends will appear as you complete orders.</p>`;
+            const sorted = Object.entries(performance).sort((a,b) => b[1]-a[1]);
+            
+            if (sorted.length === 0) {
+                analyticsList.innerHTML = `<div class="text-center py-12 text-slate-400"><i class="fa-solid fa-chart-line text-4xl mb-4 opacity-10"></i><p class="text-xs font-bold uppercase tracking-widest">Complete orders to see trends</p></div>`;
             } else {
-                analyticsList.innerHTML = Object.entries(performance).sort((a,b) => b[1]-a[1]).map(([name, rev]) => `
-                    <div class="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:bg-indigo-50/50 transition">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs shadow-sm"><i class="fa-solid fa-ranking-star"></i></div>
-                            <span class="text-xs font-black text-slate-700">${name}</span>
-                        </div>
-                        <span class="text-sm font-black text-slate-900 font-mono tracking-tighter">₹${rev.toLocaleString()}</span>
-                    </div>`).join('');
+                const max = sorted[0][1];
+                analyticsList.innerHTML = sorted.map(([name, rev]) => {
+                    const pct = (rev / max * 100).toFixed(0);
+                    return `
+                        <div class="space-y-2 group animate-fade-in">
+                            <div class="flex justify-between text-[11px] font-black uppercase tracking-wider">
+                                <span class="text-slate-600">${name}</span>
+                                <span class="text-slate-900">₹${rev.toLocaleString()}</span>
+                            </div>
+                            <div class="h-10 w-full bg-slate-50 border border-slate-100 rounded-2xl p-1 relative overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-indigo-500 to-indigo-400 rounded-xl shadow-lg transition-all duration-1000 ease-out flex items-center justify-end pr-4 text-[10px] text-white font-black" style="width: ${pct}%">
+                                    ${pct}%
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
             }
         }
 
         async function updateOrderStatus(id, status) {
-            confirmAction(`Update to ${status}?`, `Proceed with moving this order to the ${status} phase?`, async () => {
+            confirmAction(`Move to ${status}?`, `Proceed with advancing this order to the ${status} phase?`, async () => {
                 try {
                     const res = await fetch(`${API_URL}/marketplace/orders/${id}/status`, {
                         method: 'PUT',
@@ -596,40 +771,47 @@
                         body: JSON.stringify({ status })
                     });
                     if (res.ok) {
-                        showToast(`Order is now ${status}!`, "Status Shift");
+                        showToast(`Status updated to ${status}`, "Sync Success");
                         loadSellerData();
+                    } else {
+                        showToast("Failed to update status", "Error", "error");
                     }
                 } catch (e) { showToast("Backend sync failed.", "Error", 'error'); }
-            });
+            }, 'safe');
         }
 
         async function collectPayment(id) {
-            confirmAction("Verify Payment?", "Confirm you've received the required amount from the buyer? This action will finalize revenue analytics.", async () => {
+            confirmAction("Verify Collection?", "Confirm you've received the payment in cash? This will lock the revenue in your analytics.", async () => {
                 try {
                     const res = await fetch(`${API_URL}/marketplace/orders/${id}/pay`, {
                         method: 'PUT',
                         headers: getAuthHeaders()
                     });
                     if (res.ok) {
-                        showToast("Revenue consolidated successfully.", "Payment Stored");
+                        showToast("Income consolidated successfully.", "Payment Verified");
                         loadSellerData();
+                    } else {
+                        showToast("Failed to confirm payment", "Error", "error");
                     }
                 } catch (e) { showToast("Verification error.", "Status Error", 'error'); }
-            }, 'success');
+            }, 'safe');
         }
 
-        async function deleteProduct(id) {
-            confirmAction("Archive Listing?", "Remove this product from the society market? This will not affect existing orders.", async () => {
+        async function deleteProduct(id, name) {
+            confirmAction(`Archive "${name}"?`, "Remove this product from the public market? Existing orders will remain in your pipeline.", async () => {
                 try {
                     const res = await fetch(`${API_URL}/marketplace/products/${id}`, {
                         method: 'DELETE',
                         headers: getAuthHeaders()
                     });
                     if (res.ok) {
-                        showToast("Product listing removed.", "Market Shift");
+                        showToast(`"${name}" archived successfully.`, "Market Updated");
                         loadSellerData();
+                    } else {
+                        const data = await res.json();
+                        showToast(data.error || "Failed to archive item", "Action Denied", "error");
                     }
-                } catch (e) { showToast("Archival failed.", "Error", 'error'); }
+                } catch (e) { showToast("Archival failed.", "Discovery Error", 'error'); }
             });
         }
 
@@ -644,11 +826,13 @@
             if (p.image) {
                 document.getElementById('editImagePreview').src = p.image;
                 document.getElementById('editImagePreviewContainer').classList.remove('hidden');
+            } else {
+                document.getElementById('editImagePreviewContainer').classList.add('hidden');
             }
             openModal('editProductModal');
         }
 
-        // Image Previews
+        // Image Handling
         function previewProductImage(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -673,12 +857,12 @@
             }
         }
 
-        // Form Submits
+        // Form Handling
         document.getElementById('productForm').onsubmit = async (e) => {
             e.preventDefault();
-            const btn = e.target.querySelector('button');
-            const og = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing...';
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<div class="loader"></div>';
             btn.disabled = true;
 
             const payload = {
@@ -696,22 +880,25 @@
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
-                    showToast("Your listing is now live in the society!", "Market Success");
+                    showToast("Product listing is now live in the community!", "Market Launch");
                     closeModal('addProductModal');
                     e.target.reset();
                     document.getElementById('imagePreviewContainer').classList.add('hidden');
                     loadSellerData();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || "Failed to launch listing", "Market Blocked", "error");
                 }
-            } catch (e) { showToast("Listing failed.", "Sync Error", 'error'); }
-            finally { btn.innerHTML = og; btn.disabled = false; }
+            } catch (e) { showToast("Sync error.", "Host Offline", 'error'); }
+            finally { btn.innerHTML = originalContent; btn.disabled = false; }
         };
 
         document.getElementById('editProductForm').onsubmit = async (e) => {
             e.preventDefault();
             const id = document.getElementById('editPId').value;
-            const btn = e.target.querySelector('button');
-            const og = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<div class="loader"></div>';
             btn.disabled = true;
 
             const payload = {
@@ -729,17 +916,23 @@
                     body: JSON.stringify(payload)
                 });
                 if (res.ok) {
-                    showToast("Product listing refined.", "Update Success");
+                    showToast("Product specs updated successfully.", "Refined Listing");
                     closeModal('editProductModal');
                     loadSellerData();
+                } else {
+                    const data = await res.json();
+                    showToast(data.error || "Update protocol failed", "Sync Error", "error");
                 }
-            } catch (e) { showToast("Update failed.", "Sync Error", 'error'); }
-            finally { btn.innerHTML = og; btn.disabled = false; }
+            } catch (e) { showToast("Backend sync failed.", "Discovery Error", 'error'); }
+            finally { btn.innerHTML = originalContent; btn.disabled = false; }
         };
 
-        // Init
+        // Initialize state
         checkAuth();
-        setInterval(loadSellerData, 10000); // Periodic sync
+        // Periodic background refresh every 15 seconds
+        setInterval(() => {
+            if (localStorage.getItem('sellerToken')) loadSellerData();
+        }, 15000);
     </script>
 </body>
 </html>
