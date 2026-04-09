@@ -91,8 +91,15 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 def send_otp_email(recipient_email, otp):
-    msg = MIMEText(f"Your Nivaas verification OTP is: {otp}. Valid for 10 minutes.")
-    msg['Subject'] = 'Login/Signup Verification OTP'
+    return send_email_notification(
+        recipient_email, 
+        "Login/Signup Verification OTP", 
+        f"Your Nivaas verification OTP is: {otp}. Valid for 10 minutes."
+    )
+
+def send_email_notification(recipient_email, subject, body):
+    msg = MIMEText(body)
+    msg['Subject'] = f"Nivaas - {subject}"
     msg['From'] = EMAIL_HOST_USER
     msg['To'] = recipient_email
     try:
@@ -402,6 +409,15 @@ def add_bulk_dues():
         
     if due_records:
         payments_col.insert_many(due_records)
+        # Send Email Notifications in Background (simulated simple loop here)
+        for r in residents:
+            email = r.get('email')
+            if email:
+                send_email_notification(
+                    email, 
+                    "New Bill Generated", 
+                    f"Hi {r.get('name', 'Resident')},\n\nA new {data.get('type', 'Maintenance')} bill of ₹{split_amt} has been generated for your flat.\nDue Date: {due_date}\n\nPlease pay through the Nivaas app to avoid late fees.\n\nRegards,\nSociety Management"
+                )
         
     return jsonify({"message": f"Successfully generated dues of ₹{split_amt} for {len(residents)} residents."}), 201
 
@@ -415,7 +431,20 @@ def pay_due(d_id):
 @app.route('/api/admin/dues/<d_id>/confirm', methods=['PUT'])
 @admin_required
 def confirm_due(d_id):
+    due = payments_col.find_one({"_id": ObjectId(d_id)})
+    if not due: return jsonify({"error": "Payment record not found"}), 404
+    
     payments_col.update_one({"_id": ObjectId(d_id)}, {"$set": {"status": "Paid", "confirmedAt": datetime.utcnow().isoformat()}})
+    
+    # Send Receipt Email
+    user = users_col.find_one({"_id": ObjectId(due["userId"])})
+    if user and user.get('email'):
+        send_email_notification(
+            user['email'], 
+            "Payment Receipt", 
+            f"Hi {user.get('name', 'Resident')},\n\nYour payment of ₹{due.get('amount')} for {due.get('type', 'Maintenance')} has been confirmed.\n\nYou can now download your digital receipt from the Nivaas app.\n\nThank you,\nSociety Management"
+        )
+        
     return jsonify({"message": "Payment confirmed successfully"})
 
 @app.route('/api/admin/dues/<d_id>/reject', methods=['PUT'])

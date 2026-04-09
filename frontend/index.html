@@ -9,6 +9,7 @@
     <link rel="icon" type="image/png" href="icons/nivas.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -1611,13 +1612,16 @@
                             <div>
                                 <h4 class="text-sm font-bold text-dark">${d.type} Maintenance</h4>
                                 <p class="text-[10px] text-slate-500">Due Date: ${d.dueDate}</p>
-                                <span class="text-[10px] font-bold ${statusColor}">${statusText}</span>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-[10px] font-bold ${statusColor}">${statusText}</span>
+                                    ${d.status === 'Pending' ? `<button onclick="downloadPDF('${d._id}', '${d.type}', '${d.amount}', '${d.dueDate}', false)" class="text-[9px] text-primary font-bold hover:underline"><i class="fa-solid fa-file-invoice"></i> Bill</button>` : ''}
+                                </div>
                             </div>
                             <div class="text-right flex flex-col items-end gap-1">
                                 <h3 class="text-xl font-bold text-slate-700 mb-1">₹${d.amount}</h3>
                                 ${d.status === 'Pending' ? `<button onclick="mockPay('${d._id}', this)" class="text-[10px] bg-primary text-white px-3 py-1.5 rounded-lg shadow-sm font-bold active:scale-95 transition">Pay Now</button>` : 
                                   d.status === 'Pending Confirmation' ? `<button disabled class="text-[10px] bg-slate-200 text-slate-500 px-3 py-1.5 rounded-lg shadow-sm font-bold opacity-70 cursor-not-allowed flex items-center gap-1"><i class="fa-solid fa-clock"></i> Verifying</button>` :
-                                  `<button onclick="downloadReceipt('${d._id}', '${d.type}', '${d.amount}', '${d.dueDate}')" class="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm font-bold hover:bg-slate-200 transition flex items-center gap-1"><i class="fa-solid fa-download text-emerald-500"></i> Receipt</button>`}
+                                  `<button onclick="downloadPDF('${d._id}', '${d.type}', '${d.amount}', '${d.dueDate}', true)" class="text-[10px] bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-sm font-bold hover:bg-slate-200 transition flex items-center gap-1"><i class="fa-solid fa-download text-emerald-500"></i> Receipt</button>`}
                             </div>
                         </div>
                     `;
@@ -1641,42 +1645,87 @@
             } catch (e) { btn.innerText = "Pay Now"; btn.classList.replace('bg-slate-400', 'bg-primary'); }
         }
 
-        function downloadReceipt(id, type, amount, date) {
-            const socName = localStorage.getItem('userSocietyName') || 'Society Community';
+        function downloadPDF(id, type, amount, date, isReceipt) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const socName = localStorage.getItem('userSocietyName') || 'Nivaas Society';
             const userName = localStorage.getItem('userName') || 'Resident';
+            const flatNo = localStorage.getItem('userFlat') || 'N/A';
+            const title = isReceipt ? 'PAYMENT RECEIPT' : 'MAINTENANCE BILL';
+            const docDate = new Date().toLocaleDateString();
 
-            const receipt = `
-=========================================
-          ${socName.toUpperCase()}
-=========================================
+            // Premium Header
+            doc.setFillColor(79, 70, 229); // Primary Color
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NIVAAS', 20, 25);
+            doc.setFontSize(10);
+            doc.text(socName.toUpperCase(), 20, 32);
+            
+            doc.setFontSize(14);
+            doc.text(title, 140, 25);
+            doc.setFontSize(8);
+            doc.text(`DATE: ${docDate}`, 140, 32);
 
-PAYMENT RECEIPT ACKNOWLEDGEMENT
------------------------------------------
-Receipt No:  RC-${id.substring(0, 8).toUpperCase()}
-Generation:  ${new Date().toLocaleString()}
-Billed To:   ${userName}
+            // Resident Details
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(12);
+            doc.text('BILLED TO:', 20, 55);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${userName}`, 20, 62);
+            doc.text(`Flat Number: ${flatNo}`, 20, 68);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text(isReceipt ? 'RECEIPT NO:' : 'INVOICE NO:', 140, 55);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${isReceipt ? 'RC' : 'INV'}-${id.substring(0, 8).toUpperCase()}`, 140, 62);
 
-DESCRIPTION                   AMOUNT
------------------------------------------
-${type} Maintenance Due        ₹${amount}
-Cycle Date: ${date}
+            // Table Header
+            doc.setFillColor(245, 245, 245);
+            doc.rect(20, 80, 170, 10, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text('DESCRIPTION', 25, 87);
+            doc.text('BILLING CYCLE', 100, 87);
+            doc.text('AMOUNT', 160, 87);
 
-STATUS: PAID
-=========================================
-Thank you for your timely payment!
-This is a computer generated document.
-=========================================
-            `;
+            // Table Row
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${type} Maintenance`, 25, 100);
+            doc.text(`${date}`, 100, 100);
+            doc.text(`INR ${amount}`, 160, 100);
+            
+            // Total
+            doc.line(20, 110, 190, 110);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOTAL AMOUNT:', 120, 120);
+            doc.text(`INR ${amount}`, 160, 120);
 
-            const blob = new Blob([receipt], { type: 'text/plain' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Receipt_${type}_${date.replace(/-/g, '')}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            // Status Badge
+            if (isReceipt) {
+                doc.setDrawColor(16, 185, 129); // Emerald
+                doc.setLineWidth(0.5);
+                doc.rect(150, 130, 30, 10);
+                doc.setTextColor(16, 185, 129);
+                doc.text('PAID', 160, 137);
+            } else {
+                doc.setDrawColor(245, 158, 11); // Amber
+                doc.setLineWidth(0.5);
+                doc.rect(150, 130, 30, 10);
+                doc.setTextColor(245, 158, 11);
+                doc.text('PENDING', 156, 137);
+            }
+
+            // Footer
+            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(8);
+            doc.text('Thank you for being a part of Nivaas Community.', 20, 270);
+            doc.text('This is an electronically generated document. No signature required.', 20, 275);
+            doc.text('Contact Society Management for any queries.', 20, 280);
+
+            doc.save(`${title.replace(' ', '_')}_${date}.pdf`);
         }
 
         window._allUsers = [];

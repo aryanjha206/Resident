@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="icons/nivas.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -749,10 +750,13 @@
                     otherDues.forEach(d => {
                         const paid = d.status === 'Paid';
                         html += `
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center mb-2">
+                        <div class="bg-white p-3 rounded-xl border border-slate-100 flex justify-between items-center mb-2 shadow-sm">
                             <div>
                                 <h4 class="text-sm font-bold text-dark">₹${d.amount} <span class="text-[10px] text-slate-500 font-normal ml-1">Due: ${d.dueDate}</span></h4>
-                                <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-user text-[9px] mr-0.5"></i> ${d.userName}</p>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-user text-[9px] mr-0.5"></i> ${d.userName}</p>
+                                    <button onclick="downloadPDF('${d._id}', '${d.type}', '${d.amount}', '${d.dueDate}', ${paid}, '${d.userName}')" class="text-[9px] text-primary font-bold hover:underline mb-[-2px] ml-1"><i class="fa-solid fa-file-pdf"></i> ${paid ? 'Receipt' : 'Bill'}</button>
+                                </div>
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="text-[10px] font-bold px-2 py-1 rounded bg-white text-${paid?'emerald-600':'amber-600'} border border-slate-100">${d.status}</span>
@@ -795,6 +799,70 @@
                     }
                 } catch (e) { showToast("Action failed", "error"); }
             });
+        }
+
+
+        function downloadPDF(id, type, amount, date, isReceipt, residentName) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const socName = document.querySelector('#adminSocietySelect option:checked')?.text || 'Nivaas Society';
+            const title = isReceipt ? 'PAYMENT RECEIPT' : 'MAINTENANCE BILL';
+            const docDate = new Date().toLocaleDateString();
+
+            doc.setFillColor(79, 70, 229); // Primary Color
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.setFont('helvetica', 'bold');
+            doc.text('NIVAAS', 20, 25);
+            doc.setFontSize(10);
+            doc.text(socName.toUpperCase(), 20, 32);
+            doc.setFontSize(14);
+            doc.text(title, 140, 25);
+            doc.setFontSize(8);
+            doc.text(`DATE: ${docDate}`, 140, 32);
+
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(12);
+            doc.text('BILLED TO:', 20, 55);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${residentName || 'Resident'}`, 20, 62);
+            doc.setFont('helvetica', 'bold');
+            doc.text(isReceipt ? 'RECEIPT NO:' : 'INVOICE NO:', 140, 55);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${isReceipt ? 'RC' : 'INV'}-${id.substring(0, 8).toUpperCase()}`, 140, 62);
+
+            doc.setFillColor(245, 245, 245);
+            doc.rect(20, 80, 170, 10, 'F');
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.text('DESCRIPTION', 25, 87);
+            doc.text('BILLING CYCLE', 100, 87);
+            doc.text('AMOUNT', 160, 87);
+
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${type} Maintenance`, 25, 100);
+            doc.text(`${date}`, 100, 100);
+            doc.text(`INR ${amount}`, 160, 100);
+            
+            doc.line(20, 110, 190, 110);
+            doc.setFont('helvetica', 'bold');
+            doc.text('TOTAL AMOUNT:', 120, 120);
+            doc.text(`INR ${amount}`, 160, 120);
+
+            if (isReceipt) {
+                doc.setDrawColor(16, 185, 129); doc.setLineWidth(0.5); doc.rect(150, 130, 30, 10);
+                doc.setTextColor(16, 185, 129); doc.text('PAID', 160, 137);
+            } else {
+                doc.setDrawColor(245, 158, 11); doc.setLineWidth(0.5); doc.rect(150, 130, 30, 10);
+                doc.setTextColor(245, 158, 11); doc.text('PENDING', 156, 137);
+            }
+
+            doc.setTextColor(150, 150, 150);
+            doc.setFontSize(8);
+            doc.text('Thank you for being a part of Nivaas Community.', 20, 270);
+            doc.text('This is an electronically generated document. No signature required.', 20, 275);
+            doc.save(`${title.replace(' ', '_')}_${date}.pdf`);
         }
 
 
