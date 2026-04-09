@@ -353,7 +353,21 @@ def get_dues():
     else:
         query = {"userId": user_id, "societyId": society_id}
         
-    dues = list(payments_col.find(query).sort("dueDate", 1))
+    # Sorting logic: Unpaid (Pending) first, then Pending Confirmation, then Paid.
+    # Within each status, sort by dueDate (earliest first).
+    dues = list(payments_col.find(query))
+    
+    def sort_key(d):
+        status = d.get('status', 'Pending')
+        # Assign weights for sorting statuses
+        status_weight = {
+            'Pending': 0,
+            'Pending Confirmation': 1,
+            'Paid': 2
+        }.get(status, 3)
+        return (status_weight, d.get('dueDate', ''))
+
+    dues.sort(key=sort_key)
     return jsonify([format_doc(d) for d in dues])
 
 @app.route('/api/dues/bulk', methods=['POST'])
@@ -394,8 +408,21 @@ def add_bulk_dues():
 @app.route('/api/dues/<d_id>/pay', methods=['PUT'])
 @token_required
 def pay_due(d_id):
-    payments_col.update_one({"_id": ObjectId(d_id)}, {"$set": {"status": "Paid"}})
-    return jsonify({"message": "Payment successful"})
+    # Instead of marking Paid immediately, move to confirmation phase
+    payments_col.update_one({"_id": ObjectId(d_id)}, {"$set": {"status": "Pending Confirmation", "paidAt": datetime.utcnow().isoformat()}})
+    return jsonify({"message": "Payment sent for admin confirmation"})
+
+@app.route('/api/admin/dues/<d_id>/confirm', methods=['PUT'])
+@admin_required
+def confirm_due(d_id):
+    payments_col.update_one({"_id": ObjectId(d_id)}, {"$set": {"status": "Paid", "confirmedAt": datetime.utcnow().isoformat()}})
+    return jsonify({"message": "Payment confirmed successfully"})
+
+@app.route('/api/admin/dues/<d_id>/reject', methods=['PUT'])
+@admin_required
+def reject_due(d_id):
+    payments_col.update_one({"_id": ObjectId(d_id)}, {"$set": {"status": "Pending", "rejectionReason": request.json.get('reason', 'Payment not verified')}})
+    return jsonify({"message": "Payment rejected"})
 
 # -------------- SERVICES / HELPDESK MODULE --------------
 @app.route('/api/services', methods=['GET'])

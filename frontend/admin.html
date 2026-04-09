@@ -711,16 +711,42 @@
                             <input id="duesDate" type="date" required class="w-full text-sm bg-white border border-emerald-200 rounded-lg px-3 py-2">
                             <button type="submit" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-lg text-sm hover:bg-emerald-700 transition lg cursor-pointer border border-emerald-700">Split & Issue Invoices</button>
                         </form>
-                    </div><div id="financeList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div></div>`;
+                    </div>
+                    <div id="pendingApprovals"></div>
+                    <div id="financeList"><div class="text-center py-4"><i class="fa-solid fa-spinner fa-spin text-emerald-500"></i></div></div>`;
             content.innerHTML = formHtml;
 
             try {
                 const res = await fetch(`${API_URL}/dues${query}`, {headers: getAuthHeaders()});
                 if(res.ok) {
                     const dues = await res.json();
-                    let html = '<h4 class="text-xs font-bold text-slate-500 mb-2 uppercase tracking-wide">Resident Invoice History</h4>';
-                    if(dues.length === 0) html += `<p class="text-xs text-slate-400">No invoices issued yet.</p>`;
-                    dues.forEach(d => {
+                    
+                    const pendingConfirmations = dues.filter(d => d.status === 'Pending Confirmation');
+                    const otherDues = dues.filter(d => d.status !== 'Pending Confirmation');
+
+                    let pendingHtml = '';
+                    if (pendingConfirmations.length > 0) {
+                        pendingHtml = '<h4 class="text-xs font-bold text-indigo-500 mb-2 uppercase tracking-wide">Pending Confirmations</h4>';
+                        pendingConfirmations.forEach(d => {
+                            pendingHtml += `
+                            <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex justify-between items-center mb-4 shadow-sm">
+                                <div>
+                                    <h4 class="text-sm font-bold text-dark">₹${d.amount} <span class="text-[10px] text-slate-500 font-normal ml-1">Due: ${d.dueDate}</span></h4>
+                                    <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-user text-[9px] mr-1"></i> ${d.userName}</p>
+                                    <p class="text-[9px] text-indigo-400 font-bold uppercase mt-1">Sent: ${new Date(d.paidAt).toLocaleDateString()}</p>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button onclick="approvePayment('${d._id}')" class="bg-emerald-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-emerald-600 transition">Approve</button>
+                                    <button onclick="rejectPayment('${d._id}')" class="bg-red-50 text-red-500 text-[10px] font-bold px-3 py-1.5 rounded-lg border border-red-100 hover:bg-red-100 transition">Reject</button>
+                                </div>
+                            </div>`;
+                        });
+                    }
+                    document.getElementById('pendingApprovals').innerHTML = pendingHtml;
+
+                    let html = '<h4 class="text-xs font-bold text-slate-500 mb-2 mt-4 uppercase tracking-wide">Resident Invoice History</h4>';
+                    if(otherDues.length === 0) html += `<p class="text-xs text-slate-400">No other invoices issued yet.</p>`;
+                    otherDues.forEach(d => {
                         const paid = d.status === 'Paid';
                         html += `
                         <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center mb-2">
@@ -736,6 +762,39 @@
                     document.getElementById('financeList').innerHTML = html;
                 }
             } catch(e) {}
+        }
+
+        async function approvePayment(id) {
+            showConfirm("Approve Payment", "Are you sure this payment has been received in the society account?", async () => {
+                try {
+                    const res = await fetch(`${API_URL}/admin/dues/${id}/confirm`, { method: 'PUT', headers: getAuthHeaders() });
+                    if (res.ok) {
+                        showToast("Payment confirmed successfully", "success", "Confirmed");
+                        loadFinanceAdmin();
+                        fetchAdminAnalytics();
+                    }
+                } catch (e) { showToast("Action failed", "error"); }
+            });
+        }
+
+        async function rejectPayment(id) {
+            const reason = prompt("Reason for rejection?", "Transaction not found");
+            if (reason === null) return;
+
+            showConfirm("Reject Payment", "This will move the due back to 'Pending' status. Continue?", async () => {
+                try {
+                    const res = await fetch(`${API_URL}/admin/dues/${id}/reject`, { 
+                        method: 'PUT', 
+                        headers: getAuthHeaders(),
+                        body: JSON.stringify({ reason })
+                    });
+                    if (res.ok) {
+                        showToast("Payment rejected", "success", "Rejected");
+                        loadFinanceAdmin();
+                        fetchAdminAnalytics();
+                    }
+                } catch (e) { showToast("Action failed", "error"); }
+            });
         }
 
 
