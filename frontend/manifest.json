@@ -1,10 +1,10 @@
 {
-    "name": "Society Hub",
-    "short_name": "SocietyHub",
+    "name": "Nivaas",
+    "short_name": "Nivaas",
     "description": "Modern Society Management System",
-    "start_url": "index.html",
+    "start_url": "/index.html",
     "display": "standalone",
-    "background_color": "#020617",
+    "background_color": "#F8FAFC",
     "theme_color": "#4F46E5",
     "icons": [
         {

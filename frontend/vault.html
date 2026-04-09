@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Digital Vault - Society Hub</title>
+    <title>Digital Vault - Nivaas</title>
+    <link rel="icon" type="image/png" href="icons/nivas.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -54,40 +55,8 @@
         
         select option { background: white; color: #1e293b; }
     </style>
-    <script>
-        window.addEventListener('load', () => {
-            const ls = document.getElementById('loadingScreen');
-            if(ls) {
-                setTimeout(() => {
-                    ls.style.opacity = '0';
-                    setTimeout(() => ls.remove(), 750);
-                }, 1000);
-            }
-        });
-    </script>
 </head>
 <body class="pb-24 no-scrollbar">
-    <!-- Initial Loading Screen -->
-    <div id="loadingScreen" class="fixed inset-0 z-[10000] bg-[#020617] flex flex-col items-center justify-center transition-opacity duration-700">
-        <div class="relative">
-            <div class="absolute -inset-12 bg-indigo-500/20 rounded-full blur-[80px] animate-pulse"></div>
-            <img src="icons/nivas.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3061/3061341.png'" class="w-24 h-24 relative z-10 animate-bounce shadow-2xl rounded-3xl" alt="Society Hub">
-        </div>
-        <div class="mt-8 flex flex-col items-center">
-            <h2 class="text-white text-[10px] font-black tracking-[0.3em] uppercase opacity-40">Document Vault</h2>
-            <div class="w-32 h-[1px] bg-white/5 rounded-full mt-5 overflow-hidden relative">
-                <div class="absolute top-0 left-0 h-full bg-indigo-500 animate-[loading_2s_ease-in-out_infinite]" style="width: 30%"></div>
-            </div>
-        </div>
-    </div>
-    
-    <style>
-        @keyframes loading {
-            0% { transform: translateX(-100%); width: 30%; }
-            50% { width: 60%; }
-            100% { transform: translateX(350%); width: 30%; }
-        }
-    </style>
     <!-- Background Decor -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="absolute -top-[10%] -left-[10%] w-[60%] h-[60%] bg-indigo-500/5 rounded-full blur-[120px]"></div>

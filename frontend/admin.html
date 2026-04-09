@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Dashboard - Society Hub</title>
+    <title>Admin Dashboard - Nivaas</title>
+    <link rel="icon" type="image/png" href="icons/nivas.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,37 +27,6 @@
     </style>
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col">
-    <!-- Initial Loading Screen -->
-    <div id="loadingScreen" class="fixed inset-0 z-[1000] bg-[#020617] flex flex-col items-center justify-center transition-opacity duration-700">
-        <div class="relative">
-            <div class="absolute -inset-8 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
-            <img src="icons/nivas.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3061/3061341.png'" class="w-24 h-24 relative z-10 animate-bounce shadow-2xl rounded-3xl" alt="Society Hub">
-        </div>
-        <div class="mt-8 flex flex-col items-center">
-            <h2 class="text-white text-md font-black tracking-[0.2em] uppercase opacity-70">Admin Control</h2>
-            <div class="w-32 h-1 bg-white/5 rounded-full mt-4 overflow-hidden relative">
-                <div class="absolute top-0 left-0 h-full bg-indigo-500 animate-[loading_2s_ease-in-out_infinite]" style="width: 30%"></div>
-            </div>
-        </div>
-    </div>
-    <style>
-        @keyframes loading {
-            0% { transform: translateX(-100%); width: 30%; }
-            50% { width: 60%; }
-            100% { transform: translateX(330%); width: 30%; }
-        }
-    </style>
-    <script>
-        window.addEventListener('load', () => {
-            const ls = document.getElementById('loadingScreen');
-            if(ls) {
-                setTimeout(() => {
-                    ls.style.opacity = '0';
-                    setTimeout(() => ls.remove(), 750);
-                }, 1000);
-            }
-        });
-    </script>
 
     <!-- Login View -->
     <div id="loginView" class="fixed inset-0 flex flex-col items-center justify-center p-6 bg-[#020617] overflow-hidden z-[200]">
@@ -97,8 +67,14 @@
                     <p id="errorMsg" class="text-[10px] text-center mt-3 text-red-500 hidden font-bold bg-red-50 py-2 rounded-lg border border-red-100">Invalid PIN. Please try again.</p>
                 </div>
 
-                <a href="index.html" class="mt-8 text-[11px] font-bold text-slate-400 hover:text-slate-600 transition flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Residential Portal</a>
             </div>
+        </div>
+
+        <!-- External Access Links -->
+        <div class="mt-12 flex gap-8 relative z-10">
+            <a href="index.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-house p-2 bg-white/5 rounded-lg group-hover:bg-indigo-500/50 transition"></i> Resident</a>
+            <a href="guard.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-camera p-2 bg-white/5 rounded-lg group-hover:bg-indigo-500/50 transition"></i> Guard</a>
+            <a href="seller.html" class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i class="fa-solid fa-shop p-2 bg-white/5 rounded-lg group-hover:bg-indigo-500/50 transition"></i> Seller</a>
         </div>
     </div>
 

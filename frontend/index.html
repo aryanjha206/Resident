@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Society Hub</title>
+    <title>Nivaas</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/nivas.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -164,38 +165,6 @@
 </head>
 
 <body class="text-slate-800 antialiased min-h-screen overflow-x-hidden">
-    <!-- Initial Loading Screen -->
-    <div id="loadingScreen" class="fixed inset-0 z-[1000] bg-[#020617] flex flex-col items-center justify-center transition-opacity duration-700">
-        <div class="relative">
-            <div class="absolute -inset-8 bg-indigo-500/20 rounded-full blur-3xl animate-pulse"></div>
-            <img src="icons/nivas.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3061/3061341.png'" class="w-32 h-32 relative z-10 animate-bounce shadow-2xl rounded-3xl" alt="Society Hub">
-        </div>
-        <div class="mt-12 flex flex-col items-center">
-            <h2 class="text-white text-xl font-black tracking-[0.2em] uppercase opacity-80">Society Hub</h2>
-            <div class="w-48 h-1 bg-white/5 rounded-full mt-4 overflow-hidden relative">
-                <div class="absolute top-0 left-0 h-full bg-indigo-500 animate-[loading_2s_ease-in-out_infinite]" style="width: 30%"></div>
-            </div>
-        </div>
-    </div>
-    
-    <style>
-        @keyframes loading {
-            0% { transform: translateX(-100%); width: 30%; }
-            50% { width: 60%; }
-            100% { transform: translateX(330%); width: 30%; }
-        }
-    </style>
-    <script>
-        window.addEventListener('load', () => {
-            const ls = document.getElementById('loadingScreen');
-            if(ls) {
-                setTimeout(() => {
-                    ls.style.opacity = '0';
-                    setTimeout(() => ls.remove(), 750);
-                }, 1500);
-            }
-        });
-    </script>
 
     <!-- Auth / Login / Signup Screen -->
     <div id="authOverlay"
@@ -220,14 +189,9 @@
 
             <div
                 class="glass-card relative bg-white/95 backdrop-blur-2xl border border-white/20 p-8 pt-12 flex flex-col items-center shadow-2xl rounded-[2.5rem]">
-                <!-- Floating Icon -->
-                <div
-                    class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-indigo-700 shadow-2xl flex items-center justify-center text-white text-4xl transform -rotate-6 group-hover:rotate-0 transition-transform duration-500">
-                    <i class="fa-solid fa-hotel"></i>
-                </div>
 
                 <div class="text-center mb-8">
-                    <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">Society Hub</h2>
+                    <h2 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">Nivaas</h2>
                 </div>
 
                 <p class="text-[11px] text-slate-500 text-center leading-relaxed mb-8 px-4 font-medium">Elevate your
@@ -284,21 +248,7 @@
             </div>
         </div>
 
-        <!-- External Access Links -->
-        <div class="mt-12 flex gap-8">
-            <a href="guard.html"
-                class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i
-                    class="fa-solid fa-camera p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i>
-                Security Dashboard</a>
-            <a href="admin.html"
-                class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i
-                    class="fa-solid fa-shield-halved p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i>
-                Management Board</a>
-            <a href="seller.html"
-                class="flex items-center gap-2 text-[11px] text-slate-500 font-bold hover:text-white transition group"><i
-                    class="fa-solid fa-shop p-2 bg-white/5 rounded-lg group-hover:bg-primary/20 transition"></i> Seller
-                Portal</a>
-        </div>
+
     </div>
 
 
@@ -439,7 +389,7 @@
                     <i class="fa-solid fa-building"></i>
                 </div>
                 <div>
-                    <h1 id="societyNameDisplay" class="text-sm font-bold text-dark flex items-center gap-1">Society Hub
+                    <h1 id="societyNameDisplay" class="text-sm font-bold text-dark flex items-center gap-1">Nivaas
                     </h1>
                     <p id="userNameDisplay"
                         class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full mt-1">Welcome</p>
@@ -673,8 +623,7 @@
                         </div>
 
                         <!-- Marketplace Poster -->
-                        <div
-                            class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-fuchsia-600 to-indigo-900 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0 group cursor-pointer"
+                        <div class="carousel-item snap-start min-w-[85%] bg-gradient-to-br from-fuchsia-600 to-indigo-900 rounded-[20px] p-5 text-white shadow-lg relative overflow-hidden shrink-0 group cursor-pointer"
                             onclick="window.location.href='market.html'">
                             <div class="relative z-10 flex justify-between items-center">
                                 <div>
@@ -790,14 +739,17 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-xl font-bold text-dark">Property Hub</h2>
-                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Manage Your Residence</p>
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Manage Your
+                            Residence</p>
                     </div>
                 </div>
 
                 <!-- Management Control Panel (Quick Actions) -->
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="openModal('visitorModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-indigo-50/50">
-                        <div class="w-10 h-10 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center text-lg group-hover:bg-primary group-hover:text-white transition-colors">
+                    <button onclick="openModal('visitorModal')"
+                        class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-indigo-50/50">
+                        <div
+                            class="w-10 h-10 rounded-2xl bg-indigo-50 text-primary flex items-center justify-center text-lg group-hover:bg-primary group-hover:text-white transition-colors">
                             <i class="fa-solid fa-id-badge"></i>
                         </div>
                         <div class="text-left">
@@ -805,8 +757,10 @@
                             <p class="text-[9px] text-slate-400 font-medium">Generate gate pass</p>
                         </div>
                     </button>
-                    <button onclick="openModal('bookingModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-emerald-50/50">
-                        <div class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                    <button onclick="openModal('bookingModal')"
+                        class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-emerald-50/50">
+                        <div
+                            class="w-10 h-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                             <i class="fa-solid fa-calendar-check"></i>
                         </div>
                         <div class="text-left">
@@ -814,8 +768,10 @@
                             <p class="text-[9px] text-slate-400 font-medium">Book facilities</p>
                         </div>
                     </button>
-                    <button onclick="openModal('complaintModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-rose-50/50">
-                        <div class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg group-hover:bg-rose-500 group-hover:text-white transition-colors">
+                    <button onclick="openModal('complaintModal')"
+                        class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-rose-50/50">
+                        <div
+                            class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-lg group-hover:bg-rose-500 group-hover:text-white transition-colors">
                             <i class="fa-solid fa-triangle-exclamation"></i>
                         </div>
                         <div class="text-left">
@@ -823,8 +779,10 @@
                             <p class="text-[9px] text-slate-400 font-medium">Raise incident</p>
                         </div>
                     </button>
-                    <button onclick="openModal('vehicleModal')" class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-amber-50/50">
-                        <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg group-hover:bg-amber-500 group-hover:text-white transition-colors">
+                    <button onclick="openModal('vehicleModal')"
+                        class="glass-card p-4 flex flex-col gap-3 group active:scale-[0.98] transition-all hover:bg-amber-50/50">
+                        <div
+                            class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg group-hover:bg-amber-500 group-hover:text-white transition-colors">
                             <i class="fa-solid fa-car"></i>
                         </div>
                         <div class="text-left">
@@ -839,13 +797,16 @@
                     <!-- BOOKINGS SECTION -->
                     <div class="space-y-4">
                         <div class="flex items-center gap-2 px-1">
-                           <div class="w-1 h-3 bg-emerald-500 rounded-full"></div>
-                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Upcoming Bookings</h3>
+                            <div class="w-1 h-3 bg-emerald-500 rounded-full"></div>
+                            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Upcoming
+                                Bookings</h3>
                         </div>
                         <div id="myBookingsList" class="space-y-3">
-                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                            <div
+                                class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <i class="fa-solid fa-calendar-days text-2xl text-slate-200 mb-2 block"></i>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active reservations</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active
+                                    reservations</span>
                             </div>
                         </div>
                     </div>
@@ -853,13 +814,16 @@
                     <!-- PASSES SECTION -->
                     <div class="space-y-4">
                         <div class="flex items-center gap-2 px-1">
-                           <div class="w-1 h-3 bg-indigo-500 rounded-full"></div>
-                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Security Passes</h3>
+                            <div class="w-1 h-3 bg-indigo-500 rounded-full"></div>
+                            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Security
+                                Passes</h3>
                         </div>
                         <div id="myVisitorsList" class="space-y-3">
-                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                            <div
+                                class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <i class="fa-solid fa-id-card text-2xl text-slate-200 mb-2 block"></i>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active gate passes</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No active
+                                    gate passes</span>
                             </div>
                         </div>
                     </div>
@@ -867,13 +831,16 @@
                     <!-- VEHICLES SECTION -->
                     <div class="space-y-4">
                         <div class="flex items-center gap-2 px-1">
-                           <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
-                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Vehicle Registry</h3>
+                            <div class="w-1 h-3 bg-amber-500 rounded-full"></div>
+                            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Vehicle
+                                Registry</h3>
                         </div>
                         <div id="myVehiclesList" class="space-y-3">
-                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                            <div
+                                class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <i class="fa-solid fa-car-side text-2xl text-slate-200 mb-2 block"></i>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No registered vehicles</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">No
+                                    registered vehicles</span>
                             </div>
                         </div>
                     </div>
@@ -881,13 +848,16 @@
                     <!-- COMPLAINTS SECTION -->
                     <div class="space-y-4">
                         <div class="flex items-center gap-2 px-1">
-                           <div class="w-1 h-3 bg-rose-500 rounded-full"></div>
-                           <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Grievance Log</h3>
+                            <div class="w-1 h-3 bg-rose-500 rounded-full"></div>
+                            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.15em]">Grievance Log
+                            </h3>
                         </div>
                         <div id="myComplaintsList" class="space-y-3">
-                            <div class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                            <div
+                                class="text-center py-6 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
                                 <i class="fa-solid fa-clipboard-check text-2xl text-slate-200 mb-2 block"></i>
-                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Everything looks good!</span>
+                                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Everything
+                                    looks good!</span>
                             </div>
                         </div>
                     </div>
@@ -945,7 +915,7 @@
                     <i class="fa-solid fa-comments"></i>
                 </div>
                 <div>
-                    <h3 class="text-sm font-bold">Society Hub Chat</h3>
+                    <h3 class="text-sm font-bold">Nivaas Chat</h3>
                     <span class="text-[9px] text-emerald-500 font-bold uppercase tracking-wider">Live & Direct</span>
                 </div>
             </div>
@@ -1301,7 +1271,7 @@
                     localStorage.setItem('userToken', data.token);
                     localStorage.setItem('userId', data.user._id);
                     localStorage.setItem('userName', data.user.name);
-                    localStorage.setItem('userSocietyName', data.user.societyName || 'Society Hub');
+                    localStorage.setItem('userSocietyName', data.user.societyName || 'Nivaas');
                     checkAuth();
                 } else {
                     if (data.error === "Society Code is required for new signup") {
@@ -1465,7 +1435,7 @@
                         <div class="flex justify-between py-2 border-b border-slate-100"><span class="text-xs text-slate-500">Delivered</span><span class="text-xs font-bold text-dark">${inv.deliveredOn ? new Date(inv.deliveredOn).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}</span></div>
                         <div class="flex justify-between py-2"><span class="text-xs text-slate-500">Payment</span><span class="text-xs font-bold ${inv.paymentStatus === 'Paid' ? 'text-emerald-600' : 'text-red-500'}">${inv.paymentStatus === 'Paid' ? '\u2713 Paid' : 'Pending'}</span></div>
                     </div>
-                    <div class="bg-slate-50 rounded-xl p-3 text-center mt-4"><p class="text-[9px] text-slate-400">Auto-generated invoice from Society Hub Marketplace.</p></div>`;
+                    <div class="bg-slate-50 rounded-xl p-3 text-center mt-4"><p class="text-[9px] text-slate-400">Auto-generated invoice from Nivaas Marketplace.</p></div>`;
                 document.getElementById('invoiceModal').classList.remove('hidden');
             } catch (e) { }
         }

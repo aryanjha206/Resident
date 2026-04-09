@@ -91,7 +91,7 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 def send_otp_email(recipient_email, otp):
-    msg = MIMEText(f"Your Society Hub verification OTP is: {otp}. Valid for 10 minutes.")
+    msg = MIMEText(f"Your Nivaas verification OTP is: {otp}. Valid for 10 minutes.")
     msg['Subject'] = 'Login/Signup Verification OTP'
     msg['From'] = EMAIL_HOST_USER
     msg['To'] = recipient_email
